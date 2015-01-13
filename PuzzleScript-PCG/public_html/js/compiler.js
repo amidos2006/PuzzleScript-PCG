@@ -2424,7 +2424,7 @@ function compile(command,text) {
 	setGameState(state,command);
         
         //My Code
-        var test = 2;
+        var test = 3;
         var ruleAnalyzer = new pslg.RuleAnalyzer();
         ruleAnalyzer.Initialize(state);
 
@@ -2457,11 +2457,28 @@ function compile(command,text) {
             pslg.LGEvolution.lgFeature = new pslg.LGFeatures([0.4, 1, 0.5, 0.5, 0.6, 0.3]);
             pslg.LGEvolution.maxIterationSolver = 1000;
 
-            var genetic = new pslg.LGEvolution(100, 5);
+            var genetic = new pslg.LGEvolution(100, 50);
             var bestLevel = genetic.Evolve(1, 4, false);
             
             state.levels = [bestLevel[0].level];
             loadLevelFromState(state, 0);
+        }
+        else if(test === 3){
+            pslg.ParallelGenetic.maxIterations = 1000;
+            pslg.ParallelGenetic.numberOfGenerations = 100;
+            pslg.ParallelGenetic.crossoverRate = 0.6;
+            pslg.ParallelGenetic.mutationRate = 0.01;
+            pslg.ParallelGenetic.elitismRatio = 0.2;
+            pslg.ParallelGenetic.finishFunction = ParallelLGEvolutionFinishFunction;
+            
+            var intialParameter = {};
+            intialParameter["data"] = {dl: 4, lgFeature: new pslg.LGFeatures([0.4, 1, 0.5, 0.5, 0.6, 0.3])};
+            intialParameter["initializeFunction"] = ParallelLGEvolutionChromosomeInitialize;
+            intialParameter["crossOverFunction"] = ParallelLGEvolutionChromosomeCrossOver;
+            intialParameter["mutationFunction"] = ParallelLGEvolutionChromosomeMutate;
+            intialParameter["fitnessFunction"] = ParallelLGEvolutionChromosomeCalculateFitness;
+            
+            pslg.ParallelGenetic(100, intialParameter);
         }
         //End of My Code
         

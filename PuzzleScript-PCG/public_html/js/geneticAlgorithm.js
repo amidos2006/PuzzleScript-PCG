@@ -710,6 +710,130 @@ this.pslg = this.pslg||{};
     LGEvolution.elitismRatio = 0.2;
     LGEvolution.lgFeature = new pslg.LGFeatures([0.4, 1, 0.5, 0.5, 0.6, 0.3]);
     
+    function ParallelChromosome(initializeFunction, crossOverFunction, mutationFunction, fitnessFunction){
+        ParallelChromosome.prototype.Initialize = initializeFunction;
+        ParallelChromosome.prototype.CrossOver = crossOverFunction;
+        ParallelChromosome.prototype.Mutate = mutationFunction;
+        ParallelChromosome.prototype.CalculateFitness = fitnessFunction;
+    }
+    
+    function ParallelGenetic(populationSize, intialParameter){
+        var initializeFunction = intialParameter.initializeFunction; 
+        var crossOverFunction = intialParameter.crossOverFunction; ; 
+        var mutationFunction = intialParameter.mutationFunction; ; 
+        var fitnessFunction = intialParameter.fitnessFunction; ;
+        
+        var chromosomes = [];
+        for (var i = 0; i < populationSize; i++) {
+            chromosomes.push(new ParallelChromosome(initializeFunction, crossOverFunction, 
+                mutationFunction, fitnessFunction));
+            chromosomes[i].Initialize(intialParameter.data);
+        }
+        
+        ParallelGenetic.GetNextPopulation(chromosomes);
+    }
+    
+    ParallelGenetic.SelectionAlgorithm = function(chromosomes){
+        var totalSum = 0;
+        for (var i = 0; i < chromosomes.length; i++) {
+            totalSum += chromosomes[i].fitness;
+        }
+        
+        var probabilities = [];
+        var currentSum = 0;
+        for (var i = 0; i < chromosomes.length; i++) {
+            currentSum += chromosomes[i].fitness;
+            probabilities.push(currentSum / totalSum);
+        }
+        
+        var index = -1;
+        var randomValue = Math.random();
+        for (var i = 0; i < probabilities.length; i++) {
+            if(randomValue < probabilities[i]){
+                index = i;
+                break;
+            }
+        }
+        
+        return chromosomes[index];
+    };
+    
+    ParallelGenetic.GetNewChromosomes = function(chromosomes){
+        console.log("Generation Ends");
+        
+        var newChromosomes = [];
+        
+        while(newChromosomes.length < chromosomes.length * (1 - elitism)){
+            var parent1 = ParallelGenetic.SelectionAlgorithm(chromosomes);
+            var parent2 = ParallelGenetic.SelectionAlgorithm(chromosomes);
+            
+            var children;
+            if(crossoverRate === 0){
+                children = [parent1, parent2];
+                var randomValue = Math.random();
+                if(randomValue < ParallelGenetic.mutationRate){
+                    children[0] = children[0].Mutate(pslg.ruleAnalyzer, pslg.state);
+                }
+
+                randomValue = Math.random();
+                if(randomValue < ParallelGenetic.mutationRate){
+                    children[1] = children[1].Mutate(pslg.ruleAnalyzer, pslg.state);
+                }
+            }
+            else{
+                var randomValue = Math.random();
+                if(randomValue < ParallelGenetic.crossoverRate){
+                    children = parent1.CrossOver(parent2);
+
+                    randomValue = Math.random();
+                    if(randomValue < ParallelGenetic.mutationRate){
+                        children[0] = children[0].Mutate(pslg.ruleAnalyzer, pslg.state);
+                    }
+
+                    randomValue = Math.random();
+                    if(randomValue < ParallelGenetic.mutationRate){
+                        children[1] = children[1].Mutate(pslg.ruleAnalyzer, pslg.state);
+                    }
+                }
+                else
+                {
+                    children = [parent1, parent2];
+                }
+            }
+            
+            newChromosomes.push(children[0]);
+            newChromosomes.push(children[1]);
+        }
+        
+        chromosomes.sort(FitnessSort);
+        var currentLength = newChromosomes.length;
+        for(var i = 0; i < chromosomes.length - currentLength; i++){
+            newChromosomes.push(chromosomes[i]);
+        }
+        
+        GetNextPopulation(newChromosomes);
+    };
+    
+    ParallelGenetic.GetNextPopulation = function (chromosomes){
+        ParallelGenetic.numberOfGenerations -= 1;
+        if(ParallelGenetic.numberOfGenerations <= 0){
+            chromosomes.sort(FitnessSort);
+            console.log("Everything is finished");
+            ParallelGenetic.finishFunction(pslg.state, chromosomes.slice(0, 1));
+            return;
+        }
+        
+        var parallel = new Parallel(chromosomes);
+        parallel.map(function(chromosome){ chromosome.CalculateFitness(pslg.ruleAnalyzer, pslg.state); return chromosome;}).then(ParallelGenetic.GetNewChromosomes);
+    };
+    
+    ParallelGenetic.maxIterations = 1000;
+    ParallelGenetic.numberOfGenerations = 100;
+    ParallelGenetic.crossoverRate = 0.6;
+    ParallelGenetic.mutationRate = 0.01;
+    ParallelGenetic.elitismRatio = 0.2;
+    ParallelGenetic.finishFunction = undefined;
+    
     /////////////////////////////
     //  Class Declaration
     /////////////////////////////
@@ -717,6 +841,8 @@ this.pslg = this.pslg||{};
     pslg.ruleAnalyzer = ruleAnalyzer;
     pslg.LGParameterEvolution = LGParameterEvolution;
     pslg.LGEvolution = LGEvolution;
+    pslg.ParallelChromosome = ParallelChromosome;
+    pslg.ParallelGenetic = ParallelGenetic;
     pslg.InitializeSoultionAnalysis = InitializeSoultionAnalysis;
     
 }());

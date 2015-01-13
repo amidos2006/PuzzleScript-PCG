@@ -5,6 +5,7 @@
  * This contains methods to evolve new rules and levels and parameters
  */
 
+var parallelStarts = false;
 this.pslg = this.pslg||{};
 
 (function()
@@ -297,7 +298,8 @@ this.pslg = this.pslg||{};
         }
         
         this.chromosomes.sort(FitnessSort);
-        for(var i = 0; i < newPopulation.populationSize - newPopulation.chromosomes.length; i++){
+        var currentLength = newPopulation.chromosomes.length;
+        for(var i = 0; i < newPopulation.populationSize - currentLength; i++){
             newPopulation.chromosomes.push(this.chromosomes[i]);
         }
         
@@ -480,7 +482,7 @@ this.pslg = this.pslg||{};
         child1.emptySpaces = [];
         child2.notEmptySpaces = [];
         child2.emptySpaces = [];
-        for (var i = 0; i < child1.dat.length; i++) {
+        for (var i = 0; i < child1.level.dat.length; i++) {
             if(child1.level.dat[i] === pslg.state.objectMasks["background"]){
                 child1.emptySpaces.push(i);
             }
@@ -491,7 +493,7 @@ this.pslg = this.pslg||{};
             if(child2.level.dat[i] === pslg.state.objectMasks["background"]){
                 child2.emptySpaces.push(i);
             }
-            else if(child21.level.dat[i] !== pslg.state.objectMasks["wall"]){
+            else if(child2.level.dat[i] !== pslg.state.objectMasks["wall"]){
                 child2.notEmptySpaces.push(i);
             }
         }
@@ -546,14 +548,12 @@ this.pslg = this.pslg||{};
         return newChromosome;
     };
     
-    LGEvolutionChromosome.prototype.CalculateFitness = function(state){
+    LGEvolutionChromosome.prototype.CalculateFitness = function(state, totalDiffLevels){
         if(this.fitness !== undefined){
             return this.fitness;
         }
         
         state.levels = [this.level];
-        
-        var totalDiffLevels = pslg.LevelGenerator.levelsOutline.length;
         var previousSolutionLength = GetAverageSolutionLength(this.dl, totalDiffLevels);
         
         loadLevelFromState(state, 0);
@@ -593,11 +593,15 @@ this.pslg = this.pslg||{};
     LGEvolutionPopulation.prototype.NextPopulation = function(elitism, crossoverRate, mutationRate){
         var newPopulation = new LGEvolutionPopulation(this.populationSize);
         
-        for (var i = 0; i < this.chromosomes.length; i++) {
-            console.log("\tChromosome number: " + (i + 1).toString());
-            this.chromosomes[i].CalculateFitness(pslg.state);
-            console.log("\tFitness Score: " + this.chromosomes[i].fitness);
-        }
+        parallelStarts = true;
+        var parallel = new Parallel(this.chromosomes, { maxWorkers: 4, evalPath: 'js/eval.js', env: {state: pslg.state, totalDiffLevels: pslg.LevelGenerator.levelsOutline.length}});
+        parallel.map(function(chromosome){ console.log("Doing me"); chromosome.CalculateFitness(global.env.state, global.env.totalDiffLevels); return chromosome; }).then(function(res){parallelStarts = false;}, function(res){ console.logError("Parallelism Failed");});
+        
+//        for (var i = 0; i < this.chromosomes.length; i++) {
+//            console.log("\tChromosome number: " + (i + 1).toString());
+//            this.chromosomes[i].CalculateFitness(pslg.state, pslg.LevelGenerator.levelsOutline.length);
+//            console.log("\tFitness Score: " + this.chromosomes[i].fitness);
+//        }
         
         while(newPopulation.chromosomes.length < newPopulation.populationSize * (1 - elitism)){
             var parent1 = this.SelectionAlgorithm();
@@ -623,12 +627,12 @@ this.pslg = this.pslg||{};
 
                     randomValue = Math.random();
                     if(randomValue < mutationRate){
-                        children[0] = children[0].Mutate();
+                        children[0] = children[0].Mutate(pslg.ruleAnalyzer, pslg.state, LGEvolution.lgFeature.coverPercentage);
                     }
 
                     randomValue = Math.random();
                     if(randomValue < mutationRate){
-                        children[1] = children[1].Mutate();
+                        children[1] = children[1].Mutate(pslg.ruleAnalyzer, pslg.state, LGEvolution.lgFeature.coverPercentage);
                     }
                 }
                 else
@@ -642,7 +646,8 @@ this.pslg = this.pslg||{};
         }
         
         this.chromosomes.sort(FitnessSort);
-        for(var i = 0; i < newPopulation.populationSize - newPopulation.chromosomes.length; i++){
+        var currentLength = newPopulation.chromosomes.length;
+        for(var i = 0; i < newPopulation.populationSize - currentLength; i++){
             newPopulation.chromosomes.push(this.chromosomes[i]);
         }
         

@@ -2451,13 +2451,13 @@ function compile(command,text) {
             console.log("Best Parameters: " + bestParameter[0].genes + " with Best Fitness: " + bestParameter[0].fitness);
         }
         else if(test === 2){
-            pslg.LGEvolution.crossoverRate = 0;
-            pslg.LGEvolution.mutationRate = 0.4;
+            pslg.LGEvolution.crossoverRate = 0.6;
+            pslg.LGEvolution.mutationRate = 0.05;
             pslg.LGEvolution.elitismRatio = 0.2;
             pslg.LGEvolution.lgFeature = new pslg.LGFeatures([0.4, 1, 0.5, 0.5, 0.6, 0.3]);
             pslg.LGEvolution.maxIterationSolver = 1000;
 
-            var genetic = new pslg.LGEvolution(100, 50);
+            var genetic = new pslg.LGEvolution(100, 5);
             var bestLevel = genetic.Evolve(1, 4, false);
             
             state.levels = [bestLevel[0].level];

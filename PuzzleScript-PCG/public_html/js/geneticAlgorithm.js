@@ -5,7 +5,6 @@
  * This contains methods to evolve new rules and levels and parameters
  */
 
-var parallelStarts = false;
 this.pslg = this.pslg||{};
 
 (function()
@@ -593,15 +592,13 @@ this.pslg = this.pslg||{};
     LGEvolutionPopulation.prototype.NextPopulation = function(elitism, crossoverRate, mutationRate){
         var newPopulation = new LGEvolutionPopulation(this.populationSize);
         
-        parallelStarts = true;
-        var parallel = new Parallel(this.chromosomes, { maxWorkers: 4, evalPath: 'js/eval.js', env: {state: pslg.state, totalDiffLevels: pslg.LevelGenerator.levelsOutline.length}});
-        parallel.map(function(chromosome){ console.log("Doing me"); chromosome.CalculateFitness(global.env.state, global.env.totalDiffLevels); return chromosome; }).then(function(res){parallelStarts = false;}, function(res){ console.logError("Parallelism Failed");});
+        LGEvolutionPopulation.currentChromosomes = this.chromosomes;
         
-//        for (var i = 0; i < this.chromosomes.length; i++) {
-//            console.log("\tChromosome number: " + (i + 1).toString());
-//            this.chromosomes[i].CalculateFitness(pslg.state, pslg.LevelGenerator.levelsOutline.length);
-//            console.log("\tFitness Score: " + this.chromosomes[i].fitness);
-//        }
+        for (var i = 0; i < this.chromosomes.length; i++) {
+            console.log("\tChromosome number: " + (i + 1).toString());
+            this.chromosomes[i].CalculateFitness(pslg.state, pslg.LevelGenerator.levelsOutline.length);
+            console.log("\tFitness Score: " + this.chromosomes[i].fitness);
+        }
         
         while(newPopulation.chromosomes.length < newPopulation.populationSize * (1 - elitism)){
             var parent1 = this.SelectionAlgorithm();

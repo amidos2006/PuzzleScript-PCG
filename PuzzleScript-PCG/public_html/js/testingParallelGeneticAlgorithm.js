@@ -306,7 +306,7 @@ function ParallelLGEvolutionChromosomeCalculateFitness(chromosome, global){
 
     loadLevelFromState(global.env.state, 0);
     console.log("\t\tSolving level with difficulty" + (chromosome.dl + 1).toString());
-    var result = bestfs(global.env.state.levels[0].dat, global.env.maxIterations);
+    var result = bestfs(global.env.state.levels[0].dat, global.env.maxIterations, global);
     loadLevelFromState(global.env.state, 0);
     var randomResult = randomSolver(global.env.state.levels[0].dat, global.env.maxIterations);
 

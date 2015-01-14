@@ -171,8 +171,8 @@ function simulate_silent_ticks() {
 }
 
 
-function bestfs(startState, maxIterations_) {
-    var open = [ [startState, get_level_score(startState), []] ];
+function bestfs(startState, maxIterations_, global) {
+    var open = [ [startState, get_level_score(startState, global), []] ];
     var closed = {};
     var opened = {};
 
@@ -231,7 +231,7 @@ function bestfs(startState, maxIterations_) {
             u2.push(dir);
 
             lvl_temp = backupLevel();
-            lvl_score = get_level_score(lvl_temp);
+            lvl_score = get_level_score(lvl_temp, global);
 
             u = [lvl_temp, lvl_score, u2];
             if(lvl_score < bestScore || bestSolution.length === 0){
@@ -486,8 +486,8 @@ function get_level_score(leveldat, global) {
 
     if (global.env.state.winconditions.length>0)  {
         //var passed=true;
-        for (var wcIndex=0;wcIndex<state.winconditions.length;wcIndex++) {
-            var wincondition = state.winconditions[wcIndex];
+        for (var wcIndex=0;wcIndex<global.env.state.winconditions.length;wcIndex++) {
+            var wincondition = global.env.state.winconditions[wcIndex];
             var filter1 = wincondition[1];
             var filter2 = wincondition[2];
             //var rulePassed=true;

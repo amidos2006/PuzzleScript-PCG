@@ -173,30 +173,30 @@ function ParallelLGEvolutionChromosomeRandomValue(ruleAnalyzer, lgFeature){
     return ruleAnalyzer.solidObjects.rand();
 };
 
-function ParallelLGEvolutionChromosomeInitialize(intialData){
-    this.dl = intialData.dl;
-    this.lgFeature = intialData.lgFeature;
-    var lg = new pslg.LevelGenerator(this.lgFeature);
-    this.level = lg.GenerateLevel(this.dl, pslg.ruleAnalyzer, pslg.state);
-    this.notEmptySpaces = [];
-    this.emptySpaces = [];
+function ParallelLGEvolutionChromosomeInitialize(chromosome, intialData){
+    chromosome.dl = intialData.dl;
+    chromosome.lgFeature = intialData.lgFeature;
+    var lg = new pslg.LevelGenerator(chromosome.lgFeature);
+    chromosome.level = lg.GenerateLevel(chromosome.dl, pslg.ruleAnalyzer, pslg.state);
+    chromosome.notEmptySpaces = [];
+    chromosome.emptySpaces = [];
     for (var i = 0; i < level.dat.length; i++) {
         if(level.dat[i] === pslg.state.objectMasks["background"]){
-            this.emptySpaces.push(i);
+            chromosome.emptySpaces.push(i);
         }
         else if(level.dat[i] !== pslg.state.objectMasks["wall"] + pslg.state.objectMasks["background"]){
-            this.notEmptySpaces.push(i);
+            chromosome.notEmptySpaces.push(i);
         }
     }
 
-    this.fitness = undefined;
+    chromosome.fitness = undefined;
 }
 
-function ParallelLGEvolutionChromosomeCrossOver(lgeChromosome){
-    var swapPoint = Math.randomInt(this.level.dat.length - 1);
+function ParallelLGEvolutionChromosomeCrossOver(chromosome, lgeChromosome){
+    var swapPoint = Math.randomInt(chromosome.level.dat.length - 1);
     var initialData = {};
-    initialData["dl"] = this.dl;
-    initialData["lgFeature"] = this.lgFeature;
+    initialData["dl"] = chromosome.dl;
+    initialData["lgFeature"] = chromosome.lgFeature;
     
     var child1 = new pslg.ParallelChromosome(ParallelLGEvolutionChromosomeInitialize, 
         ParallelLGEvolutionChromosomeCrossOver, ParallelLGEvolutionChromosomeMutate, 
@@ -207,15 +207,15 @@ function ParallelLGEvolutionChromosomeCrossOver(lgeChromosome){
         
     child1.Initialize(initialData);
     child2.Initialize(initialData);
-    for (var i = 0; i < this.level.dat.length; i++) {
+    for (var i = 0; i < chromosome.level.dat.length; i++) {
         if(i <= swapPoint){
-            child1.level.dat[i] = this.level.dat[i];
+            child1.level.dat[i] = chromosome.level.dat[i];
             child2.level.dat[i] = lgeChromosome.level.dat[i];
         }
         else
         {
             child1.level.dat[i] = lgeChromosome.level.dat[i];
-            child2.level.dat[i] = this.level.dat[i];
+            child2.level.dat[i] = chromosome.level.dat[i];
         }
     }
 
@@ -242,26 +242,26 @@ function ParallelLGEvolutionChromosomeCrossOver(lgeChromosome){
     return [child1, child2];
 };
 
-function ParallelLGEvolutionChromosomeMutate(ruleAnalyzer, state){
-    var coverSize = pslg.LevelGenerator.emptySpaces[this.dl].length * this.lgFeature.coverPercentage;
+function ParallelLGEvolutionChromosomeMutate(chromosome, ruleAnalyzer, state){
+    var coverSize = pslg.LevelGenerator.emptySpaces[chromosome.dl].length * chromosome.lgFeature.coverPercentage;
     var initialData = {};
-    initialData["dl"] = this.dl;
-    initialData["lgFeature"] = this.lgFeature;
+    initialData["dl"] = chromosome.dl;
+    initialData["lgFeature"] = chromosome.lgFeature;
     var newChromosome = new pslg.ParallelChromosome(ParallelLGEvolutionChromosomeInitialize, 
         ParallelLGEvolutionChromosomeCrossOver, ParallelLGEvolutionChromosomeMutate, 
         ParallelLGEvolutionChromosomeCalculateFitness);
     
     newChromosome.Initialize(initialData);
-    newChromosome.level = deepCloneLevel(this.level);
-    newChromosome.notEmptySpaces = this.notEmptySpaces.clone();
-    newChromosome.emptySpaces = this.emptySpaces.clone();
+    newChromosome.level = deepCloneLevel(chromosome.level);
+    newChromosome.notEmptySpaces = chromosome.notEmptySpaces.clone();
+    newChromosome.emptySpaces = chromosome.emptySpaces.clone();
 
     var randomValue = Math.random();
-    var createProbability = (coverSize - this.notEmptySpaces.length) / coverSize;
-    var destroyProbability = (this.notEmptySpaces.length) / coverSize;
+    var createProbability = (coverSize - chromosome.notEmptySpaces.length) / coverSize;
+    var destroyProbability = (chromosome.notEmptySpaces.length) / coverSize;
     if(randomValue < createProbability * 0.7){
         newChromosome.emptySpaces.shuffle();
-        var randomObject = ParallelLGEvolutionChromosomeRandomValue(ruleAnalyzer, this.lgFeature);
+        var randomObject = ParallelLGEvolutionChromosomeRandomValue(ruleAnalyzer, chromosome.lgFeature);
         var randomEmptySpace = newChromosome.emptySpaces[0];
         newChromosome.emptySpaces.splice(0, 1);
         newChromosome.notEmptySpaces.push(randomEmptySpace);
@@ -296,28 +296,28 @@ function ParallelLGEvolutionChromosomeMutate(ruleAnalyzer, state){
     return newChromosome;
 };
 
-function ParallelLGEvolutionChromosomeCalculateFitness(ruleAnalyzer, state){
-    if(this.fitness !== undefined){
-        return this.fitness;
+function ParallelLGEvolutionChromosomeCalculateFitness(chromosome, ruleAnalyzer, state){
+    if(chromosome.fitness !== undefined){
+        return chromosome.fitness;
     }
 
-    state.levels = [this.level];
-    var previousSolutionLength = GetAverageSolutionLength(this.dl, 8);
+    state.levels = [chromosome.level];
+    var previousSolutionLength = GetAverageSolutionLength(chromosome.dl, global.env.maxDifficulty);
 
     loadLevelFromState(state, 0);
-    console.log("\t\tSolving level with difficulty" + (this.dl + 1).toString());
-    var result = bestfs(state.levels[0].dat, pslg.ParallelGenetic.maxIterations);
+    console.log("\t\tSolving level with difficulty" + (chromosome.dl + 1).toString());
+    var result = bestfs(state.levels[0].dat, global.env.maxIterations);
     loadLevelFromState(state, 0);
-    var randomResult = randomSolver(state.levels[0].dat, pslg.ParallelGenetic.maxIterations);
+    var randomResult = randomSolver(state.levels[0].dat, global.env.maxIterations);
 
-    var randomFitness = RandomSolverScore(randomResult[0] === 1, this.dl, randomResult[1].length);
-    var solutionLengthScore = SolutionLengthScore(this.dl, result[1].length - previousSolutionLength, 8);
+    var randomFitness = RandomSolverScore(randomResult[0] === 1, chromosome.dl, randomResult[1].length);
+    var solutionLengthScore = SolutionLengthScore(chromosome.dl, result[1].length - previousSolutionLength, 8);
     var solutionComplexityScore = SolutionComplexityScore(result[1], 3);
-    var explorationScore = ExplorationScore(result[0] === 1, result[2], pslg.ParallelGenetic.maxIterations);
+    var explorationScore = ExplorationScore(result[0] === 1, result[2], global.env.maxIterations);
 
-    this.fitness = result[0] + randomFitness + solutionLengthScore + solutionComplexityScore + explorationScore + 2;
+    chromosome.fitness = result[0] + randomFitness + solutionLengthScore + solutionComplexityScore + explorationScore + 2;
 
-    return this.fitness;
+    return chromosome.fitness;
 };
 
 function ParallelLGEvolutionFinishFunction(state, bestSolutions){

@@ -711,23 +711,23 @@ this.pslg = this.pslg||{};
     LGEvolution.lgFeature = new pslg.LGFeatures([0.4, 1, 0.5, 0.5, 0.6, 0.3]);
     
     function ParallelChromosome(initializeFunction, crossOverFunction, mutationFunction, fitnessFunction){
-        ParallelChromosome.prototype.Initialize = initializeFunction;
-        ParallelChromosome.prototype.CrossOver = crossOverFunction;
-        ParallelChromosome.prototype.Mutate = mutationFunction;
-        ParallelChromosome.prototype.CalculateFitness = fitnessFunction;
+//        this.Initialize = initializeFunction;
+//        this.CrossOver = crossOverFunction;
+//        this.Mutate = mutationFunction;
+//        this.CalculateFitness = fitnessFunction;
     }
     
     function ParallelGenetic(populationSize, intialParameter){
         var initializeFunction = intialParameter.initializeFunction; 
-        var crossOverFunction = intialParameter.crossOverFunction; ; 
-        var mutationFunction = intialParameter.mutationFunction; ; 
-        var fitnessFunction = intialParameter.fitnessFunction; ;
+        var crossOverFunction = intialParameter.crossOverFunction; 
+        var mutationFunction = intialParameter.mutationFunction; 
+        var fitnessFunction = intialParameter.fitnessFunction;
         
         var chromosomes = [];
         for (var i = 0; i < populationSize; i++) {
             chromosomes.push(new ParallelChromosome(initializeFunction, crossOverFunction, 
                 mutationFunction, fitnessFunction));
-            chromosomes[i].Initialize(intialParameter.data);
+            ParallelLGEvolutionChromosomeInitialize(chromosomes[i], intialParameter.data);
         }
         
         ParallelGenetic.GetNextPopulation(chromosomes);
@@ -763,7 +763,7 @@ this.pslg = this.pslg||{};
         
         var newChromosomes = [];
         
-        while(newChromosomes.length < chromosomes.length * (1 - elitism)){
+        while(newChromosomes.length < chromosomes.length * (1 - pslg.ParallelGenetic.elitism)){
             var parent1 = ParallelGenetic.SelectionAlgorithm(chromosomes);
             var parent2 = ParallelGenetic.SelectionAlgorithm(chromosomes);
             
@@ -811,7 +811,7 @@ this.pslg = this.pslg||{};
             newChromosomes.push(chromosomes[i]);
         }
         
-        GetNextPopulation(newChromosomes);
+        ParallelGenetic.GetNextPopulation(newChromosomes);
     };
     
     ParallelGenetic.GetNextPopulation = function (chromosomes){
@@ -823,8 +823,11 @@ this.pslg = this.pslg||{};
             return;
         }
         
-        var parallel = new Parallel(chromosomes);
-        parallel.map(function(chromosome){ chromosome.CalculateFitness(pslg.ruleAnalyzer, pslg.state); return chromosome;}).then(ParallelGenetic.GetNewChromosomes);
+        var parallel = new Parallel(chromosomes, { env: {ruleAnalyzer: pslg.ruleAnalyzer, 
+                state: pslg.state, maxIterations: pslg.ParallelGenetic.maxIterations, 
+                maxDifficulty: pslg.LevelGenerator.levelsOutline.length}, evalPath: 'js/eval.js'});
+        parallel.require('testingParallelGeneticAlgorithm.js').map(function(chromosome){ ParallelLGEvolutionChromosomeCalculateFitness(global.env.ruleAnalyzer, global.env.state);
+            return chromosome;}).then(ParallelGenetic.GetNewChromosomes);
     };
     
     ParallelGenetic.maxIterations = 1000;

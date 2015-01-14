@@ -826,7 +826,7 @@ this.pslg = this.pslg||{};
         var parallel = new Parallel(chromosomes, { env: {ruleAnalyzer: pslg.ruleAnalyzer, 
                 state: pslg.state, maxIterations: pslg.ParallelGenetic.maxIterations, 
                 maxDifficulty: pslg.LevelGenerator.levelsOutline.length}, evalPath: 'js/eval.js'});
-        parallel.require('testingParallelGeneticAlgorithm.js').map(function(chromosome){ ParallelLGEvolutionChromosomeCalculateFitness(global.env.ruleAnalyzer, global.env.state);
+        parallel.require('testingParallelGeneticAlgorithm.js', 'globalVariables.js', 'engine.js', 'simulator.js').map(function(chromosome){ ParallelLGEvolutionChromosomeCalculateFitness(chromosome, global);
             return chromosome;}).then(ParallelGenetic.GetNewChromosomes);
     };
     

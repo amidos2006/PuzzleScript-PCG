@@ -296,19 +296,19 @@ function ParallelLGEvolutionChromosomeMutate(chromosome, ruleAnalyzer, state){
     return newChromosome;
 };
 
-function ParallelLGEvolutionChromosomeCalculateFitness(chromosome, ruleAnalyzer, state){
+function ParallelLGEvolutionChromosomeCalculateFitness(chromosome, global){
     if(chromosome.fitness !== undefined){
         return chromosome.fitness;
     }
 
-    state.levels = [chromosome.level];
+    global.env.state.levels = [chromosome.level];
     var previousSolutionLength = GetAverageSolutionLength(chromosome.dl, global.env.maxDifficulty);
 
-    loadLevelFromState(state, 0);
+    loadLevelFromState(global.env.state, 0);
     console.log("\t\tSolving level with difficulty" + (chromosome.dl + 1).toString());
-    var result = bestfs(state.levels[0].dat, global.env.maxIterations);
-    loadLevelFromState(state, 0);
-    var randomResult = randomSolver(state.levels[0].dat, global.env.maxIterations);
+    var result = bestfs(global.env.state.levels[0].dat, global.env.maxIterations);
+    loadLevelFromState(global.env.state, 0);
+    var randomResult = randomSolver(global.env.state.levels[0].dat, global.env.maxIterations);
 
     var randomFitness = RandomSolverScore(randomResult[0] === 1, chromosome.dl, randomResult[1].length);
     var solutionLengthScore = SolutionLengthScore(chromosome.dl, result[1].length - previousSolutionLength, 8);

@@ -480,11 +480,11 @@ function get_manhattan_distance(x1, y1, x2, y2)
 	return Math.abs(x2-x1) + Math.abs(y2-y1);
 }
 
-function get_level_score(leveldat) {
+function get_level_score(leveldat, global) {
     var score = 0.0;
     var scores = [];
 
-    if (state.winconditions.length>0)  {
+    if (global.env.state.winconditions.length>0)  {
         //var passed=true;
         for (var wcIndex=0;wcIndex<state.winconditions.length;wcIndex++) {
             var wincondition = state.winconditions[wcIndex];
@@ -525,13 +525,13 @@ function get_level_score(leveldat) {
 
             var windices = [];
 
-            if ((filter1 & state.playerMask === 0) && (filter2 & state.playerMask === 0)) {
+            if ((filter1 & global.env.state.playerMask === 0) && (filter2 & global.env.state.playerMask === 0)) {
                 windices = indices1.concat(indices2);
             }
             else {
                 // winices are indices of objects that the player should go towards
                 // if PLAYER is in FILTER1, then go for object2
-                windices = filter1 & state.playerMask !== 0 ? indices2 : indices1;
+                windices = filter1 & global.env.state.playerMask !== 0 ? indices2 : indices1;
             }
 
 

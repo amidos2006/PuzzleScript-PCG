@@ -720,7 +720,7 @@ function restoreLevel(lev) {
     againing=false;
     messagetext="";
     level.commandQueue=[];
-	redraw();
+//	redraw();
 }
 
 var zoomscreen=false;
@@ -2179,7 +2179,7 @@ function processInput(dir,dontCheckWin,dontModify) {
 
     }
 
-    redraw();
+//    redraw();
 
 	if (verbose_logging) {
 		consoleCacheDump();

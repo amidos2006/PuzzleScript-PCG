@@ -763,12 +763,12 @@ this.pslg = this.pslg||{};
         
         var newChromosomes = [];
         
-        while(newChromosomes.length < chromosomes.length * (1 - pslg.ParallelGenetic.elitism)){
+        while(newChromosomes.length < chromosomes.length * (1 - pslg.ParallelGenetic.elitismRatio)){
             var parent1 = ParallelGenetic.SelectionAlgorithm(chromosomes);
             var parent2 = ParallelGenetic.SelectionAlgorithm(chromosomes);
             
             var children;
-            if(crossoverRate === 0){
+            if(pslg.ParallelGenetic.crossoverRate === 0){
                 children = [parent1, parent2];
                 var randomValue = Math.random();
                 if(randomValue < ParallelGenetic.mutationRate){
@@ -776,7 +776,7 @@ this.pslg = this.pslg||{};
                 }
 
                 randomValue = Math.random();
-                if(randomValue < ParallelGenetic.mutationRate){
+                if(randomValue < pslg.ParallelGenetic.mutationRate){
                     children[1] = children[1].Mutate(pslg.ruleAnalyzer, pslg.state);
                 }
             }
@@ -786,12 +786,12 @@ this.pslg = this.pslg||{};
                     children = parent1.CrossOver(parent2);
 
                     randomValue = Math.random();
-                    if(randomValue < ParallelGenetic.mutationRate){
+                    if(randomValue < pslg.ParallelGenetic.mutationRate){
                         children[0] = children[0].Mutate(pslg.ruleAnalyzer, pslg.state);
                     }
 
                     randomValue = Math.random();
-                    if(randomValue < ParallelGenetic.mutationRate){
+                    if(randomValue < pslg.ParallelGenetic.mutationRate){
                         children[1] = children[1].Mutate(pslg.ruleAnalyzer, pslg.state);
                     }
                 }
@@ -825,7 +825,7 @@ this.pslg = this.pslg||{};
         
         var parallel = new Parallel(chromosomes, { env: {ruleAnalyzer: pslg.ruleAnalyzer, 
                 state: pslg.state, maxIterations: pslg.ParallelGenetic.maxIterations, 
-                maxDifficulty: pslg.LevelGenerator.levelsOutline.length, differentCombinations: pslg.differentCombinations}, evalPath: 'js/eval.js'});
+                maxDifficulty: pslg.LevelGenerator.levelsOutline.length, differentCombinations: differentCombinations}, evalPath: 'js/eval.js'});
         parallel.require('testingParallelGeneticAlgorithm.js', 'globalVariables.js', 'engine.js', 'simulator.js', 'helper.js').map(function(chromosome){ 
             differentCombinations = global.env.differentCombinations;
             state = global.env.state;

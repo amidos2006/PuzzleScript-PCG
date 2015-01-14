@@ -205,8 +205,8 @@ function ParallelLGEvolutionChromosomeCrossOver(chromosome, lgeChromosome){
         ParallelLGEvolutionChromosomeCrossOver, ParallelLGEvolutionChromosomeMutate, 
         ParallelLGEvolutionChromosomeCalculateFitness);
         
-    child1.Initialize(initialData);
-    child2.Initialize(initialData);
+    ParallelLGEvolutionChromosomeInitialize(child1, initialData);
+    ParallelLGEvolutionChromosomeInitialize(child2, initialData);
     for (var i = 0; i < chromosome.level.dat.length; i++) {
         if(i <= swapPoint){
             child1.level.dat[i] = chromosome.level.dat[i];
@@ -251,7 +251,7 @@ function ParallelLGEvolutionChromosomeMutate(chromosome, ruleAnalyzer, state){
         ParallelLGEvolutionChromosomeCrossOver, ParallelLGEvolutionChromosomeMutate, 
         ParallelLGEvolutionChromosomeCalculateFitness);
     
-    newChromosome.Initialize(initialData);
+    ParallelLGEvolutionChromosomeInitialize(newChromosome, initialData);
     newChromosome.level = deepCloneLevel(chromosome.level);
     newChromosome.notEmptySpaces = chromosome.notEmptySpaces.clone();
     newChromosome.emptySpaces = chromosome.emptySpaces.clone();

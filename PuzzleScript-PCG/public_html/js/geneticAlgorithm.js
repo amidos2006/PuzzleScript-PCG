@@ -772,27 +772,27 @@ this.pslg = this.pslg||{};
                 children = [parent1, parent2];
                 var randomValue = Math.random();
                 if(randomValue < ParallelGenetic.mutationRate){
-                    children[0] = children[0].Mutate(pslg.ruleAnalyzer, pslg.state);
+                    children[0] = ParallelLGEvolutionChromosomeMutate(children[0], pslg.ruleAnalyzer, pslg.state);
                 }
 
                 randomValue = Math.random();
                 if(randomValue < pslg.ParallelGenetic.mutationRate){
-                    children[1] = children[1].Mutate(pslg.ruleAnalyzer, pslg.state);
+                    children[1] = ParallelLGEvolutionChromosomeMutate(children[1], pslg.ruleAnalyzer, pslg.state);
                 }
             }
             else{
                 var randomValue = Math.random();
                 if(randomValue < ParallelGenetic.crossoverRate){
-                    children = parent1.CrossOver(parent2);
+                    children = ParallelLGEvolutionChromosomeCrossOver(parent1, parent2);
 
                     randomValue = Math.random();
                     if(randomValue < pslg.ParallelGenetic.mutationRate){
-                        children[0] = children[0].Mutate(pslg.ruleAnalyzer, pslg.state);
+                        children[0] = ParallelLGEvolutionChromosomeMutate(children[0], pslg.ruleAnalyzer, pslg.state);
                     }
 
                     randomValue = Math.random();
                     if(randomValue < pslg.ParallelGenetic.mutationRate){
-                        children[1] = children[1].Mutate(pslg.ruleAnalyzer, pslg.state);
+                        children[1] = ParallelLGEvolutionChromosomeMutate(children[1], pslg.ruleAnalyzer, pslg.state);
                     }
                 }
                 else

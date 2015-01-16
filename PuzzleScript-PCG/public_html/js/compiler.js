@@ -2365,6 +2365,7 @@ function loadFile(str) {
 var ifrm;
 function compile(command,text) {
 	console.log('>>>> compile(), command=%s', command.toString());
+        disableIO = false;
 	forceRegenImages=true;
 	if (command===undefined) {
 		command = ["restart"];
@@ -2424,7 +2425,7 @@ function compile(command,text) {
 	setGameState(state,command);
         
         //My Code
-        var test = 3;
+        var test = 0;
         var ruleAnalyzer = new pslg.RuleAnalyzer();
         ruleAnalyzer.Initialize(state);
 
@@ -2437,7 +2438,7 @@ function compile(command,text) {
         pslg.state = state;
         
         if(test === 0){
-            var levelGenerator = new pslg.LevelGenerator(new pslg.LGFeatures([0.20540596242062747,1,0.8710285082343034,0.39073159685358405,0.5184201377443969,0.4485311292098519]));
+            var levelGenerator = new pslg.LevelGenerator(new pslg.LGFeatures([0.0028173590544611216,1,0.3811970957322046,0.2566856339108199,0.6069753888740494,0.3528567364106312]));
             state.levels = levelGenerator.GenerateLevels(ruleAnalyzer, state);
         }
         else if(test === 1){
@@ -2446,8 +2447,11 @@ function compile(command,text) {
             pslg.LGParameterEvolution.elitismRatio = 0.2;
             pslg.LGParameterEvolution.maxIterationSolver = 1000;
 
-            var genetic = new pslg.LGParameterEvolution(10, 5);
+            disableIO = true;
+            var genetic = new pslg.LGParameterEvolution(100, 50);
             var bestParameter = genetic.Evolve(1);
+            disableIO = false;
+            
             console.log("Best Parameters: " + bestParameter[0].genes + " with Best Fitness: " + bestParameter[0].fitness);
         }
         else if(test === 2){
@@ -2456,16 +2460,18 @@ function compile(command,text) {
             pslg.LGEvolution.elitismRatio = 0.2;
             pslg.LGEvolution.lgFeature = new pslg.LGFeatures([0.4, 1, 0.5, 0.5, 0.6, 0.3]);
             pslg.LGEvolution.maxIterationSolver = 1000;
-
+            
+            disableIO = true;
             var genetic = new pslg.LGEvolution(100, 50);
             var bestLevel = genetic.Evolve(1, 4, false);
+            disableIO = false;
             
             state.levels = [bestLevel[0].level];
             loadLevelFromState(state, 0);
         }
         else if(test === 3){
             pslg.ParallelGenetic.maxIterations = 1000;
-            pslg.ParallelGenetic.numberOfGenerations = 100;
+            pslg.ParallelGenetic.numberOfGenerations = 2;
             pslg.ParallelGenetic.crossoverRate = 0.6;
             pslg.ParallelGenetic.mutationRate = 0.01;
             pslg.ParallelGenetic.elitismRatio = 0.2;
@@ -2478,13 +2484,9 @@ function compile(command,text) {
             intialParameter["mutationFunction"] = ParallelLGEvolutionChromosomeMutate;
             intialParameter["fitnessFunction"] = ParallelLGEvolutionChromosomeCalculateFitness;
             
-            pslg.ParallelGenetic(100, intialParameter);
+            pslg.ParallelGenetic(1, intialParameter);
         }
         //End of My Code
-        
-	if (canDump===true) {
-		inputHistory=[];
-	}
 }
 
 

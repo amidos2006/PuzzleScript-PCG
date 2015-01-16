@@ -347,21 +347,10 @@ function onKeyDown(event) {
 
     if(lastDownTarget === canvas) {
     	if (keybuffer.indexOf(event.keyCode)===-1) {
-    		keybuffer.splice(keyRepeatIndex,0,event.keyCode);
-	    	keyRepeatTimer=0;
-	    	checkKey(event,true);
-		}
-	}
-
-
-    if (canDump===true) {
-        if (event.keyCode===74 && (event.ctrlKey||event.metaKey)) {//ctrl+j
-            dumpTestCase();
-            prevent(event);
-        } else if (event.keyCode===75 && (event.ctrlKey||event.metaKey)) {//ctrl+k
-            makeGIF();
-            prevent(event);
-        } 
+            keybuffer.splice(keyRepeatIndex,0,event.keyCode);
+            keyRepeatTimer=0;
+            checkKey(event,true);
+        }
     }
 }
 

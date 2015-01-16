@@ -1,4 +1,4 @@
-title Pile of Rules
+title My Lava Game
 author Ahmed Abdel Samea Khalifa
 homepage www.amidos-games.com
 
@@ -16,20 +16,20 @@ LIGHTGREEN GREEN
 
 
 Target
-DarkBlue
+DarkBlue Blue
 .....
 .000.
-.0.0.
+.010.
 .000.
 .....
 
-Stopper
-DarkRed
-00000
-0...0
-0...0
-0...0
-00000
+Lava
+DarkRed Red
+10101
+01010
+10101
+01010
+10101
 
 Wall
 BROWN DARKBROWN
@@ -47,20 +47,12 @@ Black Orange White Blue
 23332
 .3.3.
 
-Wife
-Brown Orange Red Blue
-00000
-01110
-22222
-23332
-.333.
-
 Crate
 Orange Yellow
 00000
-0...0
-0...0
-0...0
+01110
+01110
+01110
 00000
 
 
@@ -70,9 +62,8 @@ LEGEND
 
 . = Background
 # = Wall
-X = Stopper
+X = Lava
 P = Player
-W = Wife
 * = Crate
 O = Target
 
@@ -86,20 +77,22 @@ COLLISIONLAYERS
 
 Background 
 Target
-Stopper
-Player, Wall, Crate, Wife
+Lava
+Player, Wall, Crate
 
 ======
 RULES
 ======
 
-[ >  Player | Crate ] -> [  >  Player | > Crate  ]
+[ > Player | Crate ] -> [ > Player | > Crate ]
+[ > Player | Lava ] -> [ | Lava ]
+[ > Crate | Lava ] -> [ | ]
 
 ==============
 WINCONDITIONS
 ==============
 
-all Target on Crate
+all Target on Player
 
 =======
 LEVELS
@@ -118,12 +111,12 @@ LEVELS
 #...##
 ######
 
-######
-##..##
-#....#
-#....#
-##..##
-######
+#######
+##...##
+#.....#
+#.....#
+##...##
+#######
 
 #######
 #.....#
@@ -135,14 +128,17 @@ LEVELS
 
 #######
 #.....#
+#.....#
 #..#..#
 #.....#
 #..#..#
+#.....#
 #.....#
 #######
 
 #######
 #..#..#
+#..#..#
 #.....#
 #.....#
 #..#..#
@@ -165,22 +161,4 @@ LEVELS
 #......#
 #..##..#
 #......#
-########
-
-########
-#......#
-#..##..#
-#...#..#
-#...#..#
-#..##..#
-#......#
-########
-
-########
-#..#...#
-#..##..#
-#......#
-#......#
-#..##..#
-#...#..#
 ########

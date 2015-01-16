@@ -198,12 +198,8 @@ function ParallelLGEvolutionChromosomeCrossOver(chromosome, lgeChromosome){
     initialData["dl"] = chromosome.dl;
     initialData["lgFeature"] = chromosome.lgFeature;
     
-    var child1 = new pslg.ParallelChromosome(ParallelLGEvolutionChromosomeInitialize, 
-        ParallelLGEvolutionChromosomeCrossOver, ParallelLGEvolutionChromosomeMutate, 
-        ParallelLGEvolutionChromosomeCalculateFitness);
-    var child2 = new pslg.ParallelChromosome(ParallelLGEvolutionChromosomeInitialize, 
-        ParallelLGEvolutionChromosomeCrossOver, ParallelLGEvolutionChromosomeMutate, 
-        ParallelLGEvolutionChromosomeCalculateFitness);
+    var child1 = new pslg.ParallelChromosome();
+    var child2 = new pslg.ParallelChromosome();
         
     ParallelLGEvolutionChromosomeInitialize(child1, initialData);
     ParallelLGEvolutionChromosomeInitialize(child2, initialData);
@@ -247,9 +243,7 @@ function ParallelLGEvolutionChromosomeMutate(chromosome, ruleAnalyzer, state){
     var initialData = {};
     initialData["dl"] = chromosome.dl;
     initialData["lgFeature"] = chromosome.lgFeature;
-    var newChromosome = new pslg.ParallelChromosome(ParallelLGEvolutionChromosomeInitialize, 
-        ParallelLGEvolutionChromosomeCrossOver, ParallelLGEvolutionChromosomeMutate, 
-        ParallelLGEvolutionChromosomeCalculateFitness);
+    var newChromosome = new pslg.ParallelChromosome(-1);
     
     ParallelLGEvolutionChromosomeInitialize(newChromosome, initialData);
     newChromosome.level = deepCloneLevel(chromosome.level);
@@ -296,27 +290,24 @@ function ParallelLGEvolutionChromosomeMutate(chromosome, ruleAnalyzer, state){
     return newChromosome;
 };
 
-function ParallelLGEvolutionChromosomeCalculateFitness(chromosome, global){
+function ParallelLGEvolutionChromosomeCalculateFitness(chromosome){
     if(chromosome.fitness !== undefined){
         return chromosome.fitness;
     }
 
-    global.env.state.levels = [chromosome.level];
-    var previousSolutionLength = GetAverageSolutionLength(chromosome.dl, global.env.maxDifficulty);
-
-    loadLevelFromState(global.env.state, 0);
-    console.log("\t\tSolving level with difficulty" + (chromosome.dl + 1).toString());
-    var result = bestfs(global.env.state.levels[0].dat, global.env.maxIterations, global);
-    loadLevelFromState(global.env.state, 0);
-    var randomResult = randomSolver(global.env.state.levels[0].dat, global.env.maxIterations);
-
+    state.levels = [chromosome.level];
+    var previousSolutionLength = GetAverageSolutionLength(chromosome.dl, maxDifficulty);
+    loadLevelFromState(state, 0);
+    var result = bestfs(state.levels[0].dat, maxIterations);
+    loadLevelFromState(state, 0);
+    var randomResult = randomSolver(state.levels[0].dat, maxIterations);
     var randomFitness = RandomSolverScore(randomResult[0] === 1, chromosome.dl, randomResult[1].length);
     var solutionLengthScore = SolutionLengthScore(chromosome.dl, result[1].length - previousSolutionLength, 8);
     var solutionComplexityScore = SolutionComplexityScore(result[1], 3);
-    var explorationScore = ExplorationScore(result[0] === 1, result[2], global.env.maxIterations);
+    var explorationScore = ExplorationScore(result[0] === 1, result[2], maxIterations);
 
     chromosome.fitness = result[0] + randomFitness + solutionLengthScore + solutionComplexityScore + explorationScore + 2;
-
+    
     return chromosome.fitness;
 };
 

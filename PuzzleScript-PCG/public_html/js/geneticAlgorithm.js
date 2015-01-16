@@ -710,11 +710,8 @@ this.pslg = this.pslg||{};
     LGEvolution.elitismRatio = 0.2;
     LGEvolution.lgFeature = new pslg.LGFeatures([0.4, 1, 0.5, 0.5, 0.6, 0.3]);
     
-    function ParallelChromosome(initializeFunction, crossOverFunction, mutationFunction, fitnessFunction){
-//        this.Initialize = initializeFunction;
-//        this.CrossOver = crossOverFunction;
-//        this.Mutate = mutationFunction;
-//        this.CalculateFitness = fitnessFunction;
+    function ParallelChromosome(id){
+        this.id = id;
     }
     
     function ParallelGenetic(populationSize, intialParameter){
@@ -725,8 +722,7 @@ this.pslg = this.pslg||{};
         
         var chromosomes = [];
         for (var i = 0; i < populationSize; i++) {
-            chromosomes.push(new ParallelChromosome(initializeFunction, crossOverFunction, 
-                mutationFunction, fitnessFunction));
+            chromosomes.push(new ParallelChromosome(i));
             ParallelLGEvolutionChromosomeInitialize(chromosomes[i], intialParameter.data);
         }
         
@@ -825,12 +821,19 @@ this.pslg = this.pslg||{};
         
         var parallel = new Parallel(chromosomes, { env: {ruleAnalyzer: pslg.ruleAnalyzer, 
                 state: pslg.state, maxIterations: pslg.ParallelGenetic.maxIterations, 
-                maxDifficulty: pslg.LevelGenerator.levelsOutline.length, differentCombinations: differentCombinations}, evalPath: 'js/eval.js'});
-        parallel.require('testingParallelGeneticAlgorithm.js', 'globalVariables.js', 'engine.js', 'simulator.js', 'helper.js').map(function(chromosome){ 
-            differentCombinations = global.env.differentCombinations;
-            state = global.env.state;
-            ParallelLGEvolutionChromosomeCalculateFitness(chromosome, global);
-            return chromosome;}).then(ParallelGenetic.GetNewChromosomes);
+                maxDifficulty: pslg.LevelGenerator.levelsOutline.length, 
+                differentCombinations: differentCombinations}, evalPath: 'js/eval.js'});
+        parallel.require('testingParallelGeneticAlgorithm.js', 'globalVariables.js', 'engine.js', 'simulator.js', 'helper.js')
+            .map(function(chromosome){ 
+                differentCombinations = global.env.differentCombinations;
+                state = global.env.state;
+                ruleAnalyzer = global.env.ruleAnalyzer;
+                maxIterations = global.env.maxIterations;
+                maxDifficulty = global.env.maxDifficulty;
+                ParallelLGEvolutionChromosomeCalculateFitness(chromosome);
+                console.log("Chromosome " + (chromosome.id + 1).toString() + " has fitness= " + chromosome.fitness.toString());
+                return chromosome;
+            }).then(ParallelGenetic.GetNewChromosomes);
     };
     
     ParallelGenetic.maxIterations = 1000;

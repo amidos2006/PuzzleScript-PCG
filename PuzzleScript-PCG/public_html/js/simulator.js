@@ -171,8 +171,8 @@ function simulate_silent_ticks() {
 }
 
 
-function bestfs(startState, maxIterations_, global) {
-    var open = [ [startState, get_level_score(startState, global), []] ];
+function bestfs(startState, maxIterations_) {
+    var open = [ [startState, get_level_score(startState), []] ];
     var closed = {};
     var opened = {};
 
@@ -231,7 +231,7 @@ function bestfs(startState, maxIterations_, global) {
             u2.push(dir);
 
             lvl_temp = backupLevel();
-            lvl_score = get_level_score(lvl_temp, global);
+            lvl_score = get_level_score(lvl_temp);
 
             u = [lvl_temp, lvl_score, u2];
             if(lvl_score < bestScore || bestSolution.length === 0){
@@ -480,14 +480,14 @@ function get_manhattan_distance(x1, y1, x2, y2)
 	return Math.abs(x2-x1) + Math.abs(y2-y1);
 }
 
-function get_level_score(leveldat, global) {
+function get_level_score(leveldat) {
     var score = 0.0;
     var scores = [];
 
-    if (global.env.state.winconditions.length>0)  {
+    if (state.winconditions.length>0)  {
         //var passed=true;
-        for (var wcIndex=0;wcIndex<global.env.state.winconditions.length;wcIndex++) {
-            var wincondition = global.env.state.winconditions[wcIndex];
+        for (var wcIndex=0;wcIndex<state.winconditions.length;wcIndex++) {
+            var wincondition = state.winconditions[wcIndex];
             var filter1 = wincondition[1];
             var filter2 = wincondition[2];
             //var rulePassed=true;
@@ -525,13 +525,13 @@ function get_level_score(leveldat, global) {
 
             var windices = [];
 
-            if ((filter1 & global.env.state.playerMask === 0) && (filter2 & global.env.state.playerMask === 0)) {
+            if ((filter1 & state.playerMask === 0) && (filter2 & state.playerMask === 0)) {
                 windices = indices1.concat(indices2);
             }
             else {
                 // winices are indices of objects that the player should go towards
                 // if PLAYER is in FILTER1, then go for object2
-                windices = filter1 & global.env.state.playerMask !== 0 ? indices2 : indices1;
+                windices = filter1 & state.playerMask !== 0 ? indices2 : indices1;
             }
 
 

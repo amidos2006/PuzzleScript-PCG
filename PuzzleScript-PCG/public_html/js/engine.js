@@ -168,7 +168,7 @@ function unloadGame() {
 	    bannedGroup:[]
 	};
 	generateTitleScreen();
-	//canvasResize();
+	canvasResize();
 	redraw();
 }
 
@@ -360,7 +360,7 @@ function drawMessageScreen() {
 	if (quittingMessageScreen) {
 		titleImage[10]=titleImage[9];
 	}		
-	//canvasResize();
+	canvasResize();
 }
 
 
@@ -423,12 +423,12 @@ function loadLevelFromState(state,levelindex) {
 	} else {
 		tryPlayShowMessageSound();
 		drawMessageScreen();
-    	//canvasResize();
+    	canvasResize();
 	}
 
-//	if (canDump===true) {
-//		inputHistory=[];
-//	}
+	if (canDump===true) {
+		inputHistory=[];
+	}
 
 }
 
@@ -461,7 +461,7 @@ var sprites = [
 
 
 generateTitleScreen();
-//canvasResize();
+canvasResize();
 
 //setInterval(tick, 100);
 
@@ -473,10 +473,13 @@ redraw();
 
 
 function tryPlaySimpleSound(soundname) {
-//	if (state.sfx_Events[soundname]!==undefined) {
-//		var seed = state.sfx_Events[soundname];
-//		playSeed(seed);
-//	}
+    if(disableIO){
+        return;
+    }
+	if (state.sfx_Events[soundname]!==undefined) {
+		var seed = state.sfx_Events[soundname];
+		playSeed(seed);
+	}
 }
 function tryPlayTitleSound() {
 	tryPlaySimpleSound("titlescreen");
@@ -644,7 +647,7 @@ function setGameState(_state, command) {
 	if (canDump===true) {
 		inputHistory=[];
 	}
-    //canvasResize();
+    canvasResize();
 
 
 
@@ -720,7 +723,7 @@ function restoreLevel(lev) {
     againing=false;
     messagetext="";
     level.commandQueue=[];
-//	redraw();
+	redraw();
 }
 
 var zoomscreen=false;
@@ -1690,7 +1693,7 @@ function showTempMessage() {
 	messageselected=false;
 	tryPlayShowMessageSound();
 	drawMessageScreen();
-	//canvasResize();
+	canvasResize();
 }
 
 function applyRandomRuleGroup(ruleGroup) {
@@ -2179,7 +2182,7 @@ function processInput(dir,dontCheckWin,dontModify) {
 
     }
 
-//    redraw();
+    redraw();
 
 	if (verbose_logging) {
 		consoleCacheDump();
@@ -2266,10 +2269,10 @@ function nextLevel() {
 
 	}
 
-	//canvasResize();	
-//	if (canDump===true) {
-//		inputHistory=[];
-//	}
+	canvasResize();	
+	if (canDump===true) {
+		inputHistory=[];
+	}
 }
 
 function goToTitleScreen(){

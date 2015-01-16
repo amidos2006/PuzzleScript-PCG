@@ -262,6 +262,10 @@ function glyphCount(){
 }
 
 function redraw() {
+    if(disableIO){
+        return;
+    }
+    
     if (textMode) {
         for (var n in textImages) {
             if (textImages.hasOwnProperty(n)) {
@@ -445,6 +449,10 @@ var oldfgcolor=-1;
 var forceRegenImages=false;
 function canvasResize() {
 //  window.console.log("canvasresize");
+    if(disableIO){
+        return;
+    }
+    
     canvas.style.width = canvas.parentNode.clientWidth;
         canvas.style.height = canvas.parentNode.clientHeight;
 

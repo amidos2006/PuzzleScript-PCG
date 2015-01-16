@@ -1,4 +1,4 @@
-title Pile of Rules
+title My RunningWife
 author Ahmed Abdel Samea Khalifa
 homepage www.amidos-games.com
 
@@ -93,13 +93,14 @@ Player, Wall, Crate, Wife
 RULES
 ======
 
-[ action Player ][Crate]->[Crate][Player]
+[ > Player ][ Wife ] -> [ > Player][> Wife]
+[ > Wife | Stopper ] -> [ Wife | Stopper]
 
 ==============
 WINCONDITIONS
 ==============
 
-all Target on Crate
+all Wife on Target
 
 =======
 LEVELS
@@ -118,12 +119,12 @@ LEVELS
 #...##
 ######
 
-######
-##..##
-#....#
-#....#
-##..##
-######
+#######
+##...##
+#.....#
+#.....#
+##...##
+#######
 
 #######
 #.....#
@@ -135,14 +136,17 @@ LEVELS
 
 #######
 #.....#
+#.....#
 #..#..#
 #.....#
 #..#..#
+#.....#
 #.....#
 #######
 
 #######
 #..#..#
+#..#..#
 #.....#
 #.....#
 #..#..#
@@ -165,22 +169,4 @@ LEVELS
 #......#
 #..##..#
 #......#
-########
-
-########
-#......#
-#..##..#
-#...#..#
-#...#..#
-#..##..#
-#......#
-########
-
-########
-#..#...#
-#..##..#
-#......#
-#......#
-#..##..#
-#...#..#
 ########

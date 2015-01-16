@@ -1,4 +1,5 @@
 var unitTesting=false;
+var disableIO = false;
 var curlevel=0;
 var levelEditorOpened=false;
 

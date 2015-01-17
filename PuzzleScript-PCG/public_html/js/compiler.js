@@ -2425,7 +2425,7 @@ function compile(command,text) {
 	setGameState(state,command);
         
         //My Code
-        var test = 0;
+        var test = 1;
         var ruleAnalyzer = new pslg.RuleAnalyzer();
         ruleAnalyzer.Initialize(state);
 
@@ -2434,40 +2434,66 @@ function compile(command,text) {
         pslg.LevelGenerator.levelsOutline = state.levels;
         pslg.LevelGenerator.Initialize(state.objectMasks);
         pslg.InitializeSoultionAnalysis([0,1,2,3]);
+        
         pslg.ruleAnalyzer = ruleAnalyzer;
         pslg.state = state;
+        pslg.maxIterations = 1000;
+        pslg.totalDifficulties =  pslg.LevelGenerator.levelsOutline.length;
         
         if(test === 0){
+            //lava game 0.23500,1,0.50182,0.41498,NaN,NaN
             var levelGenerator = new pslg.LevelGenerator(new pslg.LGFeatures([0.0028173590544611216,1,0.3811970957322046,0.2566856339108199,0.6069753888740494,0.3528567364106312]));
             state.levels = levelGenerator.GenerateLevels(ruleAnalyzer, state);
         }
         else if(test === 1){
-            pslg.LGParameterEvolution.crossoverRate = 0.6;
-            pslg.LGParameterEvolution.mutationRate = 0.01;
-            pslg.LGParameterEvolution.elitismRatio = 0.2;
-            pslg.LGParameterEvolution.maxIterationSolver = 1000;
+            pslg.GeneticAlgorithm.numberOfGenerations = 100;
+            pslg.GeneticAlgorithm.populationSize = 50;
+            pslg.GeneticAlgorithm.sdError = 0;
+            pslg.GeneticAlgorithm.crossoverRate = 0.6;
+            pslg.GeneticAlgorithm.mutationRate = 0.1;
+            pslg.GeneticAlgorithm.elitismRatio = 0.2;
+
+            var initialData = {};
+            initialData["Initialize"] = pslg.ParameterEvolutionInitialize;
+            initialData["CrossOver"] = pslg.ParameterEvolutionCrossOver;
+            initialData["Mutation"] = pslg.ParameterEvolutionMutation;
+            initialData["CalculateFitness"] = pslg.ParameterEvolutionCalculateFitness;
+            initialData["data"] = {};
 
             disableIO = true;
-            var genetic = new pslg.LGParameterEvolution(100, 50);
+            var genetic = new pslg.GeneticAlgorithm(initialData);
             var bestParameter = genetic.Evolve(1);
             disableIO = false;
             
             console.log("Best Parameters: " + bestParameter[0].genes + " with Best Fitness: " + bestParameter[0].fitness);
+            
+            var levelGenerator = new pslg.LevelGenerator(new pslg.LGFeatures(bestParameter[0].genes));
+            state.levels = levelGenerator.GenerateLevels(ruleAnalyzer, state);
         }
         else if(test === 2){
-            pslg.LGEvolution.crossoverRate = 0.6;
-            pslg.LGEvolution.mutationRate = 0.05;
-            pslg.LGEvolution.elitismRatio = 0.2;
-            pslg.LGEvolution.lgFeature = new pslg.LGFeatures([0.4, 1, 0.5, 0.5, 0.6, 0.3]);
-            pslg.LGEvolution.maxIterationSolver = 1000;
+            pslg.GeneticAlgorithm.numberOfGenerations = 100;
+            pslg.GeneticAlgorithm.populationSize = 50;
+            pslg.GeneticAlgorithm.sdError = 0;
+            pslg.GeneticAlgorithm.crossoverRate = 0.6;
+            pslg.GeneticAlgorithm.mutationRate = 0.01;
+            pslg.GeneticAlgorithm.elitismRatio = 0.2;
+            
+            var initialData = {};
+            initialData["Initialize"] = pslg.LevelEvolutionInitialize;
+            initialData["CrossOver"] = pslg.LevelEvolutionCrossOver;
+            initialData["Mutation"] = pslg.LevelEvolutionMutation;
+            initialData["CalculateFitness"] = pslg.LevelEvolutionCalculateFitness;
+            initialData["data"] = {dl: 4, lgFeature: new pslg.LGFeatures([0.003,1,0.381,0.257,0.607,0.353])};
             
             disableIO = true;
-            var genetic = new pslg.LGEvolution(100, 50);
-            var bestLevel = genetic.Evolve(1, 4, false);
+            var genetic = new pslg.GeneticAlgorithm(initialData);
+            var bestLevels = genetic.Evolve(1);
             disableIO = false;
             
-            state.levels = [bestLevel[0].level];
+            state.levels = [bestLevels[0].level];
             loadLevelFromState(state, 0);
+            
+            console.log("Best Chromosome Fitness: " + bestLevels[0].fitness);
         }
         else if(test === 3){
             pslg.ParallelGenetic.maxIterations = 1000;

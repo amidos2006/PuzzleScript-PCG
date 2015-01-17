@@ -11,6 +11,14 @@ x to action.......................
 z to undo, r to restart...........
 */
 
+var tempCanvasResize = function(){
+    
+};
+
+var tempRedraw = function(){
+    
+};
+
 intro_template = [
 	"..................................",
 	"..................................",
@@ -168,8 +176,8 @@ function unloadGame() {
 	    bannedGroup:[]
 	};
 	generateTitleScreen();
-	canvasResize();
-	redraw();
+	tempCanvasResize();
+        tempRedraw()();
 }
 
 function generateTitleScreen()
@@ -360,7 +368,7 @@ function drawMessageScreen() {
 	if (quittingMessageScreen) {
 		titleImage[10]=titleImage[9];
 	}		
-	canvasResize();
+	tempCanvasResize();
 }
 
 
@@ -423,10 +431,10 @@ function loadLevelFromState(state,levelindex) {
 	} else {
 		tryPlayShowMessageSound();
 		drawMessageScreen();
-    	canvasResize();
+    	tempCanvasResize();
 	}
 
-	if (canDump===true) {
+	if (!disableIO && canDump===true) {
 		inputHistory=[];
 	}
 
@@ -461,14 +469,14 @@ var sprites = [
 
 
 generateTitleScreen();
-canvasResize();
+tempCanvasResize();
 
 //setInterval(tick, 100);
 
 //setTimeout(redraw,100);
 
 function tick() {
-redraw();
+tempRedraw();
 }
 
 
@@ -644,10 +652,10 @@ function setGameState(_state, command) {
 		}
 	}
 	
-	if (canDump===true) {
+	if (!disableIO && canDump===true) {
 		inputHistory=[];
 	}
-    canvasResize();
+    tempCanvasResize();
 
 
 
@@ -723,7 +731,7 @@ function restoreLevel(lev) {
     againing=false;
     messagetext="";
     level.commandQueue=[];
-	redraw();
+	tempRedraw();
 }
 
 var zoomscreen=false;
@@ -1693,7 +1701,7 @@ function showTempMessage() {
 	messageselected=false;
 	tryPlayShowMessageSound();
 	drawMessageScreen();
-	canvasResize();
+	tempCanvasResize();
 }
 
 function applyRandomRuleGroup(ruleGroup) {
@@ -2060,7 +2068,7 @@ function processInput(dir,dontCheckWin,dontModify) {
     		DoUndo(true);
     		seedsToPlay_CanMove=[];
     		seedsToPlay_CantMove=[];
-    		redraw();
+    		tempRedraw();
         		if (verbose_logging) {
         			consoleCacheDump();
         		}
@@ -2075,7 +2083,7 @@ function processInput(dir,dontCheckWin,dontModify) {
 	    	DoRestart(true);	
     		seedsToPlay_CanMove=[];
     		seedsToPlay_CantMove=[];
-    		redraw();  
+    		tempRedraw();  
     		if (verbose_logging) {
     			consoleCacheDump();
     		} 
@@ -2182,7 +2190,7 @@ function processInput(dir,dontCheckWin,dontModify) {
 
     }
 
-    redraw();
+    tempRedraw();
 
 	if (verbose_logging) {
 		consoleCacheDump();
@@ -2269,8 +2277,8 @@ function nextLevel() {
 
 	}
 
-	canvasResize();	
-	if (canDump===true) {
+	tempCanvasResize();	
+	if (!disableIO && canDump===true) {
 		inputHistory=[];
 	}
 }

@@ -8,26 +8,33 @@ this.pslg = this.pslg||{};
 
 (function()
 {
-    function ParallelChromosome(id){
-        this.id = id;
+    function FitnessSort(a, b) {
+	if (a.fitness > b.fitness) {
+		return -1;
+	}
+	else if (a.fitness < b.fitness) {
+		return 1;
+	}
+	else {
+		return 0;
+	}
     }
-
-    function ParallelGenetic(intialParameter){
-        var initializeFunction = intialParameter.initializeFunction; 
-        var crossOverFunction = intialParameter.crossOverFunction; 
-        var mutationFunction = intialParameter.mutationFunction; 
-        var fitnessFunction = intialParameter.fitnessFunction;
-
-        var chromosomes = [];
+    
+    function ParallelChromosome(initialData){
+        ParallelChromosome.Initialize(this, initialData);
+    }
+    
+    function ParallelPopulation(){
+        
+    }
+    
+    ParallelPopulation.Initialize = function(populationSize, chromosomes){
         for (var i = 0; i < populationSize; i++) {
-            chromosomes.push(new ParallelChromosome(i));
-            ParallelLGEvolutionChromosomeInitialize(chromosomes[i], intialParameter.data);
+            chromosomes.push(new ParallelChromosome(ParallelChromosome.InitialData));
         }
-
-        ParallelGenetic.GetNextPopulation(chromosomes);
-    }
-
-    ParallelGenetic.SelectionAlgorithm = function(chromosomes){
+    };
+    
+    ParallelPopulation.SelectionAlgorithm = function(chromosomes){
         var totalSum = 0;
         for (var i = 0; i < chromosomes.length; i++) {
             totalSum += chromosomes[i].fitness;
@@ -51,42 +58,54 @@ this.pslg = this.pslg||{};
 
         return chromosomes[index];
     };
-
-    ParallelGenetic.GetNewChromosomes = function(chromosomes){
-        console.log("Generation Ends");
-
+    
+    ParallelPopulation.CalculateFitness = function(chromosomes){
+        for (var i = 0; i < chromosomes.length; i++) {
+            chromosomes[i].id = i;
+        }
+        ParallelChromosome.CalculateFitness(chromosomes, ParallelPopulation.NextPopulation);
+    };
+    
+    ParallelPopulation.NextPopulation = function(chromosomes){
+        ParallelGenetic.numberOfGenerations -= 1;
+        if(ParallelGenetic.numberOfGenerations < 0){
+            chromosomes.sort(FitnessSort);
+            console.log("Genetic Algorithm is finished");
+            ParallelGenetic.FinishFunction(chromosomes.slice(0, ParallelGenetic.numberOfBestChromosomes));
+            return;
+        }
+        
         var newChromosomes = [];
 
-        while(newChromosomes.length < chromosomes.length * (1 - pslg.ParallelGenetic.elitismRatio)){
-            var parent1 = ParallelGenetic.SelectionAlgorithm(chromosomes);
-            var parent2 = ParallelGenetic.SelectionAlgorithm(chromosomes);
+        while(newChromosomes.length < chromosomes.length * (1 - ParallelGenetic.elitismRatio)){
+            var parent1 = ParallelPopulation.SelectionAlgorithm(chromosomes);
+            var parent2 = ParallelPopulation.SelectionAlgorithm(chromosomes);
 
-            var children;
-            if(pslg.ParallelGenetic.crossoverRate === 0){
-                children = [parent1, parent2];
+            var children = [new ParallelChromosome(ParallelChromosome.InitialData), new ParallelChromosome(ParallelChromosome.InitialData)];;
+            if(ParallelGenetic.crossoverRate === 0){
                 var randomValue = Math.random();
                 if(randomValue < ParallelGenetic.mutationRate){
-                    children[0] = ParallelLGEvolutionChromosomeMutate(children[0], pslg.ruleAnalyzer, pslg.state);
+                    ParallelChromosome.Mutate(children[0], parent1);
                 }
 
                 randomValue = Math.random();
-                if(randomValue < pslg.ParallelGenetic.mutationRate){
-                    children[1] = ParallelLGEvolutionChromosomeMutate(children[1], pslg.ruleAnalyzer, pslg.state);
+                if(randomValue < ParallelGenetic.mutationRate){
+                    ParallelChromosome.Mutate(children[1], parent2);
                 }
             }
             else{
                 var randomValue = Math.random();
                 if(randomValue < ParallelGenetic.crossoverRate){
-                    children = ParallelLGEvolutionChromosomeCrossOver(parent1, parent2);
+                    ParallelChromosome.CrossOver(children[0], children[1], parent1, parent2);
 
                     randomValue = Math.random();
-                    if(randomValue < pslg.ParallelGenetic.mutationRate){
-                        children[0] = ParallelLGEvolutionChromosomeMutate(children[0], pslg.ruleAnalyzer, pslg.state);
+                    if(randomValue < ParallelGenetic.mutationRate){
+                        ParallelChromosome.Mutate(children[0], parent1);
                     }
 
                     randomValue = Math.random();
-                    if(randomValue < pslg.ParallelGenetic.mutationRate){
-                        children[1] = ParallelLGEvolutionChromosomeMutate(children[1], pslg.ruleAnalyzer, pslg.state);
+                    if(randomValue < ParallelGenetic.mutationRate){
+                        ParallelChromosome.Mutate(children[1], parent2);
                     }
                 }
                 else
@@ -104,48 +123,39 @@ this.pslg = this.pslg||{};
         for(var i = 0; i < chromosomes.length - currentLength; i++){
             newChromosomes.push(chromosomes[i]);
         }
-
-        ParallelGenetic.GetNextPopulation(newChromosomes);
+        
+        console.log("Generations: " + (ParallelGenetic.numberOfGenerations).toString());
+        ParallelPopulation.CalculateFitness(newChromosomes);
+    };
+    
+    function ParallelGenetic(initialData){
+        ParallelChromosome.Initialize = initialData.Initialize;
+        ParallelChromosome.CrossOver = initialData.CrossOver;
+        ParallelChromosome.Mutate = initialData.Mutation;
+        ParallelChromosome.CalculateFitness = initialData.CalculateFitness;
+        
+        ParallelChromosome.InitialData = initialData.data;
+    }
+    
+    ParallelGenetic.Evolve = function(numberOfBestChromosomes){
+        ParallelGenetic.numberOfBestChromosomes = numberOfBestChromosomes;
+        var chromosomes = [];
+        
+        ParallelPopulation.Initialize(ParallelGenetic.populationSize, chromosomes);
+        ParallelPopulation.CalculateFitness(chromosomes);
     };
 
-    ParallelGenetic.GetNextPopulation = function (chromosomes){
-        ParallelGenetic.numberOfGenerations -= 1;
-        if(ParallelGenetic.numberOfGenerations <= 0){
-            chromosomes.sort(FitnessSort);
-            console.log("Everything is finished");
-            ParallelGenetic.finishFunction(pslg.state, chromosomes.slice(0, 1));
-            return;
-        }
-
-        var parallel = new Parallel(chromosomes, { env: {ruleAnalyzer: pslg.ruleAnalyzer, 
-                state: pslg.state, maxIterations: pslg.ParallelGenetic.maxIterations, 
-                maxDifficulty: pslg.LevelGenerator.levelsOutline.length, 
-                differentCombinations: differentCombinations}, evalPath: 'js/eval.js'});
-        parallel.require('testingParallelGeneticAlgorithm.js', 'globalVariables.js', 'engine.js', 'simulator.js', 'helper.js')
-            .map(function(chromosome){ 
-                differentCombinations = global.env.differentCombinations;
-                state = global.env.state;
-                ruleAnalyzer = global.env.ruleAnalyzer;
-                maxIterations = global.env.maxIterations;
-                maxDifficulty = global.env.maxDifficulty;
-                ParallelLGEvolutionChromosomeCalculateFitness(chromosome);
-                console.log("Chromosome " + (chromosome.id + 1).toString() + " has fitness= " + chromosome.fitness.toString());
-                return chromosome;
-            }).then(ParallelGenetic.GetNewChromosomes);
-    };
-
-    ParallelGenetic.maxIterations = 1000;
     ParallelGenetic.numberOfGenerations = 100;
+    ParallelGenetic.sdError = 0;
     ParallelGenetic.populationSize = 50;
     ParallelGenetic.crossoverRate = 0.6;
     ParallelGenetic.mutationRate = 0.01;
     ParallelGenetic.elitismRatio = 0.2;
-    ParallelGenetic.finishFunction = undefined;
+    ParallelGenetic.FinishFunction = undefined;
     
     /////////////////////////////
     //  Class Declaration
     /////////////////////////////
-    pslg.ParallelChromosome = ParallelChromosome;
     pslg.ParallelGenetic = ParallelGenetic;
 }());
 

@@ -2422,10 +2422,12 @@ function compile(command,text) {
 
 		}
 	}
+        tempCanvasResize = canvasResize;
+        tempRedraw = redraw;
 	setGameState(state,command);
         
         //My Code
-        var test = 1;
+        var test = 3;
         var ruleAnalyzer = new pslg.RuleAnalyzer();
         ruleAnalyzer.Initialize(state);
 
@@ -2444,6 +2446,7 @@ function compile(command,text) {
             //lava game 0.23500,1,0.50182,0.41498,NaN,NaN
             var levelGenerator = new pslg.LevelGenerator(new pslg.LGFeatures([0.0028173590544611216,1,0.3811970957322046,0.2566856339108199,0.6069753888740494,0.3528567364106312]));
             state.levels = levelGenerator.GenerateLevels(ruleAnalyzer, state);
+            
         }
         else if(test === 1){
             pslg.GeneticAlgorithm.numberOfGenerations = 100;
@@ -2496,21 +2499,23 @@ function compile(command,text) {
             console.log("Best Chromosome Fitness: " + bestLevels[0].fitness);
         }
         else if(test === 3){
-            pslg.ParallelGenetic.maxIterations = 1000;
             pslg.ParallelGenetic.numberOfGenerations = 2;
+            pslg.ParallelGenetic.populationSize = 10;
+            pslg.ParallelGenetic.sdError = 0;
             pslg.ParallelGenetic.crossoverRate = 0.6;
             pslg.ParallelGenetic.mutationRate = 0.01;
             pslg.ParallelGenetic.elitismRatio = 0.2;
-            pslg.ParallelGenetic.finishFunction = ParallelLGEvolutionFinishFunction;
+            pslg.ParallelGenetic.FinishFunction = pslg.ParallelLevelEvolutionFinishFunction;
             
-            var intialParameter = {};
-            intialParameter["data"] = {dl: 4, lgFeature: new pslg.LGFeatures([0.4, 1, 0.5, 0.5, 0.6, 0.3])};
-            intialParameter["initializeFunction"] = ParallelLGEvolutionChromosomeInitialize;
-            intialParameter["crossOverFunction"] = ParallelLGEvolutionChromosomeCrossOver;
-            intialParameter["mutationFunction"] = ParallelLGEvolutionChromosomeMutate;
-            intialParameter["fitnessFunction"] = ParallelLGEvolutionChromosomeCalculateFitness;
+            var initialData = {};
+            initialData["Initialize"] = pslg.LevelEvolutionInitialize;
+            initialData["CrossOver"] = pslg.LevelEvolutionCrossOver;
+            initialData["Mutation"] = pslg.LevelEvolutionMutation;
+            initialData["CalculateFitness"] = pslg.ParallelLevelEvolutionFitness;
+            initialData["data"] = {dl: 4, lgFeature: new pslg.LGFeatures([0.003,1,0.381,0.257,0.607,0.353])};
             
-            pslg.ParallelGenetic(1, intialParameter);
+            pslg.ParallelGenetic(initialData);
+            pslg.ParallelGenetic.Evolve(1);
         }
         //End of My Code
 }

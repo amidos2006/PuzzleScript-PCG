@@ -82,6 +82,10 @@ this.pslg = this.pslg||{};
     }
     
     function SolutionComplexityScore(solution, analysisDegree){
+        if(differentCombinations.length === 0){
+            differentCombinations = pslg.differentCombinations;
+        }
+        
         if(solution.length === 0){
             return -1;
         }
@@ -426,6 +430,30 @@ this.pslg = this.pslg||{};
         chromosome.fitness = result[0] + randomFitness + solutionLengthScore + solutionComplexityScore + explorationScore + 2;
     }
     
+    function ParallelLevelEvolutionFinishFunction(bestSolutions){
+        disableIO = false;
+        
+        pslg.state.levels = [bestSolutions[0].level];
+        loadLevelFromState(pslg.state, 0);
+    }
+    
+    function ParallelLevelEvolutionFitness(chromosomes, nextPopulation){
+        var parallel = new Parallel(chromosomes, { env: {state: pslg.state, ruleAnalyzer: pslg.ruleAnalyzer, 
+            differentCombinations: differentCombinations, Fitness: pslg.LevelEvolutionCalculateFitness}, 
+            evalPath: 'js/eval.js'});
+        parallel.require('geneticFunctions.js', 'globalVariables.js', 'engine.js', 'simulator.js', 'helper.js')
+            .map(function(chromosome){
+                    pslg.state = global.env.state;
+                    pslg.ruleAnalyzer = global.env.ruleAnalyzer;
+                    pslg.differentCombinations = global.env.differentCombinations;
+                    state = global.env.state;
+                    disableIO = true;
+                    pslg.LevelEvolutionCalculateFitness(chromosome);
+                    console.log("\tChromosome number: " + (chromosome.id + 1).toString() + " Fitness Score: " + chromosome.fitness.toString());
+                    return chromosome;
+            }).then(nextPopulation);
+    }
+    
     /////////////////////////////
     //  Variables Declaration
     /////////////////////////////
@@ -443,6 +471,9 @@ this.pslg = this.pslg||{};
     pslg.LevelEvolutionCrossOver = LevelEvolutionCrossOver;
     pslg.LevelEvolutionMutation = LevelEvolutionMutation;
     pslg.LevelEvolutionCalculateFitness = LevelEvolutionCalculateFitness;
+    
+    pslg.ParallelLevelEvolutionFinishFunction = ParallelLevelEvolutionFinishFunction;
+    pslg.ParallelLevelEvolutionFitness = ParallelLevelEvolutionFitness;
     
     pslg.ParameterEvolutionInitialize = ParameterEvolutionInitialize;
     pslg.ParameterEvolutionCrossOver = ParameterEvolutionCrossOver;

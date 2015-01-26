@@ -2416,7 +2416,7 @@ function compile(command,text) {
 	setGameState(state,command);
         
         //My Code
-        var test = 0;
+        var test = 1;
         var ruleAnalyzer = new pslg.RuleAnalyzer();
         ruleAnalyzer.Initialize(state);
 
@@ -2435,15 +2435,15 @@ function compile(command,text) {
             //lava game 0.23500,1,0.50182,0.41498,NaN,NaN
             //microban Best Parameters: 0.12461,1,0.46,0.046618,0.48850090380260464,0.12441373119198418 with Best Fitness: 3.9243630975153447
             var fitnessArray = [];
-//            disableIO = true;
-//            for (var i = 0; i < 1000; i++) {
-//                console.log("Run: " + (i + 1).toString());
-//                var chromosome = {genes: [0.12461,1,0.46,0.046618,0.48850090380260464,0.12441373119198418], fitness: undefined};
-//                pslg.ParameterEvolutionCalculateFitness(chromosome);
-//                fitnessArray.push(chromosome.fitness);
-//            }
-//            disableIO = false;
-//            console.log("Average: " + fitnessArray.avg() + " ,Min: " + fitnessArray.min() + " ,Max: " + fitnessArray.max() + " ,SD: " + fitnessArray.sd());
+            disableIO = true;
+            for (var i = 0; i < 1000; i++) {
+                console.log("Run: " + (i + 1).toString());
+                var chromosome = {genes: [0.12461,1,0.46,0.046618,0.48850090380260464,0.12441373119198418], fitness: undefined};
+                pslg.ParameterEvolutionCalculateFitness(chromosome);
+                fitnessArray.push(chromosome.fitness);
+            }
+            disableIO = false;
+            console.log("Average: " + fitnessArray.avg() + " ,Min: " + fitnessArray.min() + " ,Max: " + fitnessArray.max() + " ,SD: " + fitnessArray.sd());
             
             var levelGenerator = new pslg.LevelGenerator(new pslg.LGFeatures([0.5,1,0.46,0.046618,0.48850090380260464,0.12441373119198418]));
             state.levels = levelGenerator.GenerateLevels(ruleAnalyzer, state);

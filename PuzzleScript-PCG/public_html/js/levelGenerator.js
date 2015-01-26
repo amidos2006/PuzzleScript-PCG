@@ -198,24 +198,31 @@ this.pslg = this.pslg||{};
             for (var j = 0; j < objectNumber; j++){
                 var index = this.GetInsertionLocation(ruleAnalyzer, obj1, obj1LayerMask, _level, emptySpaces);
                 var position = emptySpaces[index];
-                emptySpaces.splice(index, 1);
                 var isCreated = ruleAnalyzer.objectBehaviour[obj1] & pslg.ObjectBehaviour.CREATE;
                 if(isCreated === 0){
+                    emptySpaces.splice(index, 1);
                     _level.dat[position] = _level.dat[position] | state.objectMasks[obj1];
                     nObjects -= 1;
                 }
                 var isCreated = ruleAnalyzer.objectBehaviour[obj2] & pslg.ObjectBehaviour.CREATE;
                 if(isCreated === 0){
                     if(ruleAnalyzer.winRules[i] === "no"){
-                        _level.dat[position] = _level.dat[position] | state.objectMasks[obj2];
+                        isCreated = ruleAnalyzer.objectBehaviour[obj2] & pslg.ObjectBehaviour.CREATE;
+                        if(isCreated === 0){
+                            _level.dat[position] = _level.dat[position] | state.objectMasks[obj2];
+                            nObjects -= 1;
+                        }
                     }
                     else{
                         index = this.GetInsertionLocation(ruleAnalyzer, obj2, obj2LayerMask, _level, emptySpaces);
                         position = emptySpaces[index];
-                        emptySpaces.splice(index, 1);
-                        _level.dat[position] = _level.dat[position] | state.objectMasks[obj2];
+                        isCreated = ruleAnalyzer.objectBehaviour[obj2] & pslg.ObjectBehaviour.CREATE;
+                        if(isCreated === 0){
+                            emptySpaces.splice(index, 1);
+                            _level.dat[position] = _level.dat[position] | state.objectMasks[obj2];
+                            nObjects -= 1;
+                        }
                     }
-                    nObjects -= 1;
                 }
             }
             delete criticalObjects[obj1];

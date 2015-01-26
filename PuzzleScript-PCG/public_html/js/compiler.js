@@ -727,17 +727,6 @@ function deepCloneHS(HS) {
 	return cloneHS;
 }
 
-function deepCloneLevel(level){
-    var clonedLevel = {
-        dat: level.dat.clone(),
-        layerCount:level.layerCount,
-        lineNumber:level.lineNumber,
-        h: level.h,
-        w: level.w
-    };
-    return clonedLevel;
-}
-
 function deepCloneRule(rule) {
 	var clonedRule = {
 		direction: rule.direction,
@@ -2427,7 +2416,7 @@ function compile(command,text) {
 	setGameState(state,command);
         
         //My Code
-        var test = 3;
+        var test = 0;
         var ruleAnalyzer = new pslg.RuleAnalyzer();
         ruleAnalyzer.Initialize(state);
 
@@ -2444,9 +2433,20 @@ function compile(command,text) {
         
         if(test === 0){
             //lava game 0.23500,1,0.50182,0.41498,NaN,NaN
-            var levelGenerator = new pslg.LevelGenerator(new pslg.LGFeatures([0.0028173590544611216,1,0.3811970957322046,0.2566856339108199,0.6069753888740494,0.3528567364106312]));
-            state.levels = levelGenerator.GenerateLevels(ruleAnalyzer, state);
+            //microban Best Parameters: 0.12461,1,0.46,0.046618,0.48850090380260464,0.12441373119198418 with Best Fitness: 3.9243630975153447
+            var fitnessArray = [];
+//            disableIO = true;
+//            for (var i = 0; i < 1000; i++) {
+//                console.log("Run: " + (i + 1).toString());
+//                var chromosome = {genes: [0.12461,1,0.46,0.046618,0.48850090380260464,0.12441373119198418], fitness: undefined};
+//                pslg.ParameterEvolutionCalculateFitness(chromosome);
+//                fitnessArray.push(chromosome.fitness);
+//            }
+//            disableIO = false;
+//            console.log("Average: " + fitnessArray.avg() + " ,Min: " + fitnessArray.min() + " ,Max: " + fitnessArray.max() + " ,SD: " + fitnessArray.sd());
             
+            var levelGenerator = new pslg.LevelGenerator(new pslg.LGFeatures([0.5,1,0.46,0.046618,0.48850090380260464,0.12441373119198418]));
+            state.levels = levelGenerator.GenerateLevels(ruleAnalyzer, state);
         }
         else if(test === 1){
             pslg.GeneticAlgorithm.numberOfGenerations = 100;
@@ -2514,6 +2514,25 @@ function compile(command,text) {
             initialData["CalculateFitness"] = pslg.ParallelLevelEvolutionFitness;
             initialData["data"] = {dl: 4, lgFeature: new pslg.LGFeatures([0.003,1,0.381,0.257,0.607,0.353])};
             
+            pslg.ParallelGenetic(initialData);
+            pslg.ParallelGenetic.Evolve(1);
+        }
+        else if(test === 4){
+            pslg.ParallelGenetic.numberOfGenerations = 1;
+            pslg.ParallelGenetic.populationSize = 1;
+            pslg.ParallelGenetic.sdError = 0;
+            pslg.ParallelGenetic.crossoverRate = 0.6;
+            pslg.ParallelGenetic.mutationRate = 0.01;
+            pslg.ParallelGenetic.elitismRatio = 0.2;
+            pslg.ParallelGenetic.FinishFunction = pslg.ParallelParameterEvolutionFinishFunction;
+
+            var initialData = {};
+            initialData["Initialize"] = pslg.ParameterEvolutionInitialize;
+            initialData["CrossOver"] = pslg.ParameterEvolutionCrossOver;
+            initialData["Mutation"] = pslg.ParameterEvolutionMutation;
+            initialData["CalculateFitness"] = pslg.ParallelParameterEvolutionFitness;
+            initialData["data"] = {};
+
             pslg.ParallelGenetic(initialData);
             pslg.ParallelGenetic.Evolve(1);
         }

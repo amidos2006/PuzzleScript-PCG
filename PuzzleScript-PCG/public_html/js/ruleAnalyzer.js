@@ -348,7 +348,7 @@ this.pslg = this.pslg||{};
         if(startingObject === "player"){
             result = result | 1;
         }
-        if(ending.indexOf(startingObject) >= 0){
+        else if(ending.indexOf(startingObject) >= 0){
             result = result | 2;
         }
         
@@ -364,7 +364,7 @@ this.pslg = this.pslg||{};
                             if(nextNodeValue === "player"){
                                 result = result | 1;
                             }
-                            if(ending.indexOf(nextNodeValue) >= 0){
+                            else if(ending.indexOf(nextNodeValue) >= 0){
                                 result = result | 2;
                             }
                         }

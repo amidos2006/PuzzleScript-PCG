@@ -140,7 +140,10 @@ this.pslg = this.pslg||{};
             for (var j = 0; j < GeneticAlgorithm.populationSize; j++) {
                 sdError.push(currentPopulation.chromosomes[j].fitness);
             }
-            console.log("current sd: " + sdError.sd().toString());
+            console.log("current sd: " + sdError.sd().toString() + 
+                " ,average fitness: " + sdError.avg().toString() + 
+                " ,best fitness: " + sdError.max().toString() +
+                " ,min fitness: " + sdError.min().toString());
             if(sdError.sd() <= GeneticAlgorithm.sdError){
                 break;
             }

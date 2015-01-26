@@ -186,34 +186,42 @@ this.pslg = this.pslg||{};
                     objectNumber = this.GetObjectNumber(dl, minObjects);;
                     break;
             }
-
-            if(obj1 === "player" || obj2 === "player"){
-                if(this.lgFeatures.playerNumber > 0){
-                    objectNumber = this.lgFeatures.playerNumber;
+            
+            if((obj1 === "player" || obj2 === "player") && this.lgFeatures.playerNumber > 0){
+                objectNumber = this.lgFeatures.playerNumber;
+            }
+            else{
+                while(objectNumber > nObjects && objectNumber - minObjects > 0){
+                    objectNumber -= minObjects;
                 }
             }
-
             for (var j = 0; j < objectNumber; j++){
                 var index = this.GetInsertionLocation(ruleAnalyzer, obj1, obj1LayerMask, _level, emptySpaces);
                 var position = emptySpaces[index];
                 emptySpaces.splice(index, 1);
-                _level.dat[position] = _level.dat[position] | state.objectMasks[obj1];
-                if(ruleAnalyzer.winRules[i] === "no"){
-                    _level.dat[position] = _level.dat[position] | state.objectMasks[obj2];
+                var isCreated = ruleAnalyzer.objectBehaviour[obj1] & pslg.ObjectBehaviour.CREATE;
+                if(isCreated === 0){
+                    _level.dat[position] = _level.dat[position] | state.objectMasks[obj1];
+                    nObjects -= 1;
                 }
-                else{
-                    index = this.GetInsertionLocation(ruleAnalyzer, obj2, obj2LayerMask, _level, emptySpaces);
-                    position = emptySpaces[index];
-                    emptySpaces.splice(index, 1);
-                    _level.dat[position] = _level.dat[position] | state.objectMasks[obj2];
+                var isCreated = ruleAnalyzer.objectBehaviour[obj2] & pslg.ObjectBehaviour.CREATE;
+                if(isCreated === 0){
+                    if(ruleAnalyzer.winRules[i] === "no"){
+                        _level.dat[position] = _level.dat[position] | state.objectMasks[obj2];
+                    }
+                    else{
+                        index = this.GetInsertionLocation(ruleAnalyzer, obj2, obj2LayerMask, _level, emptySpaces);
+                        position = emptySpaces[index];
+                        emptySpaces.splice(index, 1);
+                        _level.dat[position] = _level.dat[position] | state.objectMasks[obj2];
+                    }
+                    nObjects -= 1;
                 }
             }
             delete criticalObjects[obj1];
             delete criticalObjects[obj2];
             delete ruleObjects[obj1];
             delete ruleObjects[obj2];
-
-            nObjects -= 2 * objectNumber;
         }
         
         var noMorePlayer = false;
@@ -251,7 +259,15 @@ this.pslg = this.pslg||{};
                     noMorePlayer = true;
                 }
             }
-
+            var isCreated = ruleAnalyzer.objectBehaviour[obj] & pslg.ObjectBehaviour.CREATE;
+            if(isCreated !== 0){
+                objectNumber = 0;
+            }
+            
+            while(objectNumber > nObjects && objectNumber - minObjects > 0){
+                objectNumber -= minObjects;
+            }
+            
             for (var j = 0; j < objectNumber; j++){
                 var index = this.GetInsertionLocation(ruleAnalyzer, obj, state.layerMasks[state.objects[obj].layer], _level, emptySpaces);
                 var position = emptySpaces[index];
@@ -265,7 +281,7 @@ this.pslg = this.pslg||{};
             nObjects -= objectNumber;
         }
 
-        //console.log("level: " + l.toString() + ", with Difficult: " + dl.toString() + ", with nObjects: " + nObjects.toString());
+        //console.log("level: " + _level.dat.toString() + ", with Difficult: " + dl.toString() + ", with nObjects: " + nObjects.toString());
         // Generate the rest of the objects in the scene
         while(nObjects > 0){
             var randomValue = Math.random();
@@ -288,6 +304,11 @@ this.pslg = this.pslg||{};
                         }
                         break;
                     }
+                }
+                
+                var isCreated = ruleAnalyzer.objectBehaviour[obj] & pslg.ObjectBehaviour.CREATE;
+                if(isCreated !== 0){
+                    objectNumber = 0;
                 }
                 
                 while(objectNumber > nObjects && objectNumber - minObjects > 0){
@@ -326,6 +347,11 @@ this.pslg = this.pslg||{};
                     }
                 }
                 
+                var isCreated = ruleAnalyzer.objectBehaviour[obj] & pslg.ObjectBehaviour.CREATE;
+                if(isCreated !== 0){
+                    objectNumber = 0;
+                }
+                
                 while(objectNumber > nObjects && objectNumber - minObjects > 0){
                     objectNumber -= minObjects;
                 }
@@ -346,6 +372,11 @@ this.pslg = this.pslg||{};
                 var obj = ruleAnalyzer.solidObjects.rand();
                 minObjects = 1;
                 objectNumber = this.GetObjectNumber(dl, minObjects);
+                
+                var isCreated = ruleAnalyzer.objectBehaviour[obj] & pslg.ObjectBehaviour.CREATE;
+                if(isCreated !== 0){
+                    objectNumber = 0;
+                }
                 
                 while(objectNumber > nObjects && objectNumber - minObjects > 0){
                     objectNumber -= minObjects;

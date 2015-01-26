@@ -31,13 +31,16 @@ this.pslg = this.pslg||{};
     }
     
     function GetAverageSolutionLength(dl, totalDiffLevels){
-        var value = 0;
+        var maxValue = 0;
+        var minValue = 0;
         for (var i = 0; i <= dl; i++) {
             var max = GetTrapeziumFunctionValue(dl, totalDiffLevels / 2, totalDiffLevels / 2, 7, 2);
-            value += max;
+            var min = GetTrapeziumFunctionValue(dl, totalDiffLevels / 2, totalDiffLevels / 2, 4, 1);
+            maxValue += max;
+            minValue += min;
         }
         
-        return value;
+        return (maxValue + minValue) / 2;
     }
     
     function GetTrapeziumFunctionValue(x, hatPoint1, hatPoint2, maxValue, minValue){
@@ -57,14 +60,14 @@ this.pslg = this.pslg||{};
     function RandomSolverScore(win, dl, length){
         if(win){
             if(length > 0){
-                return -Math.min(1, (dl + 1) / length);
+                return 1 - Math.min(1, (dl + 1) / length);
             }
-            return -1;
+            return 0;
         }
-        return 0;
+        return 1;
     }
     
-    function SolutionLengthScore(dl, diff, totalDiffLevels){
+    function SolutionDiffLengthScore(dl, diff, totalDiffLevels){
         var min = GetTrapeziumFunctionValue(dl, totalDiffLevels / 2, totalDiffLevels / 2, 4, 1);
         var max = GetTrapeziumFunctionValue(dl, totalDiffLevels / 2, totalDiffLevels / 2, 7, 2);
         
@@ -73,7 +76,7 @@ this.pslg = this.pslg||{};
             min = GetTrapeziumFunctionValue(dl, totalDiffLevels, totalDiffLevels, 2, 1);
             value = -GetTrapeziumFunctionValue(Math.abs(diff), min, 10000, 1, 0);
         }
-        
+        value = (value + 1) / 2;
         return value;
     }
     
@@ -82,12 +85,8 @@ this.pslg = this.pslg||{};
     }
     
     function SolutionComplexityScore(solution, analysisDegree){
-        if(differentCombinations.length === 0){
-            differentCombinations = pslg.differentCombinations;
-        }
-        
         if(solution.length === 0){
-            return -1;
+            return 0;
         }
         
         analysisDegree = Math.min(analysisDegree, 4);
@@ -112,7 +111,7 @@ this.pslg = this.pslg||{};
             analysisScore[i - 1] /= 2 * (repeatingAmount.length - 1) * solution.length / repeatingAmount.length;
         }
         
-        return -analysisScore.avg();
+        return 1 - analysisScore.avg();
     }
     
     function ExplorationScore(win, iterations, maxIterations){
@@ -143,15 +142,15 @@ this.pslg = this.pslg||{};
         if (total === 0){
             total = 1;
         }
-        chromosome.genes[chromosome.genes.length - 1] /= total;
-        chromosome.genes[chromosome.genes.length - 2] /= total;
+        chromosome.genes[chromosome.genes.length - 1] = Number((chromosome.genes[chromosome.genes.length - 1] / total).toPrecision(5));
+        chromosome.genes[chromosome.genes.length - 2] = Number((chromosome.genes[chromosome.genes.length - 2] / total).toPrecision(5));
     }
     
     function ParameterEvolutionInitialize(chromosome, initialData){
         chromosome.genes = [];
         chromosome.fitness = undefined;
         
-        chromosome.genes.push(ParameterEvolutionRandomValue(i, 0));
+        chromosome.genes.push(ParameterEvolutionRandomValue(0, 0));
         for (var i = 1; i < 6; i++) {
             chromosome.genes.push(ParameterEvolutionRandomValue(i, chromosome.genes[i - 1]));
         }
@@ -201,6 +200,7 @@ this.pslg = this.pslg||{};
         state.levels = levelGenerator.GenerateLevels(ruleAnalyzer, state);
         
         var randomFitness = [];
+        var solutionDiffLengthScore = [];
         var solutionLengthScore = [];
         var solutionComplexityScore = [];
         var explorationScore = [];
@@ -209,14 +209,15 @@ this.pslg = this.pslg||{};
         for(var i = 0; i < state.levels.length; i++){
             var dl = Math.floor(i / pslg.LevelGenerator.numberOfLevelsPerDifficulty);
             loadLevelFromState(state, i);
-            console.log("\t\tSolving level " + (i + 1).toString());
+            //console.log("\t\tSolving level " + (i + 1).toString());
             var result = bestfs(state.levels[i].dat, maxIterations);
             loadLevelFromState(state, i);
             var randomResult = randomSolver(state.levels[i].dat, maxIterations);
             solvedLevelScore += result[0];
             
             randomFitness.push(RandomSolverScore(randomResult[0] === 1, dl, randomResult[1].length));
-            solutionLengthScore.push(SolutionLengthScore(dl, result[1].length - previousSolutionLength, totalDifficulties));
+            solutionDiffLengthScore.push(SolutionDiffLengthScore(dl, result[1].length - previousSolutionLength, totalDifficulties));
+            solutionLengthScore.push(SolutionDiffLengthScore(dl, result[1].length - GetAverageSolutionLength(dl, totalDifficulties), totalDifficulties));
             solutionComplexityScore.push(SolutionComplexityScore(result[1], 3));
             explorationScore.push(ExplorationScore(result[0] === 1, result[2], maxIterations));
             
@@ -225,7 +226,43 @@ this.pslg = this.pslg||{};
         
         solvedLevelScore = SolvedLevelsScore(solvedLevelScore, totalDifficulties);
         
-        chromosome.fitness = solvedLevelScore + randomFitness.avg() + solutionLengthScore.avg() + solutionComplexityScore.avg() + explorationScore.avg() + 2;
+        var fitness = solvedLevelScore + randomFitness.avg() + (0.8 * solutionLengthScore.avg() + 0.2 * solutionDiffLengthScore.avg()) + solutionComplexityScore.avg() + explorationScore.avg();
+        if(chromosome.fitnessArray === undefined){
+            chromosome.fitnessArray = [];
+        }
+        chromosome.fitnessArray.push(fitness);
+        chromosome.fitness = chromosome.fitnessArray.avg();
+    }
+    
+    function ParallelParameterEvolutionFinishFunction(bestSolutions){
+        disableIO = false;
+        
+        console.log("Best Parameters: " + bestSolutions[0].genes + " with Best Fitness: " + bestSolutions[0].fitness);
+            
+        var levelGenerator = new pslg.LevelGenerator(new pslg.LGFeatures(bestSolutions[0].genes));
+        state.levels = levelGenerator.GenerateLevels(pslg.ruleAnalyzer, pslg.state);
+    }
+    
+    function ParallelParameterEvolutionFitness(chromosomes, nextPopulation){
+        var parallel = new Parallel(chromosomes, { env: {state: pslg.state, ruleAnalyzer: pslg.ruleAnalyzer, 
+            differentCombinations: differentCombinations, levelOutline: pslg.LevelGenerator.levelsOutline}, 
+            evalPath: 'js/eval.js'});
+        parallel.require('ruleAnalyzer.js', 'levelGenerator.js', 'geneticFunctions.js', 'globalVariables.js', 'engine.js', 
+            'simulator.js', 'helper.js')
+            .map(function(chromosome){
+                    pslg.state = global.env.state;
+                    pslg.ruleAnalyzer = global.env.ruleAnalyzer;
+                    pslg.ruleAnalyzer.CheckCriticalObject = pslg.RuleAnalyzer.prototype.CheckCriticalObject;
+                    pslg.differentCombinations = global.env.differentCombinations;
+                    pslg.LevelGenerator.levelsOutline = global.env.levelOutline;
+                    pslg.LevelGenerator.Initialize(pslg.state.objectMasks);
+                    pslg.LevelGenerator.numberOfLevelsPerDifficulty = 1;
+                    state = global.env.state;
+                    disableIO = true;
+                    pslg.ParameterEvolutionCalculateFitness(chromosome);
+                    console.log("\tChromosome number: " + (chromosome.id + 1).toString() + " Fitness Score: " + chromosome.fitness.toString());
+                    return chromosome;
+            }).then(nextPopulation);
     }
     
     function LevelEvolutionRandomValue(lgFeature){
@@ -423,11 +460,11 @@ this.pslg = this.pslg||{};
         var randomResult = randomSolver(state.levels[0].dat, maxIterations);
 
         var randomFitness = RandomSolverScore(randomResult[0] === 1, chromosome.dl, randomResult[1].length);
-        var solutionLengthScore = SolutionLengthScore(chromosome.dl, result[1].length - previousSolutionLength, totalDifficulties);
+        var solutionLengthScore = SolutionDiffLengthScore(chromosome.dl, result[1].length - previousSolutionLength, totalDifficulties);
         var solutionComplexityScore = SolutionComplexityScore(result[1], 3);
         var explorationScore = ExplorationScore(result[0] === 1, result[2], maxIterations);
         
-        chromosome.fitness = result[0] + randomFitness + solutionLengthScore + solutionComplexityScore + explorationScore + 2;
+        chromosome.fitness = result[0] + randomFitness + solutionLengthScore + solutionComplexityScore + explorationScore;
     }
     
     function ParallelLevelEvolutionFinishFunction(bestSolutions){
@@ -439,9 +476,10 @@ this.pslg = this.pslg||{};
     
     function ParallelLevelEvolutionFitness(chromosomes, nextPopulation){
         var parallel = new Parallel(chromosomes, { env: {state: pslg.state, ruleAnalyzer: pslg.ruleAnalyzer, 
-            differentCombinations: differentCombinations, Fitness: pslg.LevelEvolutionCalculateFitness}, 
+            differentCombinations: differentCombinations}, 
             evalPath: 'js/eval.js'});
-        parallel.require('geneticFunctions.js', 'globalVariables.js', 'engine.js', 'simulator.js', 'helper.js')
+        parallel.require('geneticFunctions.js', 'globalVariables.js', 'engine.js', 
+            'simulator.js', 'helper.js')
             .map(function(chromosome){
                     pslg.state = global.env.state;
                     pslg.ruleAnalyzer = global.env.ruleAnalyzer;
@@ -479,5 +517,8 @@ this.pslg = this.pslg||{};
     pslg.ParameterEvolutionCrossOver = ParameterEvolutionCrossOver;
     pslg.ParameterEvolutionMutation = ParameterEvolutionMutation;
     pslg.ParameterEvolutionCalculateFitness = ParameterEvolutionCalculateFitness;
+    
+    pslg.ParallelParameterEvolutionFitness = ParallelParameterEvolutionFitness;
+    pslg.ParallelParameterEvolutionFinishFunction = ParallelParameterEvolutionFinishFunction;
 }());
 

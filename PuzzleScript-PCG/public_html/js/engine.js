@@ -177,7 +177,7 @@ function unloadGame() {
 	};
 	generateTitleScreen();
 	tempCanvasResize();
-        tempRedraw()();
+        tempRedraw();
 }
 
 function generateTitleScreen()
@@ -267,6 +267,17 @@ var introstate = {
 };
 
 var state = introstate;
+
+function deepCloneLevel(level){
+    var clonedLevel = {
+        dat: level.dat.clone(),
+        layerCount:level.layerCount,
+        lineNumber:level.lineNumber,
+        h: level.h,
+        w: level.w
+    };
+    return clonedLevel;
+}
 
 function deepClone(item) {
     if (!item) { return item; } // null, undefined values check

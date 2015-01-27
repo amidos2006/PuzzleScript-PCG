@@ -179,7 +179,8 @@ function bestfs(startState, maxIterations_) {
     opened[open[0].toString()] = true;
 
     var iteration = 0;
-    var maxIterations = maxIterations_ ? maxIterations_ : 1500;
+//    var maxIterations = maxIterations_ ? maxIterations_ : 1500;
+    var maxIterations = maxIterations_;
     var bestSolution = [];
     var bestScore = open[1];
 

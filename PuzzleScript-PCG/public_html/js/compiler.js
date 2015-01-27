@@ -2416,7 +2416,7 @@ function compile(command,text) {
 	setGameState(state,command);
         
         //My Code
-        var test = 1;
+        var test = 0;
         var ruleAnalyzer = new pslg.RuleAnalyzer();
         ruleAnalyzer.Initialize(state);
 
@@ -2432,20 +2432,18 @@ function compile(command,text) {
         pslg.totalDifficulties =  pslg.LevelGenerator.levelsOutline.length;
         
         if(test === 0){
-            //lava game 0.23500,1,0.50182,0.41498,NaN,NaN
-            //microban Best Parameters: 0.12461,1,0.46,0.046618,0.48850090380260464,0.12441373119198418 with Best Fitness: 3.9243630975153447
-            var fitnessArray = [];
-            disableIO = true;
-            for (var i = 0; i < 1000; i++) {
-                console.log("Run: " + (i + 1).toString());
-                var chromosome = {genes: [0.12461,1,0.46,0.046618,0.48850090380260464,0.12441373119198418], fitness: undefined};
-                pslg.ParameterEvolutionCalculateFitness(chromosome);
-                fitnessArray.push(chromosome.fitness);
-            }
-            disableIO = false;
-            console.log("Average: " + fitnessArray.avg() + " ,Min: " + fitnessArray.min() + " ,Max: " + fitnessArray.max() + " ,SD: " + fitnessArray.sd());
-            
-            var levelGenerator = new pslg.LevelGenerator(new pslg.LGFeatures([0.5,1,0.46,0.046618,0.48850090380260464,0.12441373119198418]));
+//            var fitnessArray = [];
+//            disableIO = true;
+//            for (var i = 0; i < 1000; i++) {
+//                console.log("Run: " + (i + 1).toString());
+//                var chromosome = {genes: [0.35981,0,0.99535,0.061575,0.38389,0.34191], fitness: undefined};
+//                pslg.ParameterEvolutionCalculateFitness(chromosome);
+//                fitnessArray.push(chromosome.fitness);
+//            }
+//            disableIO = false;
+//            console.log("Average: " + fitnessArray.avg() + " ,Min: " + fitnessArray.min() + " ,Max: " + fitnessArray.max() + " ,SD: " + fitnessArray.sd());
+//            
+            var levelGenerator = new pslg.LevelGenerator(new pslg.LGFeatures([0.51437,3,0.27738,0.22201,0.37059,0.58548]));
             state.levels = levelGenerator.GenerateLevels(ruleAnalyzer, state);
         }
         else if(test === 1){

@@ -126,11 +126,11 @@ this.pslg = this.pslg||{};
             case 0:
                 return Number((Math.random() * 0.6 + 0.2).toPrecision(5));
             case 1:
-                return Math.randomInt(4);
+                return Math.randomInt(3) + 1;
             case 2:
-                return Number((Math.random() * 0.75 + 0.25).toPrecision(5));
+                return Number((Math.random() * 0.25 + 0.25).toPrecision(5));
             case 3:
-                return Number((Math.random() * 0.5).toPrecision(5));
+                return Number((Math.random() * 0.25).toPrecision(5));
             case 4:
                 return Number((Math.random() * 0.5 + 0.2).toPrecision(5));
         }
@@ -218,7 +218,7 @@ this.pslg = this.pslg||{};
             randomFitness.push(RandomSolverScore(randomResult[0] === 1, dl, randomResult[1].length));
             solutionDiffLengthScore.push(SolutionDiffLengthScore(dl, result[1].length - previousSolutionLength, totalDifficulties));
             solutionLengthScore.push(SolutionDiffLengthScore(dl, result[1].length - GetAverageSolutionLength(dl, totalDifficulties), totalDifficulties));
-            solutionComplexityScore.push(SolutionComplexityScore(result[1], 3));
+            solutionComplexityScore.push(SolutionComplexityScore(result[1], 2));
             explorationScore.push(ExplorationScore(result[0] === 1, result[2], maxIterations));
             
             previousSolutionLength = result[1].length;
@@ -461,7 +461,7 @@ this.pslg = this.pslg||{};
 
         var randomFitness = RandomSolverScore(randomResult[0] === 1, chromosome.dl, randomResult[1].length);
         var solutionLengthScore = SolutionDiffLengthScore(chromosome.dl, result[1].length - previousSolutionLength, totalDifficulties);
-        var solutionComplexityScore = SolutionComplexityScore(result[1], 3);
+        var solutionComplexityScore = SolutionComplexityScore(result[1], 2);
         var explorationScore = ExplorationScore(result[0] === 1, result[2], maxIterations);
         
         chromosome.fitness = result[0] + randomFitness + solutionLengthScore + solutionComplexityScore + explorationScore;

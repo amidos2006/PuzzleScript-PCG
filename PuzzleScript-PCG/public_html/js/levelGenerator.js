@@ -119,6 +119,12 @@ this.pslg = this.pslg||{};
                     bestIndex = i;
                     bestValue = currentValue;
                 }
+                else if(currentValue === bestValue){
+                    var randomNumber = Math.random();
+                    if(randomNumber < 0.5){
+                        bestIndex = i;
+                    }
+                }
             }
             else{
                 break;

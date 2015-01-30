@@ -121,39 +121,66 @@ this.pslg = this.pslg||{};
         return iterations / maxIterations;
     }
     
-    function ParameterEvolutionRandomValue(index, pregene){
+    function NumberOfObjects(state, ruleAnalyzer){
+        var totalObjects = Object.keys(ruleAnalyzer.minNumberObjects);
+        var currentObjects = 0;
+        for (var i = 0; i < state.levels.length; i++) {
+            var curLevel = state.levels[i].dat;
+            var element = 0;
+            for (var j = 0; j < curLevel.length; j++) {
+                for (var k = 0; k < totalObjects.length; k++) {
+                    var mask = state.objectMasks[totalObjects[k]];
+                    var result = curLevel[j] & mask;
+                    var isNew = mask & element;
+                    if(result > 0 && isNew === 0){
+                        element |= mask;
+                        currentObjects += 1;
+                    }
+                }
+            }
+        }
+        
+        return currentObjects / (state.levels.length * totalObjects.length);
+    }
+    
+    function ParameterEvolutionRandomValue(index){
         switch(index){
             case 0:
                 return Number((Math.random() * 0.6 + 0.2).toPrecision(5));
             case 1:
                 return Math.randomInt(3) + 1;
             case 2:
-                return Number((Math.random() * 0.25 + 0.25).toPrecision(5));
-            case 3:
                 return Number((Math.random() * 0.25).toPrecision(5));
+            case 3:
+                return Number((Math.random()).toPrecision(5));
             case 4:
-                return Number((Math.random() * 0.5 + 0.2).toPrecision(5));
+                return Number((Math.random() * 0.8).toPrecision(5));
+            case 5:
+                return Number((Math.random() * 0.3).toPrecision(5));
         }
-        return Number((Math.random() * (1 - pregene)).toPrecision(5));
+        
+        return Number((Math.random() * 0.1).toPrecision(5));
     }
     
-    function ParameterEvolutionFixProbabilites(chromosome, thirdProbability){
-        var total = chromosome.genes[chromosome.genes.length - 1] + chromosome.genes[chromosome.genes.length - 2] + thirdProbability;
+    function ParameterEvolutionFixProbabilites(chromosome, lastProbability){
+        var total = chromosome.genes[chromosome.genes.length - 1] + chromosome.genes[chromosome.genes.length - 2] + chromosome.genes[chromosome.genes.length - 3] + lastProbability;
         if (total === 0){
             total = 1;
         }
         chromosome.genes[chromosome.genes.length - 1] = Number((chromosome.genes[chromosome.genes.length - 1] / total).toPrecision(5));
         chromosome.genes[chromosome.genes.length - 2] = Number((chromosome.genes[chromosome.genes.length - 2] / total).toPrecision(5));
+        chromosome.genes[chromosome.genes.length - 3] = Number((chromosome.genes[chromosome.genes.length - 3] / total).toPrecision(5));
     }
     
     function ParameterEvolutionInitialize(chromosome, initialData){
         chromosome.genes = [];
         chromosome.fitness = undefined;
         
-        chromosome.genes.push(ParameterEvolutionRandomValue(0, 0));
-        for (var i = 1; i < 6; i++) {
-            chromosome.genes.push(ParameterEvolutionRandomValue(i, chromosome.genes[i - 1]));
+        for (var i = 0; i < 6; i++) {
+            chromosome.genes.push(ParameterEvolutionRandomValue(i));
         }
+        
+        ParameterEvolutionFixProbabilites(chromosome, ParameterEvolutionRandomValue(6));
     }
     
     function ParameterEvolutionCrossOver(child1, child2, chromosome1, chromosome2){
@@ -170,24 +197,19 @@ this.pslg = this.pslg||{};
             }
         }
         
-        var thirdProbability = 1 - chromosome1.genes[chromosome1.genes.length - 1] - chromosome1.genes[chromosome1.genes.length - 2];
-        ParameterEvolutionFixProbabilites(child2, thirdProbability);
-        thirdProbability = 1 - chromosome2.genes[chromosome2.genes.length - 1] - chromosome2.genes[chromosome2.genes.length - 2];
-        ParameterEvolutionFixProbabilites(child1, thirdProbability);
+        var lastProbability = 1 - chromosome1.genes[chromosome1.genes.length - 1] - chromosome1.genes[chromosome1.genes.length - 2] - chromosome1.genes[chromosome1.genes.length - 3];
+        ParameterEvolutionFixProbabilites(child2, lastProbability);
+        lastProbability = 1 - chromosome2.genes[chromosome2.genes.length - 1] - chromosome2.genes[chromosome2.genes.length - 2] - chromosome2.genes[chromosome2.genes.length - 3];
+        ParameterEvolutionFixProbabilites(child1, lastProbability);
     }
     
     function ParameterEvolutionMutation(newChromosome, chromosome){
         newChromosome.genes = chromosome.genes.clone();
         var randomIndex = Math.randomInt(chromosome.genes.length);
-        if(randomIndex > 0){
-            newChromosome.genes[randomIndex] = ParameterEvolutionRandomValue(randomIndex, newChromosome.genes[randomIndex - 1]);
-        }
-        else{
-            newChromosome.genes[randomIndex] = ParameterEvolutionRandomValue(randomIndex, 0);
-        }
+        newChromosome.genes[randomIndex] = ParameterEvolutionRandomValue(randomIndex);
         
-        var thirdProbability = 1 - chromosome.genes[chromosome.genes.length - 1] - chromosome.genes[chromosome.genes.length - 2];
-        ParameterEvolutionFixProbabilites(newChromosome, thirdProbability);
+        var lastProbability = 1 - chromosome.genes[chromosome.genes.length - 1] - chromosome.genes[chromosome.genes.length - 2] - chromosome.genes[chromosome.genes.length - 3];
+        ParameterEvolutionFixProbabilites(newChromosome, lastProbability);
     }
     
     function ParameterEvolutionCalculateFitness(chromosome){
@@ -206,6 +228,7 @@ this.pslg = this.pslg||{};
         var explorationScore = [];
         var previousSolutionLength = 0;
         var solvedLevelScore = 0;
+        var objectNumberScore = NumberOfObjects(state, ruleAnalyzer);
         for(var i = 0; i < state.levels.length; i++){
             var dl = Math.floor(i / pslg.LevelGenerator.numberOfLevelsPerDifficulty);
             loadLevelFromState(state, i);
@@ -226,7 +249,7 @@ this.pslg = this.pslg||{};
         
         solvedLevelScore = SolvedLevelsScore(solvedLevelScore, totalDifficulties);
         
-        var fitness = solvedLevelScore + randomFitness.avg() + (0.8 * solutionLengthScore.avg() + 0.2 * solutionDiffLengthScore.avg()) + solutionComplexityScore.avg() + explorationScore.avg();
+        var fitness = solvedLevelScore + randomFitness.avg() + (0.8 * solutionLengthScore.avg() + 0.2 * solutionDiffLengthScore.avg()) + solutionComplexityScore.avg() + explorationScore.avg() + objectNumberScore;
         if(chromosome.fitnessArray === undefined){
             chromosome.fitnessArray = [];
         }
@@ -443,6 +466,7 @@ this.pslg = this.pslg||{};
     
     function LevelEvolutionCalculateFitness(chromosome){
         var state = pslg.state;
+        var ruleAnalyzer = pslg.ruleAnalyzer;
         var totalDifficulties = pslg.totalDifficulties;
         var maxIterations = pslg.maxIterations;
         
@@ -452,6 +476,7 @@ this.pslg = this.pslg||{};
         
         state.levels = [chromosome.level];
         var previousSolutionLength = GetAverageSolutionLength(chromosome.dl, totalDifficulties);
+        var objectNumberScore = NumberOfObjects(state, ruleAnalyzer);
         
         loadLevelFromState(state, 0);
         console.log("\t\tSolving level with difficulty" + (chromosome.dl + 1).toString());
@@ -464,7 +489,7 @@ this.pslg = this.pslg||{};
         var solutionComplexityScore = SolutionComplexityScore(result[1], 2);
         var explorationScore = ExplorationScore(result[0] === 1, result[2], maxIterations);
         
-        chromosome.fitness = result[0] + randomFitness + solutionLengthScore + solutionComplexityScore + explorationScore;
+        chromosome.fitness = result[0] + randomFitness + solutionLengthScore + solutionComplexityScore + explorationScore + objectNumberScore;
     }
     
     function ParallelLevelEvolutionFinishFunction(bestSolutions){

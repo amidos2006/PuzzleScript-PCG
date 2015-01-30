@@ -2416,7 +2416,7 @@ function compile(command,text) {
 	setGameState(state,command);
         
         //My Code
-        var test = 0;
+        var test = 1;
         var ruleAnalyzer = new pslg.RuleAnalyzer();
         ruleAnalyzer.Initialize(state);
 
@@ -2443,7 +2443,7 @@ function compile(command,text) {
 //            disableIO = false;
 //            console.log("Average: " + fitnessArray.avg() + " ,Min: " + fitnessArray.min() + " ,Max: " + fitnessArray.max() + " ,SD: " + fitnessArray.sd());
 //            
-            var levelGenerator = new pslg.LevelGenerator(new pslg.LGFeatures([0.51437,3,0.27738,0.22201,0.37059,0.58548]));
+            var levelGenerator = new pslg.LevelGenerator(new pslg.LGFeatures([0.51437,1,0.22201, 0.37059, 0.58548, 0.9]));
             state.levels = levelGenerator.GenerateLevels(ruleAnalyzer, state);
         }
         else if(test === 1){

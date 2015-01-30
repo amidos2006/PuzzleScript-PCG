@@ -295,6 +295,7 @@ this.pslg = this.pslg||{};
             var layer = engineState.collisionLayers[i];
             var tempSolidObjects = [];
             var impLayer = false;
+            var hasMovableObject = false;
             
             for(j=0; j < layer.length; j++){
                 var obj = layer[j];
@@ -306,10 +307,19 @@ this.pslg = this.pslg||{};
                 else{
                     impLayer = true;
                 }
+                
+                var isMovable = this.objectBehaviour[obj] & ObjectBehaviour.GetMovingMask();
+                if(isMovable > 0){
+                    hasMovableObject = true;
+                }
             }
             
             if(impLayer && tempSolidObjects.length > 0){
                 this.solidObjects.push(tempSolidObjects[0]);
+                this.minNumberObjects[tempSolidObjects[0]] = 1;
+                if(hasMovableObject){
+                    this.objectBehaviour[tempSolidObjects[0]] = ObjectBehaviour.GetMovingMask();
+                }
             }
         }
         
@@ -317,7 +327,12 @@ this.pslg = this.pslg||{};
         for(var obj in this.minNumberObjects){
             var hasCreateRule = this.objectBehaviour[obj] & ObjectBehaviour.CREATE;
             if(hasCreateRule > 0){
-                this.minNumberObjects[obj] = 1;
+                if(this.minNumberObjects[obj] > 1){
+                    this.minNumberObjects[obj] = 1;
+                }
+                else{
+                    this.minNumberObjects[obj] = 0;
+                }
             }
         }
     };

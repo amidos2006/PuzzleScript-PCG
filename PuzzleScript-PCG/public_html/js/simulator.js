@@ -256,6 +256,13 @@ function bestfs(startState, maxIterations_) {
     return [1 - bestScore, bestSolution, iteration];
 }
 
+function doNothing(startState){
+    if (isLevelWinning(startState)) {
+        return 1;
+    }
+    return 1 - get_level_score(startState);
+}
+
 function greedy(startState, maxIterations_) {
     var currentNode = undefined;
     var nextNode = [startState, get_level_score(startState), []];

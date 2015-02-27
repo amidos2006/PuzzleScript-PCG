@@ -143,12 +143,58 @@ this.pslg = this.pslg||{};
         return currentObjects / (state.levels.length * totalObjects.length);
     }
     
+    function GetLevelFitness(levels){
+        var state = pslg.state;
+        var ruleAnalyzer = pslg.ruleAnalyzer;
+        var totalDifficulties = pslg.totalDifficulties;
+        var maxIterations = pslg.maxIterations;
+
+        state.levels = levels;
+
+        var randomFitness = [];
+        var solutionDiffLengthScore = [];
+        var solutionLengthScore = [];
+        var solutionComplexityScore = [];
+        var explorationScore = [];
+        var doNothingScore = 0;
+        var previousSolutionLength = 0;
+        var solvedLevelScore = 0;
+        var objectNumberScore = NumberOfObjects(state, ruleAnalyzer);
+        for(var i = 0; i < state.levels.length; i++){
+            var dl = Math.floor(i / pslg.LevelGenerator.numberOfLevelsPerDifficulty);
+            loadLevelFromState(state, i);
+            //console.log("\t\tSolving level " + (i + 1).toString());
+            var result = bestfs(state.levels[i].dat, maxIterations);
+            loadLevelFromState(state, i);
+            var randomResult = randomSolver(state.levels[i].dat, maxIterations);
+            solvedLevelScore += result[0];
+            doNothingScore += doNothing(state.levels[i].dat);
+
+            randomFitness.push(RandomSolverScore(randomResult[0] === 1, dl, randomResult[1].length));
+            solutionDiffLengthScore.push(SolutionDiffLengthScore(dl, result[1].length - previousSolutionLength, totalDifficulties));
+            solutionLengthScore.push(SolutionDiffLengthScore(dl, result[1].length - GetAverageSolutionLength(dl, totalDifficulties), totalDifficulties));
+            solutionComplexityScore.push(SolutionComplexityScore(result[1], 2));
+            explorationScore.push(ExplorationScore(result[0] === 1, result[2], maxIterations));
+
+            previousSolutionLength = result[1].length;
+        }
+
+        solvedLevelScore = SolvedLevelsScore(solvedLevelScore, totalDifficulties);
+        doNothingScore = SolvedLevelsScore(doNothingScore, totalDifficulties);
+
+        var fitness = solvedLevelScore + randomFitness.avg() + (0.8 * solutionLengthScore.avg() + 
+                0.2 * solutionDiffLengthScore.avg()) + solutionComplexityScore.avg() + 
+                explorationScore.avg() + objectNumberScore - doNothingScore;
+
+        return fitness;
+    }
+    
     function ParameterEvolutionRandomValue(index){
         switch(index){
             case 0:
                 return Number((Math.random() * 0.6 + 0.2).toPrecision(5));
             case 1:
-                return Math.randomInt(3) + 1;
+                return 1;
             case 2:
                 return Number((Math.random() * 0.25).toPrecision(5));
             case 3:
@@ -215,82 +261,15 @@ this.pslg = this.pslg||{};
     function ParameterEvolutionCalculateFitness(chromosome){
         var state = pslg.state;
         var ruleAnalyzer = pslg.ruleAnalyzer;
-        var totalDifficulties = pslg.totalDifficulties;
-        var maxIterations = pslg.maxIterations;
         
         var levelGenerator = new pslg.LevelGenerator(new pslg.LGFeatures(chromosome.genes.clone()));
-        state.levels = levelGenerator.GenerateLevels(ruleAnalyzer, state);
+        var fitness = GetLevelFitness(levelGenerator.GenerateLevels(ruleAnalyzer, state));
         
-        var randomFitness = [];
-        var solutionDiffLengthScore = [];
-        var solutionLengthScore = [];
-        var solutionComplexityScore = [];
-        var explorationScore = [];
-        var doNothingScore = 0;
-        var previousSolutionLength = 0;
-        var solvedLevelScore = 0;
-        var objectNumberScore = NumberOfObjects(state, ruleAnalyzer);
-        for(var i = 0; i < state.levels.length; i++){
-            var dl = Math.floor(i / pslg.LevelGenerator.numberOfLevelsPerDifficulty);
-            loadLevelFromState(state, i);
-            //console.log("\t\tSolving level " + (i + 1).toString());
-            var result = bestfs(state.levels[i].dat, maxIterations);
-            loadLevelFromState(state, i);
-            var randomResult = randomSolver(state.levels[i].dat, maxIterations);
-            solvedLevelScore += result[0];
-            doNothingScore += doNothing(state.levels[i].dat);
-            
-            randomFitness.push(RandomSolverScore(randomResult[0] === 1, dl, randomResult[1].length));
-            solutionDiffLengthScore.push(SolutionDiffLengthScore(dl, result[1].length - previousSolutionLength, totalDifficulties));
-            solutionLengthScore.push(SolutionDiffLengthScore(dl, result[1].length - GetAverageSolutionLength(dl, totalDifficulties), totalDifficulties));
-            solutionComplexityScore.push(SolutionComplexityScore(result[1], 2));
-            explorationScore.push(ExplorationScore(result[0] === 1, result[2], maxIterations));
-            
-            previousSolutionLength = result[1].length;
-        }
-        
-        solvedLevelScore = SolvedLevelsScore(solvedLevelScore, totalDifficulties);
-        doNothingScore = SolvedLevelsScore(doNothingScore, totalDifficulties);
-        
-        var fitness = solvedLevelScore + randomFitness.avg() + (0.8 * solutionLengthScore.avg() + 
-                0.2 * solutionDiffLengthScore.avg()) + solutionComplexityScore.avg() + 
-                explorationScore.avg() + objectNumberScore - doNothingScore;
         if(chromosome.fitnessArray === undefined){
             chromosome.fitnessArray = [];
         }
         chromosome.fitnessArray.push(fitness);
         chromosome.fitness = chromosome.fitnessArray.avg();
-    }
-    
-    function ParallelParameterEvolutionFinishFunction(bestSolutions){
-        disableIO = false;
-        
-        console.log("Best Parameters: " + bestSolutions[0].genes + " with Best Fitness: " + bestSolutions[0].fitness);
-            
-        var levelGenerator = new pslg.LevelGenerator(new pslg.LGFeatures(bestSolutions[0].genes));
-        state.levels = levelGenerator.GenerateLevels(pslg.ruleAnalyzer, pslg.state);
-    }
-    
-    function ParallelParameterEvolutionFitness(chromosomes, nextPopulation){
-        var parallel = new Parallel(chromosomes, { env: {state: pslg.state, ruleAnalyzer: pslg.ruleAnalyzer, 
-            differentCombinations: differentCombinations, levelOutline: pslg.LevelGenerator.levelsOutline}, 
-            evalPath: 'js/eval.js'});
-        parallel.require('ruleAnalyzer.js', 'levelGenerator.js', 'geneticFunctions.js', 'globalVariables.js', 'engine.js', 
-            'simulator.js', 'helper.js')
-            .map(function(chromosome){
-                    pslg.state = global.env.state;
-                    pslg.ruleAnalyzer = global.env.ruleAnalyzer;
-                    pslg.ruleAnalyzer.CheckCriticalObject = pslg.RuleAnalyzer.prototype.CheckCriticalObject;
-                    pslg.differentCombinations = global.env.differentCombinations;
-                    pslg.LevelGenerator.levelsOutline = global.env.levelOutline;
-                    pslg.LevelGenerator.Initialize(pslg.state.objectMasks);
-                    pslg.LevelGenerator.numberOfLevelsPerDifficulty = 1;
-                    state = global.env.state;
-                    disableIO = true;
-                    pslg.ParameterEvolutionCalculateFitness(chromosome);
-                    console.log("\tChromosome number: " + (chromosome.id + 1).toString() + " Fitness Score: " + chromosome.fitness.toString());
-                    return chromosome;
-            }).then(nextPopulation);
     }
     
     function LevelEvolutionRandomValue(lgFeature){
@@ -470,59 +449,11 @@ this.pslg = this.pslg||{};
     }
     
     function LevelEvolutionCalculateFitness(chromosome){
-        var state = pslg.state;
-        var ruleAnalyzer = pslg.ruleAnalyzer;
-        var totalDifficulties = pslg.totalDifficulties;
-        var maxIterations = pslg.maxIterations;
-        
         if(this.fitness !== undefined){
             return;
         }
         
-        state.levels = [chromosome.level];
-        var previousSolutionLength = GetAverageSolutionLength(chromosome.dl, totalDifficulties);
-        var objectNumberScore = NumberOfObjects(state, ruleAnalyzer);
-        
-        loadLevelFromState(state, 0);
-        console.log("\t\tSolving level with difficulty" + (chromosome.dl + 1).toString());
-        var result = bestfs(state.levels[0].dat, maxIterations);
-        loadLevelFromState(state, 0);
-        var randomResult = randomSolver(state.levels[0].dat, maxIterations);
-        var doNothingScore = doNothing(state.levels[0].dat);
-
-        var randomFitness = RandomSolverScore(randomResult[0] === 1, chromosome.dl, randomResult[1].length);
-        var solutionLengthScore = SolutionDiffLengthScore(chromosome.dl, result[1].length - previousSolutionLength, totalDifficulties);
-        var solutionComplexityScore = SolutionComplexityScore(result[1], 2);
-        var explorationScore = ExplorationScore(result[0] === 1, result[2], maxIterations);
-        
-        chromosome.fitness = result[0] + randomFitness + solutionLengthScore + 
-                solutionComplexityScore + explorationScore + objectNumberScore -
-                doNothingScore;
-    }
-    
-    function ParallelLevelEvolutionFinishFunction(bestSolutions){
-        disableIO = false;
-        
-        pslg.state.levels = [bestSolutions[0].level];
-        loadLevelFromState(pslg.state, 0);
-    }
-    
-    function ParallelLevelEvolutionFitness(chromosomes, nextPopulation){
-        var parallel = new Parallel(chromosomes, { env: {state: pslg.state, ruleAnalyzer: pslg.ruleAnalyzer, 
-            differentCombinations: differentCombinations}, 
-            evalPath: 'js/eval.js'});
-        parallel.require('geneticFunctions.js', 'globalVariables.js', 'engine.js', 
-            'simulator.js', 'helper.js')
-            .map(function(chromosome){
-                    pslg.state = global.env.state;
-                    pslg.ruleAnalyzer = global.env.ruleAnalyzer;
-                    pslg.differentCombinations = global.env.differentCombinations;
-                    state = global.env.state;
-                    disableIO = true;
-                    pslg.LevelEvolutionCalculateFitness(chromosome);
-                    console.log("\tChromosome number: " + (chromosome.id + 1).toString() + " Fitness Score: " + chromosome.fitness.toString());
-                    return chromosome;
-            }).then(nextPopulation);
+        chromosome.fitness = GetLevelFitness([chromosome.level]);
     }
     
     /////////////////////////////
@@ -543,15 +474,9 @@ this.pslg = this.pslg||{};
     pslg.LevelEvolutionMutation = LevelEvolutionMutation;
     pslg.LevelEvolutionCalculateFitness = LevelEvolutionCalculateFitness;
     
-    pslg.ParallelLevelEvolutionFinishFunction = ParallelLevelEvolutionFinishFunction;
-    pslg.ParallelLevelEvolutionFitness = ParallelLevelEvolutionFitness;
-    
     pslg.ParameterEvolutionInitialize = ParameterEvolutionInitialize;
     pslg.ParameterEvolutionCrossOver = ParameterEvolutionCrossOver;
     pslg.ParameterEvolutionMutation = ParameterEvolutionMutation;
     pslg.ParameterEvolutionCalculateFitness = ParameterEvolutionCalculateFitness;
-    
-    pslg.ParallelParameterEvolutionFitness = ParallelParameterEvolutionFitness;
-    pslg.ParallelParameterEvolutionFinishFunction = ParallelParameterEvolutionFinishFunction;
 }());
 

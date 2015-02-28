@@ -57,16 +57,6 @@ this.pslg = this.pslg||{};
         return minValue;
     }
     
-    function RandomSolverScore(win, dl, length){
-        if(win){
-            if(length > 0){
-                return 1 - Math.min(1, (dl + 1) / length);
-            }
-            return 0;
-        }
-        return 1;
-    }
-    
     function SolutionDiffLengthScore(dl, diff, totalDiffLevels){
         var min = GetTrapeziumFunctionValue(dl, totalDiffLevels / 2, totalDiffLevels / 2, 4, 1);
         var max = GetTrapeziumFunctionValue(dl, totalDiffLevels / 2, totalDiffLevels / 2, 7, 2);
@@ -151,7 +141,6 @@ this.pslg = this.pslg||{};
 
         state.levels = levels;
 
-        var randomFitness = [];
         var solutionDiffLengthScore = [];
         var solutionLengthScore = [];
         var solutionComplexityScore = [];
@@ -165,12 +154,9 @@ this.pslg = this.pslg||{};
             loadLevelFromState(state, i);
             //console.log("\t\tSolving level " + (i + 1).toString());
             var result = bestfs(state.levels[i].dat, maxIterations);
-            loadLevelFromState(state, i);
-            var randomResult = randomSolver(state.levels[i].dat, maxIterations);
             solvedLevelScore += result[0];
             doNothingScore += doNothing(state.levels[i].dat);
 
-            randomFitness.push(RandomSolverScore(randomResult[0] === 1, dl, randomResult[1].length));
             solutionDiffLengthScore.push(SolutionDiffLengthScore(dl, result[1].length - previousSolutionLength, totalDifficulties));
             solutionLengthScore.push(SolutionDiffLengthScore(dl, result[1].length - GetAverageSolutionLength(dl, totalDifficulties), totalDifficulties));
             solutionComplexityScore.push(SolutionComplexityScore(result[1], 2));
@@ -182,8 +168,7 @@ this.pslg = this.pslg||{};
         solvedLevelScore = SolvedLevelsScore(solvedLevelScore, totalDifficulties);
         doNothingScore = SolvedLevelsScore(doNothingScore, totalDifficulties);
 
-        var fitness = (solvedLevelScore - doNothingScore) + 
-                randomFitness.avg() + 
+        var fitness = (solvedLevelScore - doNothingScore) +
                 (0.8 * solutionLengthScore.avg() + 0.2 * solutionDiffLengthScore.avg()) + 
                 solutionComplexityScore.avg() + 
                 explorationScore.avg() + 

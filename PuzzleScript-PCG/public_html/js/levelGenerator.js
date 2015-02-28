@@ -334,6 +334,12 @@ this.pslg = this.pslg||{};
         while(solidNumber > 0){
             var obj = ruleAnalyzer.solidObjects.rand();
             
+            if(!state.objects.hasOwnProperty(obj))
+            {
+                console.log("Error happened because of " + obj + " and the objects length is " + Object.keys(state.objects).length);
+                throw "Error happened because of " + obj + " and the objects length is " + Object.keys(state.objects).length.toString();
+            }
+            
             var index = this.GetInsertionLocation(ruleAnalyzer, obj, state.layerMasks[state.objects[obj].layer], _level, emptySpaces);
             var position = emptySpaces[index];
             emptySpaces.splice(index, 1);

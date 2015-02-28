@@ -182,9 +182,12 @@ this.pslg = this.pslg||{};
         solvedLevelScore = SolvedLevelsScore(solvedLevelScore, totalDifficulties);
         doNothingScore = SolvedLevelsScore(doNothingScore, totalDifficulties);
 
-        var fitness = solvedLevelScore + randomFitness.avg() + (0.8 * solutionLengthScore.avg() + 
-                0.2 * solutionDiffLengthScore.avg()) + solutionComplexityScore.avg() + 
-                explorationScore.avg() + objectNumberScore - doNothingScore;
+        var fitness = (solvedLevelScore - doNothingScore) + 
+                randomFitness.avg() + 
+                (0.8 * solutionLengthScore.avg() + 0.2 * solutionDiffLengthScore.avg()) + 
+                solutionComplexityScore.avg() + 
+                explorationScore.avg() + 
+                objectNumberScore;
 
         return fitness;
     }
@@ -192,7 +195,7 @@ this.pslg = this.pslg||{};
     function ParameterEvolutionRandomValue(index){
         switch(index){
             case 0:
-                return Number((Math.random() * 0.6 + 0.2).toPrecision(5));
+                return Number((Math.random() * 0.7 + 0.2).toPrecision(5));
             case 1:
                 return 1;
             case 2:

@@ -138,6 +138,7 @@ this.pslg = this.pslg||{};
         var ruleAnalyzer = pslg.ruleAnalyzer;
         var totalDifficulties = pslg.totalDifficulties;
         var maxIterations = pslg.maxIterations;
+        var startingDifficulty = pslg.startingDifficulty;
 
         state.levels = levels;
 
@@ -150,7 +151,7 @@ this.pslg = this.pslg||{};
         var solvedLevelScore = 0;
         var objectNumberScore = NumberOfObjects(state, ruleAnalyzer);
         for(var i = 0; i < state.levels.length; i++){
-            var dl = Math.floor(i / pslg.LevelGenerator.numberOfLevelsPerDifficulty);
+            var dl = Math.floor((startingDifficulty + i) / pslg.LevelGenerator.numberOfLevelsPerDifficulty);
             loadLevelFromState(state, i);
             //console.log("\t\tSolving level " + (i + 1).toString());
             var result = bestfs(state.levels[i].dat, maxIterations);
@@ -451,6 +452,7 @@ this.pslg = this.pslg||{};
     pslg.ruleAnalyzer = undefined;
     pslg.maxIterations = 1000;
     pslg.totalDifficulties = 8;
+    pslg.startingDifficulty = 0;
     
     /////////////////////////////
     //  Functions Declaration

@@ -2430,6 +2430,7 @@ function compile(command,text) {
         pslg.state = state;
         pslg.maxIterations = 1000;
         pslg.totalDifficulties =  pslg.LevelGenerator.levelsOutline.length;
+        pslg.startingDifficulty = 0;
         
         if(test === 0){
 //            var fitnessArray = [];

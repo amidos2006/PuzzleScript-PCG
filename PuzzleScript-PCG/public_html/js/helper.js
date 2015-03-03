@@ -150,3 +150,11 @@ Array.prototype.isEqual = function(array){
 Math.randomInt = function(max){
     return Math.floor(Math.random() * max);
 };
+
+Math.getPoint = function(number, height){
+    var point = {};
+    point["x"] = Math.floor(number / height);
+    point["y"] = number % height;
+    
+    return point;
+};

@@ -86,9 +86,12 @@ this.pslg = this.pslg||{};
         return values;
     };
     
-    LevelGenerator.prototype.GetInsertionLocation = function(ruleAnalyzer, obj, layerMask, level, emptySpaces){
-        var bestIndex = -1;
-        var bestValue = 10;
+    LevelGenerator.prototype.GetInsertionLocations = function(ruleAnalyzer, obj, layerMask, level, emptySpaces){
+        var locations = [];
+        for (var i = 0; i < 9; i++) {
+            locations.push([]);
+        }
+        
         for (var i = 0; i < emptySpaces.length; i++) {
             var result = ruleAnalyzer.objectBehaviour[obj] & pslg.ObjectBehaviour.GetMovingMask();
             var currentValue = 0;
@@ -115,24 +118,48 @@ this.pslg = this.pslg||{};
                     currentValue = downRight > 0? currentValue + 1 : currentValue;
                 }
                 
-                if(currentValue < bestValue){
-                    bestIndex = i;
-                    bestValue = currentValue;
-                }
-                else if(currentValue === bestValue){
-                    var randomNumber = Math.random();
-                    if(randomNumber < 0.5){
-                        bestIndex = i;
-                    }
-                }
+                locations[currentValue].push(i);
             }
             else{
+                locations[0].push(i);
+            }
+        }
+        
+        return locations;
+    };
+    
+    LevelGenerator.prototype.GetInsertionLocation = function(ruleAnalyzer, obj, layerMask, level, emptySpaces){
+        var locations = this.GetInsertionLocations(ruleAnalyzer, obj, layerMask, level, emptySpaces);
+        
+        for (var i = 0; i < locations.length; i++) {
+            if(locations[i].length > 0){
+                return locations[i][Math.randomInt(locations[i].length)];
+            }
+        }
+        
+        return 0;
+    };
+    
+    LevelGenerator.prototype.GetFarthestInsertionLocation = function(ruleAnalyzer, obj, layerMask, level, emptySpaces, pos){
+        var locations = this.GetInsertionLocations(ruleAnalyzer, obj, layerMask, level, emptySpaces);
+        var p1 = Math.getPoint(pos, level.h);
+        var currentValue = 0;
+        for (var i = 0; i < locations.length; i++) {
+            if(locations[i].length > 0){
+                currentValue = i;
                 break;
             }
         }
         
-        if(bestIndex < 0){
-            bestIndex = 0;
+        var bestIndex = 0;
+        var bestValue = -1;
+        for (var i = 0; i < locations[currentValue].length; i++) {
+            var p2 = Math.getPoint(emptySpaces[locations[currentValue][i]], level.h);
+            var dist = get_manhattan_distance(p1.x, p1.y, p2.x, p2.y) + Math.randomInt(3);
+            if(dist > bestValue){
+                bestValue = dist;
+                bestIndex = i;
+            }
         }
         
         return bestIndex;
@@ -197,19 +224,33 @@ this.pslg = this.pslg||{};
         var objectNumber = 0;
         var minObjects = 0;
         
-        // Adding player to the play ground
-        var obj1LayerMask = state.layerMasks[state.objects["player"].layer];
-        while(playerNumber > 0){
-            var index = this.GetInsertionLocation(ruleAnalyzer, "player", obj1LayerMask, _level, emptySpaces);
+        // Generate solid Objects
+        while(solidNumber > 0){
+            var obj = ruleAnalyzer.solidObjects.rand();
+            
+            if(!state.objects.hasOwnProperty(obj))
+            {
+                console.log("Error happened because of " + obj + " and the objects length is " + Object.keys(state.objects).length);
+                throw "Error happened because of " + obj + " and the objects length is " + Object.keys(state.objects).length.toString();
+            }
+            
+            var index = this.GetInsertionLocation(ruleAnalyzer, obj, state.layerMasks[state.objects[obj].layer], _level, emptySpaces);
             var position = emptySpaces[index];
             emptySpaces.splice(index, 1);
-            _level.dat[position] = _level.dat[position] | state.objectMasks["player"];
-            playerNumber -= 1;
+            _level.dat[position] = _level.dat[position] | state.objectMasks[obj];
+
+            solidNumber -= 1;
         }
         
         // Adding winning condition objects
         var obj1 = ruleAnalyzer.winObjects[0];
         var obj2 = ruleAnalyzer.winObjects[1];
+        //Make sure the moving object is the first to be placed while static one is the second
+        var result = ruleAnalyzer.objectBehaviour[obj1] & pslg.ObjectBehaviour.GetMovingMask();
+        if(result === 0){
+            obj1 = ruleAnalyzer.winObjects[1];
+            obj2 = ruleAnalyzer.winObjects[0];
+        }
         var obj1LayerMask = state.layerMasks[state.objects[obj1].layer];
         var obj2LayerMask = state.layerMasks[state.objects[obj2].layer];
         minObjects = Math.max(ruleAnalyzer.minNumberObjects[obj1], ruleAnalyzer.minNumberObjects[obj2]);
@@ -226,13 +267,23 @@ this.pslg = this.pslg||{};
                     winNumber -= 1;   
                 }
                 else{
-                    index = this.GetInsertionLocation(ruleAnalyzer, obj2, obj2LayerMask, _level, emptySpaces);
+                    index = this.GetFarthestInsertionLocation(ruleAnalyzer, obj2, obj2LayerMask, _level, emptySpaces, position);
                     position = emptySpaces[index];
                     emptySpaces.splice(index, 1);
                     _level.dat[position] = _level.dat[position] | state.objectMasks[obj2];
                     winNumber -= 1;
                 }
             }
+        }
+        
+        // Adding player to the play ground
+        var obj1LayerMask = state.layerMasks[state.objects["player"].layer];
+        while(playerNumber > 0){
+            var index = this.GetInsertionLocation(ruleAnalyzer, "player", obj1LayerMask, _level, emptySpaces);
+            var position = emptySpaces[index];
+            emptySpaces.splice(index, 1);
+            _level.dat[position] = _level.dat[position] | state.objectMasks["player"];
+            playerNumber -= 1;
         }
         
         //deleting win objects and players so as not to generate them again
@@ -328,24 +379,6 @@ this.pslg = this.pslg||{};
                 objectNumber = 1;
             }
             ruleNumber -= objectNumber;
-        }
-        
-        // Generate solid Objects
-        while(solidNumber > 0){
-            var obj = ruleAnalyzer.solidObjects.rand();
-            
-            if(!state.objects.hasOwnProperty(obj))
-            {
-                console.log("Error happened because of " + obj + " and the objects length is " + Object.keys(state.objects).length);
-                throw "Error happened because of " + obj + " and the objects length is " + Object.keys(state.objects).length.toString();
-            }
-            
-            var index = this.GetInsertionLocation(ruleAnalyzer, obj, state.layerMasks[state.objects[obj].layer], _level, emptySpaces);
-            var position = emptySpaces[index];
-            emptySpaces.splice(index, 1);
-            _level.dat[position] = _level.dat[position] | state.objectMasks[obj];
-
-            solidNumber -= 1;
         }
         
         return _level;

@@ -104,6 +104,21 @@ this.pslg = this.pslg||{};
         return 1 - analysisScore.avg();
     }
     
+    function BoxLineMetricScore(solution){
+        if(solution.length <= 1){
+            return 0;
+        }
+        
+        var different = 0;
+        for (var i = 1; i < solution.length; i++) {
+            if(solution[i] !== solution[i - 1]){
+                different += 1;
+            }
+        }
+        
+        return different / solution.length;
+    }
+    
     function ExplorationScore(win, iterations, maxIterations){
         if(win){
             return 1;
@@ -458,6 +473,15 @@ this.pslg = this.pslg||{};
     //  Functions Declaration
     /////////////////////////////
     pslg.InitializeSoultionAnalysis = InitializeSoultionAnalysis;
+    pslg.GetAverageSolutionLength = GetAverageSolutionLength;
+    pslg.GetTrapeziumFunctionValue = GetTrapeziumFunctionValue;
+    pslg.SolutionDiffLengthScore = SolutionDiffLengthScore;
+    pslg.SolvedLevelsScore = SolvedLevelsScore;
+    pslg.SolutionComplexityScore = SolutionComplexityScore;
+    pslg.BoxLineMetricScore = BoxLineMetricScore;
+    pslg.ExplorationScore = ExplorationScore;
+    pslg.NumberOfObjects = NumberOfObjects;
+    pslg.GetLevelFitness = GetLevelFitness;
     
     pslg.LevelEvolutionInitialize = LevelEvolutionInitialize;
     pslg.LevelEvolutionCrossOver = LevelEvolutionCrossOver;

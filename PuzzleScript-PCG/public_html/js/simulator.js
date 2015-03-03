@@ -179,19 +179,15 @@ function bestfs(startState, maxIterations_) {
     opened[open[0].toString()] = true;
 
     var iteration = 0;
-//    var maxIterations = maxIterations_ ? maxIterations_ : 1500;
+    //var maxIterations = maxIterations_ ? maxIterations_ : 1500;
     var maxIterations = maxIterations_;
     var bestSolution = [];
-    var bestScore = open[1];
+    var bestScore = get_output_score(open[0]);
 
     while (open.length > 0) {
 
         if (iteration >= maxIterations) {
             break;
-        }
-
-        if (iteration % 100 === 0 ) {
-            //console.log("\titeration=" + iteration.toString());
         }
 
         t = open[0];
@@ -235,8 +231,14 @@ function bestfs(startState, maxIterations_) {
             lvl_score = get_level_score(lvl_temp);
 
             u = [lvl_temp, lvl_score, u2];
-            if(lvl_score < bestScore || bestSolution.length === 0){
-                bestScore = lvl_score;
+            
+            var output_score = get_output_score(lvl_temp);
+            if(output_score < bestScore || bestSolution.length === 0){
+                bestScore = output_score;
+                bestSolution = u2;
+            }
+            else if(output_score === bestScore && bestSolution.length < u2.length){
+                bestScore = output_score;
                 bestSolution = u2;
             }
 
@@ -252,7 +254,6 @@ function bestfs(startState, maxIterations_) {
         iteration++;
     }
     
-    //console.log("exhausted!");
     return [1 - bestScore, bestSolution, iteration];
 }
 
@@ -260,7 +261,7 @@ function doNothing(startState){
     if (isLevelWinning(startState)) {
         return 1;
     }
-    return 1 - get_level_score(startState);
+    return 1 - get_output_score(startState);
 }
 
 function greedy(startState, maxIterations_) {
@@ -583,6 +584,67 @@ function get_level_score(leveldat) {
     return score;
 }
 
+function get_output_score(leveldat) {
+    var score = 0.0;
+    var scores = [];
+
+    if (state.winconditions.length>0)  {
+        for (var wcIndex=0;wcIndex<state.winconditions.length;wcIndex++) {
+            var wincondition = state.winconditions[wcIndex];
+            var filter1 = wincondition[1];
+            var filter2 = wincondition[2];
+
+            var indices1 = [];
+            var indices2 = [];
+            var distances = [];
+
+            var conditionScore = 0.0;
+
+            for (var i=0;i<leveldat.length;i++) {
+                var val = leveldat[i];
+                if ( (filter1&val)!==0 ) {
+                        indices1.push(i);
+                }
+                if ( (filter2&val)!==0 ) {
+                        indices2.push(i);
+                }
+            }
+
+            for (var j=0; j<indices1.length;j++) {
+                var dt = [];
+                for (var k=0; k<indices2.length;k++) {
+                    dt.push(get_index_manhattan_distance(indices1[j],indices2[k]));
+                }
+                if (dt.length > 0 ){
+                    distances.push(dt.min());
+                }
+            }
+            
+            var max_manhattan = level.width+level.height;
+            switch(wincondition[0]) {
+                case -1://NO
+                {
+                    conditionScore = 1 - distances.avg()/max_manhattan;
+                    break;
+                }
+                case 0://SOME
+                {
+                    conditionScore = distances.avg()/max_manhattan;
+                    break;
+                }
+                case 1://ALL
+                {
+                    conditionScore = distances.avg()/max_manhattan;
+                    break;
+                }
+            }
+            scores.push(conditionScore);
+        }
+        score=scores.avg();
+    }
+
+    return score;
+}
 
 function simulate_solution(solution, doMakeGIF) {
 	var simulator_action = null;

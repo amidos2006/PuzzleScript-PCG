@@ -120,10 +120,12 @@ this.pslg = this.pslg||{};
     }
     
     function ExplorationScore(win, iterations, maxIterations){
+        var winBonus = 0;
         if(win){
-            return 1;
+            winBonus = 0.5;
         }
-        return iterations / maxIterations;
+        
+        return winBonus + (1 - winBonus) * (iterations / maxIterations);
     }
     
     function NumberOfObjects(state, ruleAnalyzer){
@@ -160,7 +162,7 @@ this.pslg = this.pslg||{};
         var solutionDiffLengthScore = [];
         var solutionLengthScore = [];
         var solutionComplexityScore = [];
-        var explorationScore = [];
+        var boxMetricScore = [];
         var doNothingScore = 0;
         var previousSolutionLength = 0;
         var solvedLevelScore = 0;
@@ -176,7 +178,7 @@ this.pslg = this.pslg||{};
             solutionDiffLengthScore.push(SolutionDiffLengthScore(dl, result[1].length - previousSolutionLength, totalDifficulties));
             solutionLengthScore.push(SolutionDiffLengthScore(dl, result[1].length - GetAverageSolutionLength(dl, totalDifficulties), totalDifficulties));
             solutionComplexityScore.push(SolutionComplexityScore(result[1], 2));
-            explorationScore.push(ExplorationScore(result[0] === 1, result[2], maxIterations));
+            boxMetricScore.push(BoxLineMetricScore(result[1]));
 
             previousSolutionLength = result[1].length;
         }
@@ -187,7 +189,7 @@ this.pslg = this.pslg||{};
         var fitness = (solvedLevelScore - doNothingScore) +
                 (0.8 * solutionLengthScore.avg() + 0.2 * solutionDiffLengthScore.avg()) + 
                 solutionComplexityScore.avg() + 
-                explorationScore.avg() + 
+                boxMetricScore.avg() + 
                 objectNumberScore;
 
         return fitness;

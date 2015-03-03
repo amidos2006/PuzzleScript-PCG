@@ -274,6 +274,8 @@ this.pslg = this.pslg||{};
         if(chromosome.fitnessArray === undefined){
             chromosome.fitnessArray = [];
         }
+        
+        fitness += (chromosome.fitnessArray.length * 1.0) / pslg.GeneticAlgorithm.numberOfGenerations;
         chromosome.fitnessArray.push(fitness);
         chromosome.fitness = chromosome.fitnessArray.avg();
     }

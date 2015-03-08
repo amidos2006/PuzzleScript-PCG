@@ -2229,7 +2229,7 @@ function checkWin() {
 }
 
 function DoWin() {
-	console.log("DoWin(), inputHistory=%s", inputHistory)
+	//console.log("DoWin(), inputHistory=%s", inputHistory)
 	if (winning) {
 		return;
 	}

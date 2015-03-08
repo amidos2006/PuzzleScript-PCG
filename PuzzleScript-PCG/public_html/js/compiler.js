@@ -2433,7 +2433,7 @@ function compile(command,text) {
         pslg.startingDifficulty = 0;
         
         if(test === -1){
-            var levelGenerator = new pslg.LevelGenerator(new pslg.LGFeatures([0.87767,1,0.043181,0.45903,0.085971,0.37598]));
+            var levelGenerator = new pslg.LevelGenerator(new pslg.LGFeatures([0.78288,1,0.19787,0.030318,0.36929,0.41863]));
             state.levels = levelGenerator.GenerateLevels(ruleAnalyzer, state);
         }
         else if(test === 0){
@@ -2461,7 +2461,7 @@ function compile(command,text) {
                 averageLength.push(0);
             }
             
-            var levelGenerator = new pslg.LevelGenerator(new pslg.LGFeatures([0.87767,1,0.043181,0.45903,0.085971,0.37598]));
+            var levelGenerator = new pslg.LevelGenerator(new pslg.LGFeatures([0.28662,1,0.18865,0.77056,0.14444,0.064056]));
             for (var i = 0; i < 1000; i++) {
                 console.log("Trial Number: " + i);
                 state.levels = levelGenerator.GenerateLevels(ruleAnalyzer, state);
@@ -2555,12 +2555,13 @@ function compile(command,text) {
             pslg.GeneticAlgorithm.numberOfGenerations = 100;
             pslg.GeneticAlgorithm.populationSize = 50;
             pslg.GeneticAlgorithm.sdError = 0;
-            pslg.GeneticAlgorithm.crossoverRate = 0.6;
+            pslg.GeneticAlgorithm.crossoverRate = 0.7;
             pslg.GeneticAlgorithm.mutationRate = 0.1;
-            pslg.GeneticAlgorithm.elitismRatio = 0.2;
+            pslg.GeneticAlgorithm.elitismRatio = 0;
 
             var initialData = {};
             initialData["Initialize"] = pslg.ParameterEvolutionInitialize;
+            initialData["Clone"] = pslg.ParameterEvolutionClone;
             initialData["CrossOver"] = pslg.ParameterEvolutionCrossOver;
             initialData["Mutation"] = pslg.ParameterEvolutionMutation;
             initialData["CalculateFitness"] = pslg.ParameterEvolutionCalculateFitness;
@@ -2580,12 +2581,13 @@ function compile(command,text) {
             pslg.GeneticAlgorithm.numberOfGenerations = 100;
             pslg.GeneticAlgorithm.populationSize = 50;
             pslg.GeneticAlgorithm.sdError = 0;
-            pslg.GeneticAlgorithm.crossoverRate = 0.6;
-            pslg.GeneticAlgorithm.mutationRate = 0.01;
-            pslg.GeneticAlgorithm.elitismRatio = 0.2;
+            pslg.GeneticAlgorithm.crossoverRate = 0.7;
+            pslg.GeneticAlgorithm.mutationRate = 0.1;
+            pslg.GeneticAlgorithm.elitismRatio = 0;
             
             var initialData = {};
             initialData["Initialize"] = pslg.LevelEvolutionInitialize;
+            initialData["Clone"] = pslg.LevelEvolutionClone;
             initialData["CrossOver"] = pslg.LevelEvolutionCrossOver;
             initialData["Mutation"] = pslg.LevelEvolutionMutation;
             initialData["CalculateFitness"] = pslg.LevelEvolutionCalculateFitness;

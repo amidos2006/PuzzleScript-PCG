@@ -125,7 +125,7 @@ this.pslg = this.pslg||{};
             winBonus = 0.5;
         }
         
-        return winBonus + (1 - winBonus) * (iterations / maxIterations);
+        return winBonus + 0.5 * (iterations / maxIterations);
     }
     
     function NumberOfObjects(state, ruleAnalyzer){
@@ -161,7 +161,7 @@ this.pslg = this.pslg||{};
 
         var solutionDiffLengthScore = [];
         var solutionLengthScore = [];
-        var solutionComplexityScore = [];
+        var explorationScore = [];
         var boxMetricScore = [];
         var doNothingScore = 0;
         var previousSolutionLength = 0;
@@ -170,14 +170,13 @@ this.pslg = this.pslg||{};
         for(var i = 0; i < state.levels.length; i++){
             var dl = Math.floor((startingDifficulty + i) / pslg.LevelGenerator.numberOfLevelsPerDifficulty);
             loadLevelFromState(state, i);
-            //console.log("\t\tSolving level " + (i + 1).toString());
             var result = bestfs(state.levels[i].dat, maxIterations);
             solvedLevelScore += result[0];
             doNothingScore += doNothing(state.levels[i].dat);
 
             solutionDiffLengthScore.push(SolutionDiffLengthScore(dl, result[1].length - previousSolutionLength, totalDifficulties));
             solutionLengthScore.push(SolutionDiffLengthScore(dl, result[1].length - GetAverageSolutionLength(dl, totalDifficulties), totalDifficulties));
-            solutionComplexityScore.push(SolutionComplexityScore(result[1], 2));
+            explorationScore.push(pslg.ExplorationScore(result[0] === 1, result[2], pslg.maxIterations));
             boxMetricScore.push(BoxLineMetricScore(result[1]));
 
             previousSolutionLength = result[1].length;
@@ -186,11 +185,11 @@ this.pslg = this.pslg||{};
         solvedLevelScore = SolvedLevelsScore(solvedLevelScore, totalDifficulties);
         doNothingScore = SolvedLevelsScore(doNothingScore, totalDifficulties);
 
-        var fitness = (solvedLevelScore - doNothingScore) +
-                (0.8 * solutionLengthScore.avg() + 0.2 * solutionDiffLengthScore.avg()) + 
-                solutionComplexityScore.avg() + 
-                boxMetricScore.avg() + 
-                objectNumberScore;
+        var fitness = 0.4 * (solvedLevelScore - doNothingScore) +
+                0.2 * (0.8 * solutionLengthScore.avg() + 0.2 * solutionDiffLengthScore.avg()) + 
+                0.15 * explorationScore.avg() + 
+                0.15 * boxMetricScore.avg() + 
+                0.1 * objectNumberScore;
 
         return fitness;
     }
@@ -235,6 +234,13 @@ this.pslg = this.pslg||{};
         ParameterEvolutionFixProbabilites(chromosome, ParameterEvolutionRandomValue(6));
     }
     
+    function ParameterEvolutionClone(cloned, chromosome){
+        cloned.genes = chromosome.genes.clone();
+        cloned.fitness = chromosome.fitness;
+        cloned.fitnessArray = chromosome.fitnessArray.clone();
+        cloned.age = chromosome.age;
+    }
+    
     function ParameterEvolutionCrossOver(child1, child2, chromosome1, chromosome2){
         var pointOfSwap = Math.randomInt(chromosome1.genes.length - 1);
         
@@ -274,10 +280,9 @@ this.pslg = this.pslg||{};
         if(chromosome.fitnessArray === undefined){
             chromosome.fitnessArray = [];
         }
-        
-        fitness += (chromosome.fitnessArray.length * 1.0) / pslg.GeneticAlgorithm.numberOfGenerations;
         chromosome.fitnessArray.push(fitness);
-        chromosome.fitness = chromosome.fitnessArray.avg();
+        chromosome.fitness = chromosome.fitnessArray.avg() + 
+                (chromosome.age * 0.005) / pslg.GeneticAlgorithm.numberOfGenerations;
     }
     
     function LevelEvolutionRandomValue(lgFeature){
@@ -371,6 +376,15 @@ this.pslg = this.pslg||{};
                 chromosome.notEmptySpaces.push(i);
             }
         }
+    }
+    
+    function LevelEvolutionClone(cloned, chromosome){
+        cloned.dl = chromosome.dl;
+        cloned.lgFeature = chromosome.lgFeature;
+        cloned.notEmptySpaces = chromosome.notEmptySpaces.clone();
+        cloned.emptySpaces = cloned.emptySpaces.clone();
+        cloned.fitness = chromosome.fitness;
+        cloned.level = deepCloneLevel(chromosome.level);
     }
     
     function LevelEvolutionCrossOver(child1, child2, chromosome1, chromosome2){
@@ -488,11 +502,13 @@ this.pslg = this.pslg||{};
     pslg.GetLevelFitness = GetLevelFitness;
     
     pslg.LevelEvolutionInitialize = LevelEvolutionInitialize;
+    pslg.LevelEvolutionClone = LevelEvolutionClone;
     pslg.LevelEvolutionCrossOver = LevelEvolutionCrossOver;
     pslg.LevelEvolutionMutation = LevelEvolutionMutation;
     pslg.LevelEvolutionCalculateFitness = LevelEvolutionCalculateFitness;
     
     pslg.ParameterEvolutionInitialize = ParameterEvolutionInitialize;
+    pslg.ParameterEvolutionClone = ParameterEvolutionClone;
     pslg.ParameterEvolutionCrossOver = ParameterEvolutionCrossOver;
     pslg.ParameterEvolutionMutation = ParameterEvolutionMutation;
     pslg.ParameterEvolutionCalculateFitness = ParameterEvolutionCalculateFitness;

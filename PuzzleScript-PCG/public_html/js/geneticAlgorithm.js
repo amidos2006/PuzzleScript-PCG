@@ -23,6 +23,7 @@ this.pslg = this.pslg||{};
     
     function Chromosome(initialData){
         Chromosome.Initialize(this, initialData);
+        this.age = 0;
     }
     
     function Population(populationSize){
@@ -66,6 +67,7 @@ this.pslg = this.pslg||{};
         
         for (var i = 0; i < this.chromosomes.length; i++) {
             console.log("\tChromosome number: " + (i + 1).toString());
+            this.chromosomes[i].age += 1;
             Chromosome.CalculateFitness(this.chromosomes[i]);
             console.log("\tFitness Score: " + this.chromosomes[i].fitness);
         }
@@ -103,7 +105,8 @@ this.pslg = this.pslg||{};
                 }
                 else
                 {
-                    children = [parent1, parent2];
+                    Chromosome.Clone(children[0], parent1);
+                    Chromosome.Clone(children[1], parent2);
                 }
             }
             
@@ -122,6 +125,7 @@ this.pslg = this.pslg||{};
     
     function GeneticAlgorithm(initialData){
         Chromosome.Initialize = initialData.Initialize;
+        Chromosome.Clone = initialData.Clone;
         Chromosome.CrossOver = initialData.CrossOver;
         Chromosome.Mutate = initialData.Mutation;
         Chromosome.CalculateFitness = initialData.CalculateFitness;
@@ -134,7 +138,7 @@ this.pslg = this.pslg||{};
         currentPopulation.Initialize();
         
         for(var i = 0; i < GeneticAlgorithm.numberOfGenerations; i++){
-            console.log("Generation number: " + (i + 1).toString());
+            console.log("Generation number: " + (i + 1).toString());      
             var newPopulation = currentPopulation.NextPopulation(GeneticAlgorithm.elitismRatio, GeneticAlgorithm.crossoverRate, GeneticAlgorithm.mutationRate);
             var sdError = [];
             for (var j = 0; j < GeneticAlgorithm.populationSize; j++) {

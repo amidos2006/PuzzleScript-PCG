@@ -125,7 +125,7 @@ this.pslg = this.pslg||{};
             winBonus = 0.5;
         }
         
-        return winBonus + 0.5 * (iterations / maxIterations);
+        return winBonus + (1 - winBonus) * (iterations / maxIterations);
     }
     
     function NumberOfObjects(state, ruleAnalyzer){

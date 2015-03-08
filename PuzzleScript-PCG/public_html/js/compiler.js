@@ -2461,7 +2461,7 @@ function compile(command,text) {
                 averageLength.push(0);
             }
             
-            var levelGenerator = new pslg.LevelGenerator(new pslg.LGFeatures([0.28662,1,0.18865,0.77056,0.14444,0.064056]));
+            var levelGenerator = new pslg.LevelGenerator(new pslg.LGFeatures([0.72453,1,0.24036,0.38305,0.36053,0.19288]));
             for (var i = 0; i < 1000; i++) {
                 console.log("Trial Number: " + i);
                 state.levels = levelGenerator.GenerateLevels(ruleAnalyzer, state);

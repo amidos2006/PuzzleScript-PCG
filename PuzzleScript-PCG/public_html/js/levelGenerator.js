@@ -170,8 +170,6 @@ this.pslg = this.pslg||{};
         
         var criticalObjects = {};
         var ruleObjects = {};
-        var criticalNumber = 0;
-        var ruleNumber = 0;
         for (var i = 0; i < ruleAnalyzer.ruleObjects.length; i++){
             var obj = ruleAnalyzer.ruleObjects[i];
             if(ruleAnalyzer.winObjects.indexOf(obj) > -1 || obj === "player"){
@@ -184,15 +182,12 @@ this.pslg = this.pslg||{};
                     break;
                 case 1:
                     ruleObjects[obj] = ruleAnalyzer.minNumberObjects[obj];
-                    ruleNumber += ruleAnalyzer.minNumberObjects[obj];
                     break;
                 case 2:
                     ruleObjects[obj] = ruleAnalyzer.minNumberObjects[obj];
-                    ruleNumber += ruleAnalyzer.minNumberObjects[obj];
                     break;
                 case 3:
                     criticalObjects[obj] = ruleAnalyzer.minNumberObjects[obj];
-                    criticalNumber += ruleAnalyzer.minNumberObjects[obj];
                     break;
             }
         }
@@ -200,23 +195,21 @@ this.pslg = this.pslg||{};
         var _level = deepCloneLevel(LevelGenerator.levelsOutline[dl]);
         
         var playerNumber = ruleAnalyzer.minNumberObjects["player"] * this.lgFeatures.playerNumber;
-        var winNumber = ruleAnalyzer.minNumberObjects[ruleAnalyzer.winObjects[0]] + ruleAnalyzer.minNumberObjects[ruleAnalyzer.winObjects[1]];
+        var winNumber = 0;
         if(ruleAnalyzer.winObjects.indexOf("player") > -1){
             winNumber = 2 * playerNumber;
             playerNumber = 0;
         }
-        var solidNumber = ruleAnalyzer.solidObjects.length;
-        var totalNumber = criticalNumber + ruleNumber + solidNumber + winNumber;
         
         var emptySpaces = LevelGenerator.emptySpaces[dl].clone().shuffle();
         var nObjects = this.lgFeatures.coverPercentage * emptySpaces.length - playerNumber;
         
         if(playerNumber > 0){
-            winNumber = (winNumber / totalNumber) * nObjects * this.lgFeatures.winCondWeight * (1 - (Math.random() - 0.5) * this.lgFeatures.randomnessPercentage);
+            winNumber = nObjects * this.lgFeatures.winCondWeight * (1 - (Math.random() - 0.5) * this.lgFeatures.randomnessPercentage);
         }
-        criticalNumber = (criticalNumber / totalNumber) * nObjects * this.lgFeatures.criticalWeight * (1 - (Math.random() - 0.5) * this.lgFeatures.randomnessPercentage);
-        ruleNumber = (ruleNumber / totalNumber) * nObjects * this.lgFeatures.ruleWeight * (1 - (Math.random() - 0.5) * this.lgFeatures.randomnessPercentage);
-        solidNumber = (solidNumber / totalNumber) * nObjects * (1 - this.lgFeatures.ruleWeight - this.lgFeatures.criticalWeight - this.lgFeatures.winCondWeight);
+        var criticalNumber = nObjects * this.lgFeatures.criticalWeight * (1 - (Math.random() - 0.5) * this.lgFeatures.randomnessPercentage);
+        var ruleNumber = nObjects * this.lgFeatures.ruleWeight * (1 - (Math.random() - 0.5) * this.lgFeatures.randomnessPercentage);
+        var solidNumber = nObjects * (1 - this.lgFeatures.ruleWeight - this.lgFeatures.criticalWeight - this.lgFeatures.winCondWeight);
         if(solidNumber > nObjects - ruleNumber - winNumber - criticalNumber){
             solidNumber = nObjects - ruleNumber - winNumber - criticalNumber;
         }
@@ -241,6 +234,9 @@ this.pslg = this.pslg||{};
 
             solidNumber -= 1;
         }
+        
+        objectNumber = 0;
+        minObjects = 0;
         
         // Adding winning condition objects
         var obj1 = ruleAnalyzer.winObjects[0];
@@ -275,6 +271,9 @@ this.pslg = this.pslg||{};
                 }
             }
         }
+        
+        objectNumber = 0;
+        minObjects = 0;
         
         // Adding player to the play ground
         var obj1LayerMask = state.layerMasks[state.objects["player"].layer];
@@ -314,6 +313,9 @@ this.pslg = this.pslg||{};
             rulePropability[obj] /= objectAccumlator;
         }
         
+        objectNumber = 0;
+        minObjects = 0;
+        
         // Adding at least 1 critical path elements
         for (var obj in criticalObjects){
             objectNumber = criticalObjects[obj];
@@ -330,6 +332,9 @@ this.pslg = this.pslg||{};
             }
             criticalNumber -= objectNumber;
         }
+        
+        objectNumber = 0;
+        minObjects = 0;
         
         //Generate Rest of critical objects
         while(criticalNumber > 0){
@@ -355,6 +360,9 @@ this.pslg = this.pslg||{};
             }
             criticalNumber -= objectNumber;
         }
+        
+        objectNumber = 0;
+        minObjects = 0;
         
         //Generating Rule Objects
         while(ruleNumber > 0){

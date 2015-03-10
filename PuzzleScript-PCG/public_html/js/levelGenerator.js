@@ -43,6 +43,61 @@ this.pslg = this.pslg||{};
         }
     };
     
+    LevelGenerator.AutoFeatures = function(ruleAnalyzer){
+        var criticalNumber = 0;
+        var ruleNumber = 0;
+        for (var i = 0; i < ruleAnalyzer.ruleObjects.length; i++){
+            var obj = ruleAnalyzer.ruleObjects[i];
+            if(ruleAnalyzer.winObjects.indexOf(obj) > -1 || obj === "player"){
+                continue;
+            }
+            var result = ruleAnalyzer.CheckCriticalObject(obj);
+            switch(result){
+                case 0:
+                    //useless object in rule
+                    break;
+                case 1:
+                    ruleNumber += ruleAnalyzer.minNumberObjects[obj];
+                    break;
+                case 2:
+                    ruleNumber += ruleAnalyzer.minNumberObjects[obj];
+                    break;
+                case 3:
+                    criticalNumber += ruleAnalyzer.minNumberObjects[obj];
+                    break;
+            }
+        }
+        
+        var playerNumber = ruleAnalyzer.minNumberObjects["player"];
+        var winNumber = ruleAnalyzer.minNumberObjects[ruleAnalyzer.winObjects[0]] + ruleAnalyzer.minNumberObjects[ruleAnalyzer.winObjects[1]];
+        if(ruleAnalyzer.winObjects.indexOf("player") > -1){
+            winNumber = 2 * playerNumber;
+        }
+        else if(ruleAnalyzer.winRules[0] === "some"){
+            winNumber = Math.max(ruleAnalyzer.minNumberObjects[ruleAnalyzer.winObjects[0]], ruleAnalyzer.minNumberObjects[ruleAnalyzer.winObjects[1]]);
+        }
+        var solidNumber = ruleAnalyzer.solidObjects.length;
+        var totalNumber = solidNumber + winNumber + criticalNumber + ruleNumber;
+        var density = 1 - (winNumber + criticalNumber) / totalNumber;
+        
+        winNumber *= 2;
+        criticalNumber *= 2;
+        ruleNumber *= 1.5;
+        solidNumber *= 1;
+        totalNumber = winNumber + criticalNumber + ruleNumber + solidNumber;
+        
+        winNumber /= totalNumber;
+        criticalNumber /= totalNumber;
+        ruleNumber /= totalNumber;
+        solidNumber /= totalNumber;
+        
+        return new LGFeatures([density.toPrecision(5), playerNumber, 
+            (0.2 * Math.random()).toPrecision(5), 
+            winNumber.toPrecision(5), 
+            criticalNumber.toPrecision(5), 
+            ruleNumber.toPrecision(5)]);
+    };
+    
     LevelGenerator.prototype.GetObjectNumber = function(dl, minObjects){
         var objIncrease = this.lgFeatures.objectIncPercentage * (1 - (Math.random() - 0.5) * this.lgFeatures.randomnessPercentage);
         return Math.floor(dl * objIncrease) * minObjects  + minObjects;
@@ -88,7 +143,7 @@ this.pslg = this.pslg||{};
     
     LevelGenerator.prototype.GetInsertionLocations = function(ruleAnalyzer, obj, layerMask, level, emptySpaces){
         var locations = [];
-        for (var i = 0; i < 9; i++) {
+        for (var i = 0; i < 16; i++) {
             locations.push([]);
         }
         
@@ -101,21 +156,21 @@ this.pslg = this.pslg||{};
                 var up = level.dat[emptySpaces[i] - level.h] & layerMask;
                 var down = level.dat[emptySpaces[i] + level.h] & layerMask;
                 
-                var upLeft = level.dat[emptySpaces[i] - level.h - 1] & layerMask;
-                var upRight = level.dat[emptySpaces[i] - level.h + 1] & layerMask;
-                var downLeft = level.dat[emptySpaces[i] + level.h - 1] & layerMask;
-                var downRight = level.dat[emptySpaces[i] + level.h + 1] & layerMask;
+                var leftSide = emptySpaces[i] / level.h < 2;
+                var rightSide = emptySpaces[i] / level.h >= level.w - 2;
+                var downSide = emptySpaces[i] % level.h >= level.h - 2;
+                var upSide = emptySpaces[i] % level.h < 2;
                 
-                currentValue = right > 0? currentValue + 1 : currentValue;
-                currentValue = left > 0? currentValue + 1 : currentValue;
-                currentValue = up > 0? currentValue + 1 : currentValue;
-                currentValue = down > 0? currentValue + 1 : currentValue;
+                currentValue = right > 0? currentValue + 2 : currentValue;
+                currentValue = left > 0? currentValue + 2 : currentValue;
+                currentValue = up > 0? currentValue + 2 : currentValue;
+                currentValue = down > 0? currentValue + 2 : currentValue;
                 
                 if(LevelGenerator.moreStrict){
-                    currentValue = upLeft > 0? currentValue + 1 : currentValue;
-                    currentValue = upRight > 0? currentValue + 1 : currentValue;
-                    currentValue = downLeft > 0? currentValue + 1 : currentValue;
-                    currentValue = downRight > 0? currentValue + 1 : currentValue;
+                    currentValue = leftSide? currentValue + 1 : currentValue;
+                    currentValue = rightSide? currentValue + 1 : currentValue;
+                    currentValue = downSide? currentValue + 1 : currentValue;
+                    currentValue = upSide? currentValue + 1 : currentValue;
                 }
                 
                 locations[currentValue].push(i);
@@ -200,11 +255,16 @@ this.pslg = this.pslg||{};
             winNumber = 2 * playerNumber;
             playerNumber = 0;
         }
+        else if(this.winRule === "some"){
+            var obj1 = ruleAnalyzer.winObjects[0];
+            var obj2 = ruleAnalyzer.winObjects[1]; 
+            winNumber = Math.max(ruleAnalyzer.minNumberObjects[obj1], ruleAnalyzer.minNumberObjects[obj2]);
+        }
         
         var emptySpaces = LevelGenerator.emptySpaces[dl].clone().shuffle();
         var nObjects = this.lgFeatures.coverPercentage * emptySpaces.length - playerNumber;
         
-        if(playerNumber > 0){
+        if(winNumber === 0){
             winNumber = nObjects * this.lgFeatures.winCondWeight * (1 - (Math.random() - 0.5) * this.lgFeatures.randomnessPercentage);
         }
         var criticalNumber = nObjects * this.lgFeatures.criticalWeight * (1 - (Math.random() - 0.5) * this.lgFeatures.randomnessPercentage);
@@ -247,9 +307,18 @@ this.pslg = this.pslg||{};
             obj1 = ruleAnalyzer.winObjects[1];
             obj2 = ruleAnalyzer.winObjects[0];
         }
+        //Make sure neither any of the output have creation pattern
+        result = ruleAnalyzer.objectBehaviour[obj1] & pslg.ObjectBehaviour.CREATE;
+        if(result !== 0){
+            var temp = obj1;
+            obj1 = obj2;
+            obj2 = temp;
+        }
         var obj1LayerMask = state.layerMasks[state.objects[obj1].layer];
         var obj2LayerMask = state.layerMasks[state.objects[obj2].layer];
         minObjects = Math.max(ruleAnalyzer.minNumberObjects[obj1], ruleAnalyzer.minNumberObjects[obj2]);
+        var generateOne = (ruleAnalyzer.objectBehaviour[obj1] & pslg.ObjectBehaviour.CREATE) | 
+                (ruleAnalyzer.objectBehaviour[obj2] & pslg.ObjectBehaviour.CREATE);
         while(winNumber > 0){
             for (var j = 0; j < minObjects; j++){
                 var index = this.GetInsertionLocation(ruleAnalyzer, obj1, obj1LayerMask, _level, emptySpaces);
@@ -258,7 +327,11 @@ this.pslg = this.pslg||{};
                 _level.dat[position] = _level.dat[position] | state.objectMasks[obj1];
                 winNumber -= 1;
                 
-                if(ruleAnalyzer.winRules[i] === "no"){
+                if(generateOne > 0){
+                    continue;
+                }
+                
+                if(this.winRule === "no"){
                     _level.dat[position] = _level.dat[position] | state.objectMasks[obj2];
                     winNumber -= 1;   
                 }

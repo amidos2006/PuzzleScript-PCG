@@ -2416,12 +2416,12 @@ function compile(command,text) {
 	setGameState(state,command);
         
         //My Code
-        var test = 1;
+        var test = 2;
         var ruleAnalyzer = new pslg.RuleAnalyzer();
         ruleAnalyzer.Initialize(state);
 
         pslg.LevelGenerator.numberOfLevelsPerDifficulty = 1;
-        pslg.LevelGenerator.moreStrict = false;
+        pslg.LevelGenerator.moreStrict = true;
         pslg.LevelGenerator.levelsOutline = state.levels;
         pslg.LevelGenerator.Initialize(state.objectMasks);
         pslg.InitializeSoultionAnalysis([0,1,2,3]);
@@ -2433,7 +2433,7 @@ function compile(command,text) {
         pslg.startingDifficulty = 0;
         
         if(test === -1){
-            var levelGenerator = new pslg.LevelGenerator(new pslg.LGFeatures([0.78288,1,0.19787,0.030318,0.36929,0.41863]));
+            var levelGenerator = new pslg.LevelGenerator(new pslg.LGFeatures([1,1,0.064465,0.63348,0.20061,0.13654]));
             state.levels = levelGenerator.GenerateLevels(ruleAnalyzer, state);
         }
         else if(test === 0){
@@ -2578,6 +2578,25 @@ function compile(command,text) {
             state.levels = levelGenerator.GenerateLevels(ruleAnalyzer, state);
         }
         else if(test === 2){
+            disableIO = true;
+            
+            var features = pslg.LevelGenerator.AutoFeatures(pslg.ruleAnalyzer);
+            var levelGenerator = new pslg.LevelGenerator(features);
+            
+            var fitnessArray = [];
+//            for (var i = 0; i < 1000; i++) {
+//                console.log("Trial Number: " + i);
+//                state.levels = levelGenerator.GenerateLevels(ruleAnalyzer, state);
+//                fitnessArray.push(pslg.GetLevelFitness(state.levels));
+//            }
+            
+            console.log("Current Features: " + features.ConvertToArray());
+            console.log("Average Fitness: " + fitnessArray.avg() + ", Min Fitness: " + fitnessArray.min() + ", Max Fitness: " + fitnessArray.max() + " ,sd: " + fitnessArray.sd());
+            state.levels = levelGenerator.GenerateLevels(pslg.ruleAnalyzer, state);
+            
+            disableIO = false;
+        }
+        else if(test === 3){
             pslg.GeneticAlgorithm.numberOfGenerations = 100;
             pslg.GeneticAlgorithm.populationSize = 50;
             pslg.GeneticAlgorithm.sdError = 0;
@@ -2602,44 +2621,6 @@ function compile(command,text) {
             loadLevelFromState(state, 0);
             
             console.log("Best Chromosome Fitness: " + bestLevels[0].fitness);
-        }
-        else if(test === 3){
-            pslg.ParallelGenetic.numberOfGenerations = 2;
-            pslg.ParallelGenetic.populationSize = 10;
-            pslg.ParallelGenetic.sdError = 0;
-            pslg.ParallelGenetic.crossoverRate = 0.6;
-            pslg.ParallelGenetic.mutationRate = 0.01;
-            pslg.ParallelGenetic.elitismRatio = 0.2;
-            pslg.ParallelGenetic.FinishFunction = pslg.ParallelLevelEvolutionFinishFunction;
-            
-            var initialData = {};
-            initialData["Initialize"] = pslg.LevelEvolutionInitialize;
-            initialData["CrossOver"] = pslg.LevelEvolutionCrossOver;
-            initialData["Mutation"] = pslg.LevelEvolutionMutation;
-            initialData["CalculateFitness"] = pslg.ParallelLevelEvolutionFitness;
-            initialData["data"] = {dl: 4, lgFeature: new pslg.LGFeatures([0.003,1,0.381,0.257,0.607,0.353])};
-            
-            pslg.ParallelGenetic(initialData);
-            pslg.ParallelGenetic.Evolve(1);
-        }
-        else if(test === 4){
-            pslg.ParallelGenetic.numberOfGenerations = 1;
-            pslg.ParallelGenetic.populationSize = 1;
-            pslg.ParallelGenetic.sdError = 0;
-            pslg.ParallelGenetic.crossoverRate = 0.6;
-            pslg.ParallelGenetic.mutationRate = 0.01;
-            pslg.ParallelGenetic.elitismRatio = 0.2;
-            pslg.ParallelGenetic.FinishFunction = pslg.ParallelParameterEvolutionFinishFunction;
-
-            var initialData = {};
-            initialData["Initialize"] = pslg.ParameterEvolutionInitialize;
-            initialData["CrossOver"] = pslg.ParameterEvolutionCrossOver;
-            initialData["Mutation"] = pslg.ParameterEvolutionMutation;
-            initialData["CalculateFitness"] = pslg.ParallelParameterEvolutionFitness;
-            initialData["data"] = {};
-
-            pslg.ParallelGenetic(initialData);
-            pslg.ParallelGenetic.Evolve(1);
         }
         //End of My Code
 }

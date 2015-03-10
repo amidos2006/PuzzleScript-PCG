@@ -478,6 +478,12 @@ function checkKey(e,justPressed) {
         }
         case 13://enter
         case 32://space
+        case 18:
+            if (textMode===false) {
+            	nextLevel();
+            	return prevent(e);
+            }
+            break;
         case 67://c
         case 88://x
         {

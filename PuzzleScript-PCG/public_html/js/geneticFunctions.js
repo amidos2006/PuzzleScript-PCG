@@ -70,8 +70,8 @@ this.pslg = this.pslg||{};
         return value;
     }
     
-    function SolvedLevelsScore(numberOfSolved, totalDiffLevels){
-        return numberOfSolved / totalDiffLevels;
+    function SolvedLevelsScore(numberOfSolved, totalNumLevels){
+        return numberOfSolved / totalNumLevels;
     }
     
     function SolutionComplexityScore(solution, analysisDegree){
@@ -182,8 +182,8 @@ this.pslg = this.pslg||{};
             previousSolutionLength = result[1].length;
         }
 
-        solvedLevelScore = SolvedLevelsScore(solvedLevelScore, totalDifficulties);
-        doNothingScore = SolvedLevelsScore(doNothingScore, totalDifficulties);
+        solvedLevelScore = SolvedLevelsScore(solvedLevelScore, state.levels.length);
+        doNothingScore = SolvedLevelsScore(doNothingScore, state.levels.length);
 
         var fitness = 0.4 * (solvedLevelScore - doNothingScore) +
                 0.2 * (0.8 * solutionLengthScore.avg() + 0.2 * solutionDiffLengthScore.avg()) + 

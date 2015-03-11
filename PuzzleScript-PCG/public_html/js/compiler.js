@@ -1,3 +1,5 @@
+/* global pslg */
+
 'use strict';
 
 
@@ -2416,7 +2418,7 @@ function compile(command,text) {
 	setGameState(state,command);
         
         //My Code
-        var test = 2;
+        var test = 1;
         var ruleAnalyzer = new pslg.RuleAnalyzer();
         ruleAnalyzer.Initialize(state);
 
@@ -2572,7 +2574,7 @@ function compile(command,text) {
             var bestParameter = genetic.Evolve(1);
             disableIO = false;
             
-            console.log("Best Parameters: " + bestParameter[0].genes + " with Best Fitness: " + bestParameter[0].fitness);
+            console.log("Best Parameters: " + bestParameter[0].genes + " with Best Fitness: " + bestParameter[0].fitness + " at age of " + bestParameter[0].age);
             
             var levelGenerator = new pslg.LevelGenerator(new pslg.LGFeatures(bestParameter[0].genes));
             state.levels = levelGenerator.GenerateLevels(ruleAnalyzer, state);
@@ -2584,11 +2586,11 @@ function compile(command,text) {
             var levelGenerator = new pslg.LevelGenerator(features);
             
             var fitnessArray = [];
-//            for (var i = 0; i < 1000; i++) {
-//                console.log("Trial Number: " + i);
-//                state.levels = levelGenerator.GenerateLevels(ruleAnalyzer, state);
-//                fitnessArray.push(pslg.GetLevelFitness(state.levels));
-//            }
+            for (var i = 0; i < 1000; i++) {
+                console.log("Trial Number: " + i);
+                state.levels = levelGenerator.GenerateLevels(ruleAnalyzer, state);
+                fitnessArray.push(pslg.GetLevelFitness(state.levels));
+            }
             
             console.log("Current Features: " + features.ConvertToArray());
             console.log("Average Fitness: " + fitnessArray.avg() + ", Min Fitness: " + fitnessArray.min() + ", Max Fitness: " + fitnessArray.max() + " ,sd: " + fitnessArray.sd());

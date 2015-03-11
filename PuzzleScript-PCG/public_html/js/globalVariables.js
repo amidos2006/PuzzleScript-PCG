@@ -3,6 +3,7 @@ var disableIO = false;
 var parallelCode = false;
 var curlevel=0;
 var levelEditorOpened=false;
+var numAppRules = 0;
 
 try {
  	if (!!window.localStorage) { 

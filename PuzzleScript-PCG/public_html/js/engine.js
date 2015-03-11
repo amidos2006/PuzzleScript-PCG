@@ -1763,13 +1763,18 @@ function applyRuleGroup(ruleGroup) {
     	loopcount++;
     	if (loopcount>200) 
     	{
+                numAppRules = 0;
     		logError("Got caught looping lots in a rule group :O",ruleGroup[0][3],true);
     		break;
     	}
         propagated=false
         for (var ruleIndex=0;ruleIndex<ruleGroup.length;ruleIndex++) {
-            var rule = ruleGroup[ruleIndex];            
-            propagated = tryApplyRule(rule) || propagated;
+            var rule = ruleGroup[ruleIndex];
+            var ruleApply = tryApplyRule(rule);
+            if(ruleApply){
+                numAppRules += 1;
+            }
+            propagated = ruleApply || propagated;
         }
         if (propagated) {
         	loopPropagated=true;

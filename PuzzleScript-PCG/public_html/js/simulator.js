@@ -174,7 +174,8 @@ function simulate_silent_ticks() {
 
 
 function bestfs(startState, maxIterations_) {
-    var open = [ [startState, get_level_score(startState), []] ];
+    numAppRules = 0;
+    var open = [ [startState, get_level_score(startState), [], numAppRules] ];
     var closed = {};
     var opened = {};
 
@@ -205,10 +206,11 @@ function bestfs(startState, maxIterations_) {
         closed[t[0].concat(dir).toString()] = true;
 
         restoreLevel(t[0]);
+        numAppRules = t[3];
 
         if (isLevelWinning(t[0])) {
             //console.log("found winning state! solution=%s, iterations=%s", t[2], iteration);
-            return [1, t[2],iteration];
+            return [1, t[2],iteration, numAppRules];
         }
         
         var dirs = [0,1,2,3,4];
@@ -219,6 +221,7 @@ function bestfs(startState, maxIterations_) {
         {
             dir = dirs[i];
             restoreLevel(t[0]);
+            numAppRules = t[3];
 
             processInput(dir, true, false);
 
@@ -232,7 +235,7 @@ function bestfs(startState, maxIterations_) {
             lvl_temp = backupLevel();
             lvl_score = get_level_score(lvl_temp);
 
-            u = [lvl_temp, lvl_score, u2];
+            u = [lvl_temp, lvl_score, u2, numAppRules];
             
             var output_score = get_output_score(lvl_temp);
             if(output_score < bestScore || bestSolution.length === 0){
@@ -256,7 +259,7 @@ function bestfs(startState, maxIterations_) {
         iteration++;
     }
     
-    return [1 - bestScore, bestSolution, iteration];
+    return [1 - bestScore, bestSolution, iteration, numAppRules];
 }
 
 function doNothing(startState){

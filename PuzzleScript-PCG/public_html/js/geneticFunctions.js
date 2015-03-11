@@ -128,6 +128,13 @@ this.pslg = this.pslg||{};
         return winBonus + (1 - winBonus) * (iterations / maxIterations);
     }
     
+    function AppliedRulesScore(appRules, totalLength){
+        if(totalLength === 0){
+            return 0;
+        }
+        return appRules / totalLength;
+    }
+    
     function NumberOfObjects(state, ruleAnalyzer){
         var totalObjects = Object.keys(ruleAnalyzer.minNumberObjects);
         var currentObjects = 0;
@@ -163,6 +170,7 @@ this.pslg = this.pslg||{};
         var solutionLengthScore = [];
         var explorationScore = [];
         var boxMetricScore = [];
+        var appliedRuleScore = [];
         var doNothingScore = 0;
         var previousSolutionLength = 0;
         var solvedLevelScore = 0;
@@ -176,7 +184,8 @@ this.pslg = this.pslg||{};
 
             solutionDiffLengthScore.push(SolutionDiffLengthScore(dl, result[1].length - previousSolutionLength, totalDifficulties));
             solutionLengthScore.push(SolutionDiffLengthScore(dl, result[1].length - GetAverageSolutionLength(dl, totalDifficulties), totalDifficulties));
-            explorationScore.push(pslg.ExplorationScore(result[0] === 1, result[2], pslg.maxIterations));
+            explorationScore.push(ExplorationScore(result[0] === 1, result[2], maxIterations));
+            appliedRuleScore.push(AppliedRulesScore(result[3], result[1].length));
             boxMetricScore.push(BoxLineMetricScore(result[1]));
 
             previousSolutionLength = result[1].length;
@@ -185,11 +194,12 @@ this.pslg = this.pslg||{};
         solvedLevelScore = SolvedLevelsScore(solvedLevelScore, state.levels.length);
         doNothingScore = SolvedLevelsScore(doNothingScore, state.levels.length);
 
-        var fitness = 0.4 * (solvedLevelScore - doNothingScore) +
-                0.2 * (0.8 * solutionLengthScore.avg() + 0.2 * solutionDiffLengthScore.avg()) + 
-                0.15 * explorationScore.avg() + 
-                0.15 * boxMetricScore.avg() + 
-                0.1 * objectNumberScore;
+        var fitness = 0.35 * (solvedLevelScore - doNothingScore) +
+                0.18 * (0.8 * solutionLengthScore.avg() + 0.2 * solutionDiffLengthScore.avg()) +
+                0.13 * explorationScore.avg() + 
+                0.13 * boxMetricScore.avg() +
+                0.13 * appliedRuleScore.avg() +
+                0.08 * objectNumberScore;
 
         return fitness;
     }
@@ -498,6 +508,7 @@ this.pslg = this.pslg||{};
     pslg.SolutionComplexityScore = SolutionComplexityScore;
     pslg.BoxLineMetricScore = BoxLineMetricScore;
     pslg.ExplorationScore = ExplorationScore;
+    pslg.AppliedRulesScore = AppliedRulesScore;
     pslg.NumberOfObjects = NumberOfObjects;
     pslg.GetLevelFitness = GetLevelFitness;
     

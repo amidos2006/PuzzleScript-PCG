@@ -9,6 +9,8 @@
 * artificial intelligence (AI) playerrs or bots. 
 */
 
+/* global level, state */
+
 var SIMULATOR_MOVE_LEFT = 1;
 var SIMULATOR_MOVE_RIGHT = 3;
 var SIMULATOR_MOVE_UP = 0;
@@ -500,10 +502,39 @@ function get_level_score(leveldat) {
             var filter1 = wincondition[1];
             var filter2 = wincondition[2];
             //var rulePassed=true;
-
+            
             var indices1 = [];
             var indices2 = [];
+            var criticalIndeces = [];
+            var ruleIndeces = [];
+            
             var distances = [];
+            
+            //Get the critical and rule objects
+            var ruleAnalyzer = pslg.ruleAnalyzer;
+            var criticalObjects = [];
+            var ruleObjects = [];
+            for (var i = 0; i < ruleAnalyzer.ruleObjects.length; i++){
+                var obj = ruleAnalyzer.ruleObjects[i];
+                if(ruleAnalyzer.winObjects.indexOf(obj) > -1 || obj === "player"){
+                    continue;
+                }
+                var result = ruleAnalyzer.CheckCriticalObject(obj);
+                switch(result){
+                    case 0:
+                        //useless object in rule
+                        break;
+                    case 1:
+                        ruleObjects.push(state.objectMasks[obj]);
+                        break;
+                    case 2:
+                        ruleObjects.push(state.objectMasks[obj]);
+                        break;
+                    case 3:
+                        criticalObjects.push(state.objectMasks[obj]);
+                        break;
+                }
+            }
 
             var conditionScore = 0.0;
 
@@ -514,6 +545,20 @@ function get_level_score(leveldat) {
                 }
                 if ( (filter2&val)!==0 ) {
                         indices2.push(i);
+                }
+                
+                //critical objects indeces
+                for (var j = 0; j < criticalObjects.length; j++) {
+                    if((criticalObjects[j]&val) !== 0){
+                        criticalIndeces.push(i);
+                    }
+                }
+                
+                //rule objects indeces
+                for (var j = 0; j < ruleObjects.length; j++) {
+                    if((ruleObjects[j]&val) !== 0){
+                        ruleIndeces.push(i);
+                    }
                 }
             }
 
@@ -543,8 +588,6 @@ function get_level_score(leveldat) {
                 windices = filter1 & state.playerMask !== 0 ? indices2 : indices1;
             }
 
-
-
             for (var p=0; p < playerPositions.length; p++) {
                 var dt2 = [];
                 for (var o=0; o < windices.length; o++) {
@@ -553,9 +596,26 @@ function get_level_score(leveldat) {
                 if (dt2.length > 0 ){
                     distances.push(dt2.avg());
                 }
+                
+                //Critical Objects Distance
+                dt2 = [];
+                for (var o=0; o < criticalIndeces.length; o++) {
+                    dt2.push(get_index_manhattan_distance(playerPositions[p], criticalIndeces[o]));
+                }
+                if (dt2.length > 0 ){
+                    distances.push(0.5 * dt2.avg());
+                }
+                
+                //Rule Objects Distance
+                dt2 = [];
+                for (var o=0; o < ruleIndeces.length; o++) {
+                    dt2.push(get_index_manhattan_distance(playerPositions[p], ruleIndeces[o]));
+                }
+                if (dt2.length > 0 ){
+                    distances.push(0.25 * dt2.avg());
+                }
             }
-
-
+            
             //console.log('[get_level_score]:\t wincondition=%s', wincondition[0]);
             //console.log('[get_level_score]:\t distances=%o', distances);
             var max_manhattan = level.width+level.height;

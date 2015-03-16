@@ -128,11 +128,11 @@ this.pslg = this.pslg||{};
         return winBonus + (1 - winBonus) * (iterations / maxIterations);
     }
     
-    function AppliedRulesScore(appRules, totalLength){
+    function AppliedRulesScore(appRules, noMoveRule, totalLength){
         if(totalLength === 0){
             return 0;
         }
-        return appRules / totalLength;
+        return GetTrapeziumFunctionValue((appRules - noMoveRule) / totalLength, 0.2, 0.5, 1, 0);
     }
     
     function NumberOfObjects(state, ruleAnalyzer){
@@ -181,11 +181,14 @@ this.pslg = this.pslg||{};
             var result = bestfs(state.levels[i].dat, maxIterations);
             solvedLevelScore += result[0];
             doNothingScore += doNothing(state.levels[i].dat);
+            loadLevelFromState(state, i);
+            numAppRules = 0;
+            processInput(-1, true, true);
 
             solutionDiffLengthScore.push(SolutionDiffLengthScore(dl, result[1].length - previousSolutionLength, totalDifficulties));
             solutionLengthScore.push(SolutionDiffLengthScore(dl, result[1].length - GetAverageSolutionLength(dl, totalDifficulties), totalDifficulties));
             explorationScore.push(ExplorationScore(result[0] === 1, result[2], maxIterations));
-            appliedRuleScore.push(AppliedRulesScore(result[3], result[1].length));
+            appliedRuleScore.push(AppliedRulesScore(result[3], numAppRules, result[1].length));
             boxMetricScore.push(BoxLineMetricScore(result[1]));
 
             previousSolutionLength = result[1].length;

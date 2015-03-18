@@ -2418,7 +2418,7 @@ function compile(command,text) {
 	setGameState(state,command);
         
         //My Code
-        var test = 0;
+        var test = -1;
         var ruleAnalyzer = new pslg.RuleAnalyzer();
         ruleAnalyzer.Initialize(state);
 
@@ -2435,7 +2435,7 @@ function compile(command,text) {
         pslg.startingDifficulty = 0;
         
         if(test === -1){
-            var levelGenerator = new pslg.LevelGenerator(new pslg.LGFeatures([1,1,0.064465,0.63348,0.20061,0.13654]));
+            var levelGenerator = new pslg.LevelGenerator(new pslg.LGFeatures([0.2918, 1, 0.17341, 0.7166, 0.11969, 0.1332]));
             state.levels = levelGenerator.GenerateLevels(ruleAnalyzer, state);
         }
         else if(test === 0){

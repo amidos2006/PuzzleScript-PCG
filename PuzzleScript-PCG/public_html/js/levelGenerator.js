@@ -406,11 +406,10 @@ this.pslg = this.pslg||{};
             criticalNumber -= objectNumber;
         }
         
-        objectNumber = 0;
-        minObjects = 0;
-        
         //Generate Rest of critical objects
         while(criticalNumber > 0){
+            objectNumber = 0;
+            minObjects = 0;
             randomValue = Math.random();
             var obj;
             for (obj in criticalPropability){
@@ -434,11 +433,10 @@ this.pslg = this.pslg||{};
             criticalNumber -= objectNumber;
         }
         
-        objectNumber = 0;
-        minObjects = 0;
-        
         //Generating Rule Objects
         while(ruleNumber > 0){
+            objectNumber = 0;
+            minObjects = 0;
             randomValue = Math.random();
             var obj;
             for (obj in rulePropability){

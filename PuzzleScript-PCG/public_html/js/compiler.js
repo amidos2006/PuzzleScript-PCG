@@ -2418,7 +2418,7 @@ function compile(command,text) {
 	setGameState(state,command);
         
         //My Code
-        var test = 1;
+        var test = 0;
         var ruleAnalyzer = new pslg.RuleAnalyzer();
         ruleAnalyzer.Initialize(state);
 
@@ -2430,7 +2430,7 @@ function compile(command,text) {
         
         pslg.ruleAnalyzer = ruleAnalyzer;
         pslg.state = state;
-        pslg.maxIterations = 1000;
+        pslg.maxIterations = 2000;
         pslg.totalDifficulties =  pslg.LevelGenerator.levelsOutline.length;
         pslg.startingDifficulty = 0;
         
@@ -2441,21 +2441,23 @@ function compile(command,text) {
         else if(test === 0){
             disableIO = true;
             var expHistogram = [];
-            var comHistogram = [];
+            var ruleFitnessHistogram = [];
             var lenHistogram = [];
             var playHistogram = [];
             var boxHistogram = [];
             var doNothingHistogram = [];
             var objectNumberHistogram = [];
+            var totalFitnessHistogram = [];
             var winScore = 0;
             for (var i = 0; i < 101; i++) {
                 expHistogram.push(0);
-                comHistogram.push(0);
+                ruleFitnessHistogram.push(0);
                 lenHistogram.push(0);
                 playHistogram.push(0);
                 boxHistogram.push(0);
                 doNothingHistogram.push(0);
                 objectNumberHistogram.push(0);
+                totalFitnessHistogram.push(0);
             }
             
             var averageLength = [];
@@ -2463,13 +2465,13 @@ function compile(command,text) {
                 averageLength.push(0);
             }
             
-            var levelGenerator = new pslg.LevelGenerator(new pslg.LGFeatures([0.72453,1,0.24036,0.38305,0.36053,0.19288]));
-            for (var i = 0; i < 1000; i++) {
+            var levelGenerator = new pslg.LevelGenerator(new pslg.LGFeatures([0.38003, 1, 0.0037171, 0.5109, 0.21737, 0.1653]));
+            for (var i = 0; i < 500; i++) {
                 console.log("Trial Number: " + i);
                 state.levels = levelGenerator.GenerateLevels(ruleAnalyzer, state);
                 var solutionDiffLengthScore = [];
                 var solutionLengthScore = [];
-                var solutionComplexityScore = [];
+                var ruleFitnessScore = [];
                 var boxMetricScore = [];
                 var explorationScore = [];
                 var doNothingScore = 0;
@@ -2489,7 +2491,7 @@ function compile(command,text) {
 
                     solutionDiffLengthScore.push(pslg.SolutionDiffLengthScore(dl, result[1].length - previousSolutionLength, pslg.totalDifficulties));
                     solutionLengthScore.push(pslg.SolutionDiffLengthScore(dl, result[1].length - pslg.GetAverageSolutionLength(dl, pslg.totalDifficulties), pslg.totalDifficulties));
-                    solutionComplexityScore.push(pslg.SolutionComplexityScore(result[1], 2));
+                    ruleFitnessScore.push(pslg.AppliedRulesScore(result[3], result[1].length));
                     boxMetricScore.push(pslg.BoxLineMetricScore(result[1]));
                     explorationScore.push(pslg.ExplorationScore(result[0] === 1, result[2], pslg.maxIterations));
 
@@ -2501,12 +2503,20 @@ function compile(command,text) {
                 var objectNumberScore = pslg.NumberOfObjects(state, ruleAnalyzer);
                 
                 expHistogram[Math.round(explorationScore.avg() * 100)] += 1;
-                comHistogram[Math.round(solutionComplexityScore.avg() * 100)] += 1;
+                ruleFitnessHistogram[Math.round(ruleFitnessScore.avg() * 100)] += 1;
                 lenHistogram[Math.round((0.8 * solutionLengthScore.avg() + 0.2 * solutionDiffLengthScore.avg()) * 100)] += 1;
                 playHistogram[Math.round((solvedLevelScore - doNothingScore) * 100)] += 1;
                 boxHistogram[Math.round(boxMetricScore.avg() * 100)] += 1;
                 doNothingHistogram[Math.round(doNothingScore * 100)] += 1;
                 objectNumberHistogram[Math.round(objectNumberScore * 100)] += 1;
+                
+                var fitness = 0.35 * (solvedLevelScore - doNothingScore) +
+                    0.18 * (0.8 * solutionLengthScore.avg() + 0.2 * solutionDiffLengthScore.avg()) +
+                    0.13 * explorationScore.avg() + 
+                    0.13 * boxMetricScore.avg() +
+                    0.13 * ruleFitnessScore.avg() +
+                    0.08 * objectNumberScore;
+                totalFitnessHistogram[Math.round(fitness * 100)] += 1;
             }
             
             console.log("\n##################### Wins #####################\n");
@@ -2514,7 +2524,7 @@ function compile(command,text) {
             
             console.log("\n##################### Average Length #####################\n");
             for (var i = 0; i < pslg.totalDifficulties; i++) {
-                console.log(i + "\t" + (averageLength[i] / 1000).toString());
+                console.log(i + "\t" + (averageLength[i] / 500).toString());
             }
             
             console.log("\n##################### Exploration #####################\n");
@@ -2522,9 +2532,9 @@ function compile(command,text) {
                 console.log(i + "\t" +expHistogram[i] + "\n");
             }
             
-            console.log("\n##################### Complexity #####################\n");
+            console.log("\n##################### Rule Fitness #####################\n");
             for (var i = 0; i < 101; i++) {
-                console.log(i + "\t" +comHistogram[i] + "\n");
+                console.log(i + "\t" +ruleFitnessHistogram[i] + "\n");
             }
             
             console.log("\n##################### Length #####################\n");
@@ -2550,6 +2560,11 @@ function compile(command,text) {
             console.log("\n##################### Box Line Metric #####################\n");
             for (var i = 0; i < 101; i++) {
                 console.log(i + "\t" +boxHistogram[i] + "\n");
+            }
+            
+            console.log("\n##################### Total Fitness #####################\n");
+            for (var i = 0; i < 101; i++) {
+                console.log(i + "\t" +totalFitnessHistogram[i] + "\n");
             }
             disableIO = false;
         }

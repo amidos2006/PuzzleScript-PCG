@@ -625,16 +625,25 @@ function get_level_score(leveldat) {
             switch(wincondition[0]) {
                 case -1://NO
                 {
+                    if(distances.length <= 0){
+                        distances.push(0);
+                    }
                     conditionScore = 1 - distances.avg()/max_manhattan;
                     break;
                 }
                 case 0://SOME
                 {
+                    if(distances.length <= 0){
+                        distances.push(max_manhattan);
+                    }
                     conditionScore = distances.avg()/max_manhattan;
                     break;
                 }
                 case 1://ALL
                 {
+                    if(distances.length <= 0){
+                        distances.push(max_manhattan);
+                    }
                     conditionScore = distances.avg()/max_manhattan;
                     break;
                 }
@@ -687,16 +696,25 @@ function get_output_score(leveldat) {
             switch(wincondition[0]) {
                 case -1://NO
                 {
+                    if(distances.length <= 0){
+                        distances.push(0);
+                    }
                     conditionScore = 1 - distances.avg()/max_manhattan;
                     break;
                 }
                 case 0://SOME
                 {
+                    if(distances.length <= 0){
+                        distances.push(max_manhattan);
+                    }
                     conditionScore = distances.avg()/max_manhattan;
                     break;
                 }
                 case 1://ALL
                 {
+                    if(distances.length <= 0){
+                        distances.push(max_manhattan);
+                    }
                     conditionScore = distances.avg()/max_manhattan;
                     break;
                 }

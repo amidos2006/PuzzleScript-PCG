@@ -70,6 +70,10 @@ this.pslg = this.pslg||{};
         return value;
     }
     
+    function SolutionLengthScore(length, width, height){
+        return Math.getGaussianScore(length / ((width - 2) * (height - 2)), 1.128, 0.468);
+    }
+    
     function SolvedLevelsScore(numberOfSolved, totalNumLevels){
         return numberOfSolved / totalNumLevels;
     }
@@ -125,7 +129,7 @@ this.pslg = this.pslg||{};
     function ExplorationScore(win, iterations, maxIterations){
         var winBonus = 0;
         if(win){
-            winBonus = 0.5;
+            winBonus = 0.75;
         }
         
         return winBonus + (1 - winBonus) * (iterations / maxIterations);
@@ -135,7 +139,7 @@ this.pslg = this.pslg||{};
         if(totalLength === 0){
             return 0;
         }
-        return GetTrapeziumFunctionValue(appRules / totalLength, 0.2, 0.5, 1, 0);
+        return Math.getGaussianScore(appRules / totalLength, 0.451, 0.209);
     }
     
     function NumberOfObjects(state, ruleAnalyzer){
@@ -163,46 +167,37 @@ this.pslg = this.pslg||{};
     function GetLevelFitness(levels){
         var state = pslg.state;
         var ruleAnalyzer = pslg.ruleAnalyzer;
-        var totalDifficulties = pslg.totalDifficulties;
         var maxIterations = pslg.maxIterations;
-        var startingDifficulty = pslg.startingDifficulty;
-
+        
         state.levels = levels;
 
-        var solutionDiffLengthScore = [];
         var solutionLengthScore = [];
         var explorationScore = [];
         var boxMetricScore = [];
         var appliedRuleScore = [];
         var doNothingScore = 0;
-        var previousSolutionLength = 0;
         var solvedLevelScore = 0;
         var objectNumberScore = NumberOfObjects(state, ruleAnalyzer);
         for(var i = 0; i < state.levels.length; i++){
-            var dl = Math.floor( i / pslg.LevelGenerator.numberOfLevelsPerDifficulty + startingDifficulty);
-            
             loadLevelFromState(state, i);
             var result = bestfs(state.levels[i].dat, maxIterations);
             solvedLevelScore += result[0];
             doNothingScore += doNothing(state.levels[i].dat);
             
-            solutionDiffLengthScore.push(SolutionDiffLengthScore(dl, result[1].length - previousSolutionLength, totalDifficulties));
-            solutionLengthScore.push(SolutionDiffLengthScore(dl, result[1].length - GetAverageSolutionLength(dl, totalDifficulties), totalDifficulties));
+            solutionLengthScore.push(SolutionLengthScore(result[1].length, state.levels[i].width, state.levels[i].height));
             explorationScore.push(ExplorationScore(result[0] === 1, result[2], maxIterations));
             appliedRuleScore.push(AppliedRulesScore(result[3], result[1].length));
             boxMetricScore.push(BoxLineMetricScore(result[1]));
-
-            previousSolutionLength = result[1].length;
         }
 
         solvedLevelScore = SolvedLevelsScore(solvedLevelScore, state.levels.length);
         doNothingScore = SolvedLevelsScore(doNothingScore, state.levels.length);
 
-        var fitness = 0.35 * (solvedLevelScore - doNothingScore) +
-                0.18 * (0.8 * solutionLengthScore.avg() + 0.2 * solutionDiffLengthScore.avg()) +
-                0.13 * explorationScore.avg() + 
-                0.13 * boxMetricScore.avg() +
-                0.13 * appliedRuleScore.avg() +
+        var fitness = 0.36 * (solvedLevelScore - doNothingScore) +
+                0.2 * solutionLengthScore.avg() + 
+                0.14 * boxMetricScore.avg() +
+                0.14 * appliedRuleScore.avg() +
+                0.08 * explorationScore.avg() +
                 0.08 * objectNumberScore;
 
         return fitness;
@@ -508,6 +503,7 @@ this.pslg = this.pslg||{};
     pslg.GetAverageSolutionLength = GetAverageSolutionLength;
     pslg.GetTrapeziumFunctionValue = GetTrapeziumFunctionValue;
     pslg.SolutionDiffLengthScore = SolutionDiffLengthScore;
+    pslg.SolutionLengthScore = SolutionLengthScore;
     pslg.SolvedLevelsScore = SolvedLevelsScore;
     pslg.SolutionComplexityScore = SolutionComplexityScore;
     pslg.BoxLineMetricScore = BoxLineMetricScore;

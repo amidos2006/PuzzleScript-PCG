@@ -109,6 +109,7 @@ this.pslg = this.pslg||{};
             this.minNumberObjects[winCond[1]] = 1;
         }
         
+        var minCreateRule = {};
         //Check the original rules
         for(i = 0; i < engineState.originalRules.length; i++){
             var rule = engineState.originalRules[i];
@@ -248,6 +249,12 @@ this.pslg = this.pslg||{};
                     }
                     else if(numberLHS[obj] < numberRHS[obj]){
                         this.objectBehaviour[obj] |= pslg.ObjectBehaviour.CREATE;
+                        if(minCreateRule[obj] === undefined){
+                            minCreateRule[obj] = numberLHS[obj];
+                        }
+                        else if(minCreateRule[obj] > numberLHS[obj]){
+                            minCreateRule[obj] = numberLHS[obj];
+                        }
                     }
                     else{
                         if(moveObj.indexOf(obj) < 0){
@@ -277,6 +284,12 @@ this.pslg = this.pslg||{};
                     }
                     else if(numberLHS[obj] < numberRHS[obj]){
                         this.objectBehaviour[obj] |= pslg.ObjectBehaviour.CREATE;
+                        if(minCreateRule[obj] === undefined){
+                            minCreateRule[obj] = numberLHS[obj];
+                        }
+                        else if(minCreateRule[obj] > numberLHS[obj]){
+                            minCreateRule[obj] = numberLHS[obj];
+                        }
                     }
                     else{
                         if(moveObj.indexOf(obj) < 0){
@@ -286,6 +299,7 @@ this.pslg = this.pslg||{};
                 }
                 else{
                     this.objectBehaviour[obj] |= pslg.ObjectBehaviour.CREATE;
+                    minCreateRule[obj] = 0;
                 }
             }
         }
@@ -318,12 +332,7 @@ this.pslg = this.pslg||{};
         for(var obj in this.minNumberObjects){
             var hasCreateRule = this.objectBehaviour[obj] & ObjectBehaviour.CREATE;
             if(hasCreateRule > 0){
-                if(this.minNumberObjects[obj] > 1){
-                    this.minNumberObjects[obj] = 1;
-                }
-                else{
-                    this.minNumberObjects[obj] = 0;
-                }
+                this.minNumberObjects[obj] = minCreateRule[obj];
             }
         }
     };

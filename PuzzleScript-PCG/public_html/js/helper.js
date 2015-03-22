@@ -168,3 +168,7 @@ Math.getPoint = function(number, height){
     
     return point;
 };
+
+Math.getGaussianScore = function(x, mean, sd){
+    return Math.exp(-Math.pow(x - mean, 2) / (2 * Math.pow(sd, 2)));
+};

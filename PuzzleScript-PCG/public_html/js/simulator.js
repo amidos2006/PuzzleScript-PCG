@@ -629,7 +629,7 @@ function get_level_score(leveldat) {
                     if(winDistances.length <= 0){
                         winDistances.push(0);
                     }
-                    conditionScore = 1 - winDistances.avg()/max_manhattan + distances.avg() / max_manhattan;
+                    conditionScore = 1 - winDistances.nonZeroCount() / winDistances.length + distances.avg() / max_manhattan;
                     break;
                 }
                 case 0://SOME
@@ -700,7 +700,7 @@ function get_output_score(leveldat) {
                     if(distances.length <= 0){
                         distances.push(0);
                     }
-                    conditionScore = 1 - distances.avg()/max_manhattan;
+                    conditionScore = 1 - distances.nonZeroCount() / distances.length;
                     break;
                 }
                 case 0://SOME

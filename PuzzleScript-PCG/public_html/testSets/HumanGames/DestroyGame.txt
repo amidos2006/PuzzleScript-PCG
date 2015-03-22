@@ -1,0 +1,165 @@
+title DestroyGame
+author Ahmed Khalifa
+homepage www.amidos-games.com
+
+========
+OBJECTS
+========
+
+Background
+LIGHTGREEN GREEN
+11111
+01111
+11101
+11111
+10111
+
+
+Target
+DarkBlue Blue
+.....
+.000.
+.0.0.
+.000.
+.....
+
+Gem
+DarkRed Red
+..0..
+.010.
+.100.
+.000.
+..0..
+
+Wall
+BROWN DARKBROWN
+00010
+11111
+01000
+11111
+00010
+
+Player
+Black Orange White Blue
+.000.
+.111.
+22222
+23332
+.3.3.
+
+Crate
+Orange Yellow
+00000
+0...0
+0...0
+0...0
+00000
+
+
+=======
+LEGEND
+=======
+
+. = Background
+# = Wall
+X = Gem
+P = Player
+c = Crate
+t = Target
+O = Gem and Target
+
+=======
+Sounds
+=======
+
+================
+COLLISIONLAYERS
+================
+
+Background 
+Target
+Player, Wall, Crate, Gem
+
+======
+RULES
+======
+
+[ > Player | Crate ] -> [ > Player | > Crate ]
+[ Crate | Gem | Crate ] -> [ | | ]
+[ Gem | Crate | Crate ] -> [ | | ]
+[ Crate | Crate | Gem ] -> [ | | ]
+
+==============
+WINCONDITIONS
+==============
+
+No Target on Gem
+
+=======
+LEVELS
+=======
+
+#####
+#.O.#
+#c.c#
+#.p.#
+#####
+
+######
+##p..#
+##..c#
+#.c.o#
+#...##
+######
+
+#######
+##p..##
+#.cc.o#
+#co.c.#
+##...##
+#######
+
+#######
+#p....#
+#.c...#
+#..#.o#
+#.cc..#
+#co...#
+#######
+
+#######
+#p....#
+#...cc#
+#.c#co#
+#..o..#
+#..#c.#
+#..oc.#
+#..#..#
+#######
+
+#######
+#.p#.o#
+#.c#cc#
+#c....#
+#...c.#
+#.c#o.#
+#o.#..#
+#######
+
+########
+#p.c.o.#
+#.o.c.c#
+#.c##..#
+#c.##co#
+#..o.c.#
+#.....c#
+########
+
+########
+#......#
+#.c##c.#
+#...oc.#
+#oc.c..#
+#c.##o.#
+#.c.ocp#
+########

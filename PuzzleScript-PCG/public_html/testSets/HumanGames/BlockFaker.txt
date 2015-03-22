@@ -1,0 +1,165 @@
+title Blockfaker
+author Ahmed Khalifa
+homepage www.amidos-games.com
+
+========
+OBJECTS
+========
+
+Background
+LIGHTGREEN GREEN
+11111
+01111
+11101
+11111
+10111
+
+
+Target
+DarkBlue Blue
+.....
+.000.
+.0.0.
+.000.
+.....
+
+Stopper
+DarkRed
+.....
+.000.
+.000.
+.000.
+.....
+
+Wall
+BROWN DARKBROWN
+00010
+11111
+01000
+11111
+00010
+
+Player
+Black Orange White Blue
+.000.
+.111.
+22222
+23332
+.3.3.
+
+Crate
+Orange Yellow
+00000
+0...0
+0...0
+0...0
+00000
+
+
+=======
+LEGEND
+=======
+
+. = Background
+# = Wall
+X = Stopper
+P = Player
+c = Crate
+O = Target
+
+=======
+Sounds
+=======
+
+================
+COLLISIONLAYERS
+================
+
+Background 
+Target
+Stopper
+Player, Wall, Crate
+
+======
+RULES
+======
+
+[ > Player | Crate ] -> [ > Player | > Crate ]
+[ > Crate | Crate ] -> [ > Crate | > Crate]
+[ > Crate | Stopper] -> [ Crate | Stopper ]
+[ Crate | Crate | Crate ] -> [ | | ]
+
+==============
+WINCONDITIONS
+==============
+
+all Target on Player
+
+=======
+LEVELS
+=======
+
+#####
+#co##
+#.cx#
+#cp.#
+#####
+
+######
+###xo#
+#pc.##
+#.cc.#
+#...##
+######
+
+#######
+##oc.##
+#xc..c#
+#.cc..#
+##pc.##
+#######
+
+#######
+#cxxc.#
+#.cc..#
+#.c#c.#
+#c.c#c#
+#p.c.o#
+#######
+
+#######
+#...c.#
+#.p#c.#
+###c..#
+#oc..c#
+###c.c#
+#xxxc.#
+#.....#
+#######
+
+#######
+#.c#..#
+#..#c.#
+#.xpc.#
+#c.c..#
+#xc#cc#
+##o#.c#
+#######
+
+########
+#.....p#
+#..c...#
+#.x##.c#
+#.c##c.#
+#cco#c.#
+#cx##.c#
+########
+
+########
+#p#oc..#
+#.###..#
+#cc...x#
+#..c...#
+#xc##cc#
+#cc...c#
+########

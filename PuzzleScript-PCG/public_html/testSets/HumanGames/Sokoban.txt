@@ -1,0 +1,153 @@
+title Sokoban
+author Ahmed Khalifa
+homepage www.amidos-games.com
+
+========
+OBJECTS
+========
+
+Background
+LIGHTGREEN GREEN
+11111
+01111
+11101
+11111
+10111
+
+
+Target
+DarkBlue
+.....
+.000.
+.0.0.
+.000.
+.....
+
+Wall
+BROWN DARKBROWN
+00010
+11111
+01000
+11111
+00010
+
+Player
+Black Orange White Blue
+.000.
+.111.
+22222
+.333.
+.3.3.
+
+Crate
+Orange Yellow
+00000
+0...0
+0...0
+0...0
+00000
+
+
+=======
+LEGEND
+=======
+
+. = Background
+# = Wall
+P = Player
+c = Crate
+t = Target
+
+
+=======
+SOUNDS
+=======
+
+================
+COLLISIONLAYERS
+================
+
+Background
+Target
+Player, Wall, Crate
+
+======
+RULES
+======
+
+[ >  Player | Crate ] -> [  >  Player | > Crate  ]
+
+==============
+WINCONDITIONS
+==============
+
+All Target on Crate
+
+=======
+LEVELS
+=======
+
+#####
+#...#
+#pc.#
+###t#
+#####
+
+######
+##..t#
+##c..#
+#....#
+#p..##
+######
+
+#######
+##...##
+#.c...#
+#pc..t#
+##..t##
+#######
+
+#######
+#t....#
+#.....#
+##c#.##
+#.c...#
+#..p.t#
+#######
+
+#######
+#..#..#
+#....t#
+#.c####
+#..c..#
+#.##c.#
+#.....#
+#t.p.t#
+#######
+
+#######
+#tt#..#
+#..#..#
+#..cc.#
+#..c..#
+#..#..#
+#.t#.p#
+#######
+
+########
+#..#...#
+#.c.cc.#
+#..##.p#
+#c.##.##
+#ttt#..#
+#t.....#
+########
+
+########
+#..#tc.#
+#..###t#
+#.cct..#
+#..cp..#
+#..##..#
+#t.##..#
+########

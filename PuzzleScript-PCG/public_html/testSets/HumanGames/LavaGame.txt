@@ -1,0 +1,164 @@
+title LavaGame
+author Ahmed Khalifa
+homepage www.amidos-games.com
+
+========
+OBJECTS
+========
+
+Background
+LIGHTGREEN GREEN
+11111
+01111
+11101
+11111
+10111
+
+
+Target
+DarkBlue
+.....
+.000.
+.0.0.
+.000.
+.....
+
+Lava
+DarkRed Red
+10101
+01010
+10101
+01010
+10101
+
+Wall
+BROWN DARKBROWN
+00010
+11111
+01000
+11111
+00010
+
+Player
+Black Orange White Blue
+.000.
+.111.
+22222
+23332
+.3.3.
+
+Crate
+Orange Yellow
+00000
+0...0
+0...0
+0...0
+00000
+
+
+=======
+LEGEND
+=======
+
+. = Background
+# = Wall
+X = Lava
+P = Player
+c = Crate
+O = Target
+
+=======
+Sounds
+=======
+
+================
+COLLISIONLAYERS
+================
+
+Background 
+Target
+Lava
+Player, Wall, Crate
+
+======
+RULES
+======
+
+[ > Player | Crate ] -> [ > Player | > Crate ]
+[ > Player | Lava ] -> [ Player | Lava ]
+[ > Crate | Lava ] -> [ | ]
+
+==============
+WINCONDITIONS
+==============
+
+all Target on Player
+
+=======
+LEVELS
+=======
+
+#####
+#.xo#
+#.cx#
+#p..#
+#####
+
+######
+##.xo#
+#xc.##
+#c...#
+#.p.##
+######
+
+#######
+##o#p##
+##x...#
+###cc.#
+##...##
+#######
+
+#######
+#.....#
+#.c.c.#
+#..cc.#
+####..#
+#oxxxp#
+#######
+
+#######
+#p#o#.#
+#.#x..#
+#..#xx#
+#cc.c.#
+#..#..#
+#xcx..#
+#.....#
+#######
+
+#######
+#..#.p#
+#.c#c.#
+#..xc.#
+#.cxxx#
+#xc#xx#
+#..##o#
+#######
+
+########
+#..cxxo#
+#x..x###
+#..##p.#
+#.c##c.#
+#...c..#
+#x.x...#
+########
+
+########
+#.p#ox.#
+#..##x.#
+#.c..x.#
+#.c....#
+#.c##..#
+#...xc.#
+########

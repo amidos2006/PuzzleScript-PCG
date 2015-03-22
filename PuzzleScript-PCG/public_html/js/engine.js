@@ -540,7 +540,10 @@ var backups=[];
 var restartTarget;
 
 function backupLevel() {
-	return level.dat.concat([]);
+    if(humanTesting){
+        return [level.dat.concat([]), numAppRules];
+    }
+    return level.dat.concat([]);
 }
 
 function setGameState(_state, command) {
@@ -722,7 +725,13 @@ function setGameState(_state, command) {
 var messagetext="";
 function restoreLevel(lev) {
 	oldflickscreendat=[];
-	level.dat=lev.concat([]);
+        if(humanTesting){
+            level.dat=lev[0].concat([]);
+            numAppRules = lev[1];
+        }
+        else{
+            level.dat=lev.concat([]);
+        }
 
 	//width/height don't change, neither does layercount
 	for (var i=0;i<level.dat.length;i++) {
@@ -759,6 +768,10 @@ function DoRestart(force) {
 	if (force===false) {
 		backups.push(backupLevel());
 	}
+        if(humanTesting){
+            numAppRules = 0;
+            backups = [];
+        }
 
 	if (verbose_logging) {
 		consolePrint("--- restarting ---");
@@ -2220,7 +2233,7 @@ function checkWin() {
 	}
 
 	if (level.commandQueue.indexOf('win')>=0) {
-		consolePrint("Win Condition Satisfied");
+		consolePrint((backups.length / ((level.height - 2) * (level.width - 2))).toPrecision(5) + "\t" + (numAppRules / backups.length).toPrecision(5));
 		DoWin();
 		return;
 	}
@@ -2228,7 +2241,7 @@ function checkWin() {
 	var won = isLevelWinning(level.dat);
 
 	if (won) {
-		consolePrint("Win Condition Satisfied");
+		consolePrint((backups.length / ((level.height - 2) * (level.width - 2))).toPrecision(5) + "\t" + (numAppRules / backups.length).toPrecision(5));
 		DoWin();
 	}
 }
@@ -2260,6 +2273,10 @@ function anyMovements() {
 
 
 function nextLevel() {
+    if(humanTesting){
+        numAppRules = 0;
+        backups = [];
+    }
 	keybuffer=[];
     againing=false;
 	messagetext="";

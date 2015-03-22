@@ -105,8 +105,11 @@ this.pslg = this.pslg||{};
     }
     
     function BoxLineMetricScore(solution){
-        if(solution.length <= 1){
+        if(solution.length < 1){
             return 0;
+        }
+        if(solution.length === 1){
+            return 1;
         }
         
         var different = 0;

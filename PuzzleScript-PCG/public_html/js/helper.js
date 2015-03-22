@@ -127,6 +127,16 @@ Array.prototype.rand = function() {
 	}
 };
 
+Array.prototype.nonZeroCount = function(){
+    var count = 0;
+    for (var i = 0; i < this.length; i++) {
+        if(this[i] > 0){
+            count++;
+        }
+    }
+    return count;
+};
+
 Array.prototype.clone = function(){
     return this.map(function(obj){ return obj; });
 };

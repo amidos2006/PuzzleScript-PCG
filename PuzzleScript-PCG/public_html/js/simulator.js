@@ -511,6 +511,7 @@ function get_level_score(leveldat) {
             var criticalIndeces = [];
             var ruleIndeces = [];
             
+            var winDistances = [];
             var distances = [];
             
             //Get the critical and rule objects
@@ -571,7 +572,7 @@ function get_level_score(leveldat) {
                         dt.push(get_index_manhattan_distance(indices1[j],indices2[k]));
                 }
                 if (dt.length > 0 ){
-                        distances.push(dt.min());
+                        winDistances.push(dt.min());
                 }
 
             }
@@ -625,30 +626,30 @@ function get_level_score(leveldat) {
             switch(wincondition[0]) {
                 case -1://NO
                 {
-                    if(distances.length <= 0){
-                        distances.push(0);
+                    if(winDistances.length <= 0){
+                        winDistances.push(0);
                     }
-                    conditionScore = 1 - distances.avg()/max_manhattan;
+                    conditionScore = 1 - winDistances.avg()/max_manhattan + distances.avg() / max_manhattan;
                     break;
                 }
                 case 0://SOME
                 {
-                    if(distances.length <= 0){
-                        distances.push(max_manhattan);
+                    if(winDistances.length <= 0){
+                        winDistances.push(max_manhattan);
                     }
-                    conditionScore = distances.avg()/max_manhattan;
+                    conditionScore = winDistances.avg()/max_manhattan + distances.avg()/max_manhattan;
                     break;
                 }
                 case 1://ALL
                 {
-                    if(distances.length <= 0){
-                        distances.push(max_manhattan);
+                    if(winDistances.length <= 0){
+                        winDistances.push(max_manhattan);
                     }
-                    conditionScore = distances.avg()/max_manhattan;
+                    conditionScore = winDistances.avg()/max_manhattan + distances.avg()/max_manhattan;
                     break;
                 }
             }
-            scores.push(conditionScore);
+            scores.push(conditionScore / 2);
         }
         score=scores.avg();
     }

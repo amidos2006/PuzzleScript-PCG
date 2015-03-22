@@ -2418,7 +2418,7 @@ function compile(command,text) {
 	setGameState(state,command);
         
         //My Code
-        var test = -1;
+        var test = -3;
         var ruleAnalyzer = new pslg.RuleAnalyzer();
         ruleAnalyzer.Initialize(state);
 
@@ -2434,9 +2434,98 @@ function compile(command,text) {
         pslg.totalDifficulties =  pslg.LevelGenerator.levelsOutline.length;
         pslg.startingDifficulty = 0;
         
-        if(test === -1){
-            var levelGenerator = new pslg.LevelGenerator(new pslg.LGFeatures([0.2918, 1, 0.17341, 0.7166, 0.11969, 0.1332]));
+        if(test === -3){
+            humanTesting = true;
+        }
+        else if(test === -2){
+            var levelGenerator = new pslg.LevelGenerator(pslg.LevelGenerator.AutoFeatures(pslg.ruleAnalyzer));
             state.levels = levelGenerator.GenerateLevels(ruleAnalyzer, state);
+        }
+        else if(test === -1){
+            disableIO = true;
+            var averageLength = [];
+            var ruleNumber = [];
+            var explorationNumber = [];
+            var freeAreaNumber = [];
+            var solutionDiffLengthScore = [];
+            var solutionLengthScore = [];
+            var ruleFitnessScore = [];
+            var boxMetricScore = [];
+            var explorationScore = [];
+            var doNothingScore = [];
+            var solvedLevelScore = [];
+            var previousSolutionLength = 0;
+            
+            for(var j = 0; j < state.levels.length; j++){
+                var dl = Math.floor(j / pslg.LevelGenerator.numberOfLevelsPerDifficulty);
+                loadLevelFromState(state, j);
+                var result = bestfs(state.levels[j].dat, pslg.maxIterations);
+                
+                solvedLevelScore.push(result[0]);
+                averageLength.push(result[1].length);
+                explorationNumber.push(result[2]);
+                ruleNumber.push(result[3]);
+                freeAreaNumber.push(pslg.LevelGenerator.emptySpaces[dl].length);
+                
+                doNothingScore.push(doNothing(state.levels[j].dat));
+                solutionLengthScore.push(pslg.SolutionDiffLengthScore(dl, result[1].length - pslg.GetAverageSolutionLength(dl, pslg.totalDifficulties), pslg.totalDifficulties));
+                solutionDiffLengthScore.push(pslg.SolutionDiffLengthScore(dl, result[1].length - previousSolutionLength, pslg.totalDifficulties));
+                
+                ruleFitnessScore.push(pslg.AppliedRulesScore(result[3], result[1].length));
+                boxMetricScore.push(pslg.BoxLineMetricScore(result[1]));
+                explorationScore.push(pslg.ExplorationScore(result[0] === 1, result[2], pslg.maxIterations));
+
+                previousSolutionLength = result[1].length;
+            }
+
+            console.log("\n##################### Solved Score #####################\n");
+            for (var i = 0; i < solvedLevelScore.length; i++) {
+                console.log(i + "\t" + solvedLevelScore[i]);
+            }
+            
+            console.log("\n##################### DoNothing Score #####################\n");
+            for (var i = 0; i < doNothingScore.length; i++) {
+                console.log(i + "\t" + doNothingScore[i]);
+            }
+            
+            console.log("\n##################### Average Length #####################\n");
+            for (var i = 0; i < averageLength.length; i++) {
+                console.log(i + "\t" + averageLength[i]);
+            }
+            
+            console.log("\n##################### Exploration #####################\n");
+            for (var i = 0; i < explorationNumber.length; i++) {
+                console.log(i + "\t" + explorationNumber[i]);
+            }
+            
+            console.log("\n##################### Rules #####################\n");
+            for (var i = 0; i < ruleNumber.length; i++) {
+                console.log(i + "\t" + ruleNumber[i]);
+            }
+            
+            console.log("\n##################################################\n");
+            
+            console.log("\n##################### Solution Length Score #####################\n");
+            for (var i = 0; i < solutionLengthScore.length; i++) {
+                console.log(i + "\t" + solutionLengthScore[i]);
+            }
+            
+            console.log("\n##################### BoxMetric Fitness #####################\n");
+            for (var i = 0; i < boxMetricScore.length; i++) {
+                console.log(i + "\t" + boxMetricScore[i]);
+            }
+            
+            console.log("\n##################### Exploration Fitness #####################\n");
+            for (var i = 0; i < explorationScore.length; i++) {
+                console.log(i + "\t" + explorationScore[i]);
+            }
+            
+            console.log("\n##################### Rule Fitness #####################\n");
+            for (var i = 0; i < ruleFitnessScore.length; i++) {
+                console.log(i + "\t" + ruleFitnessScore[i]);
+            }
+            
+            disableIO = false;
         }
         else if(test === 0){
             disableIO = true;

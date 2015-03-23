@@ -2355,122 +2355,229 @@ function loadFile(str) {
 
 var ifrm;
 function compile(command,text) {
-	console.log('>>>> compile(), command=%s', command.toString());
-        disableIO = false;
-	forceRegenImages=true;
-	if (command===undefined) {
-		command = ["restart"];
-	}
-	lastDownTarget=canvas;	
+    console.log('>>>> compile(), command=%s', command.toString());
+    disableIO = false;
+    forceRegenImages=true;
+    if (command===undefined) {
+        command = ["restart"];
+    }
+    lastDownTarget=canvas;	
 
-	if (text===undefined){
-		var code = window.form1.code;
+    if (text===undefined){
+        var code = window.form1.code;
 
-		var editor = code.editorreference;
+        var editor = code.editorreference;
 
-		text = editor.getValue()+"\n";
-	}
-	if (canDump===true) {
-		compiledText=text;
-	}
+        text = editor.getValue()+"\n";
+    }
+    if (canDump===true) {
+        compiledText=text;
+    }
 
-	errorCount = 0;
-	compiling = true;
-	errorStrings = [];
-	consolePrint('=================================');
-	try
-	{
-		var state = loadFile(text);
+    errorCount = 0;
+    compiling = true;
+    errorStrings = [];
+    consolePrint('=================================');
+    try
+    {
+        var state = loadFile(text);
 //		consolePrint(JSON.stringify(state));
-	} finally {
-		compiling = false;
-	}
-	if (errorCount>MAX_ERRORS) {
-		return;
-	}
-	/*catch(err)
-	{
-		if (anyErrors===false) {
-			logErrorNoLine(err.toString());
-		}
-	}*/
+    } finally {
+        compiling = false;
+    }
+    if (errorCount>MAX_ERRORS) {
+        return;
+    }
+    /*catch(err)
+    {
+            if (anyErrors===false) {
+                    logErrorNoLine(err.toString());
+            }
+    }*/
 
-	if (errorCount>0) {
-		consoleError('<span class="systemMessage">Errors detected during compilation, the game may not work correctly.</span>');
-	}
-	else {
-		var ruleCount=0;
-		for (var i=0;i<state.rules.length;i++) {
-			ruleCount+=state.rules[i].length;
-		}
-		for (var i=0;i<state.lateRules.length;i++) {
-			ruleCount+=state.lateRules[i].length;
-		}
-		if (command[0]=="restart") {
-			consolePrint('<span class="systemMessage">Successful Compilation, generated ' + ruleCount + ' instructions.</span>');
-		} else {
-			consolePrint('<span class="systemMessage">Successful live recompilation, generated ' + ruleCount + ' instructions.</span>');
-
-		}
-	}
-        tempCanvasResize = canvasResize;
-        tempRedraw = redraw;
-	setGameState(state,command);
-        
-        //My Code
-        var test = -3;
-        var ruleAnalyzer = new pslg.RuleAnalyzer();
-        ruleAnalyzer.Initialize(state);
-
-        pslg.LevelGenerator.numberOfLevelsPerDifficulty = 1;
-        pslg.LevelGenerator.moreStrict = true;
-        pslg.LevelGenerator.levelsOutline = state.levels;
-        pslg.LevelGenerator.Initialize(state.objectMasks);
-        pslg.InitializeSoultionAnalysis([0,1,2,3]);
-        
-        pslg.ruleAnalyzer = ruleAnalyzer;
-        pslg.state = state;
-        pslg.maxIterations = 2000;
-        pslg.totalDifficulties =  pslg.LevelGenerator.levelsOutline.length;
-        pslg.startingDifficulty = 0;
-        
-        if(test === -3){
-            humanTesting = true;
+    if (errorCount>0) {
+        consoleError('<span class="systemMessage">Errors detected during compilation, the game may not work correctly.</span>');
+    }
+    else {
+        var ruleCount=0;
+        for (var i=0;i<state.rules.length;i++) {
+            ruleCount+=state.rules[i].length;
         }
-        else if(test === -2){
-            var levelGenerator = new pslg.LevelGenerator(pslg.LevelGenerator.AutoFeatures(pslg.ruleAnalyzer));
+        for (var i=0;i<state.lateRules.length;i++) {
+            ruleCount+=state.lateRules[i].length;
+        }
+        if (command[0]=="restart") {
+            consolePrint('<span class="systemMessage">Successful Compilation, generated ' + ruleCount + ' instructions.</span>');
+        } else {
+            consolePrint('<span class="systemMessage">Successful live recompilation, generated ' + ruleCount + ' instructions.</span>');
+
+        }
+    }
+    tempCanvasResize = canvasResize;
+    tempRedraw = redraw;
+    setGameState(state,command);
+
+    //My Code
+    var test = 3;
+    var ruleAnalyzer = new pslg.RuleAnalyzer();
+    ruleAnalyzer.Initialize(state);
+
+    pslg.LevelGenerator.numberOfLevelsPerDifficulty = 1;
+    pslg.LevelGenerator.moreStrict = true;
+    pslg.LevelGenerator.levelsOutline = state.levels;
+    pslg.LevelGenerator.Initialize(state.objectMasks);
+    pslg.InitializeSoultionAnalysis([0,1,2,3]);
+
+    pslg.ruleAnalyzer = ruleAnalyzer;
+    pslg.state = state;
+    pslg.maxIterations = 2000;
+    pslg.totalDifficulties =  pslg.LevelGenerator.levelsOutline.length;
+    pslg.startingDifficulty = 0;
+
+    //Human Testing
+    if(test === -3){
+        humanTesting = true;
+    }
+    //Testing Auto Generator
+    else if(test === -2){
+        var levelGenerator = new pslg.LevelGenerator(pslg.LevelGenerator.AutoFeatures(pslg.ruleAnalyzer));
+        state.levels = levelGenerator.GenerateLevels(ruleAnalyzer, state);
+    }
+    //Testing Human Designed Levels
+    else if(test === -1){
+        disableIO = true;
+        var averageLength = [];
+        var ruleNumber = [];
+        var explorationNumber = [];
+        var freeAreaNumber = [];
+        var solutionDiffLengthScore = [];
+        var solutionLengthScore = [];
+        var ruleFitnessScore = [];
+        var boxMetricScore = [];
+        var explorationScore = [];
+        var doNothingScore = [];
+        var solvedLevelScore = [];
+
+        for(var j = 0; j < state.levels.length; j++){
+            var dl = Math.floor(j / pslg.LevelGenerator.numberOfLevelsPerDifficulty);
+            loadLevelFromState(state, j);
+            var result = bestfs(state.levels[j].dat, pslg.maxIterations);
+
+            solvedLevelScore.push(result[0]);
+            averageLength.push(result[1].length);
+            explorationNumber.push(result[2]);
+            ruleNumber.push(result[3]);
+            freeAreaNumber.push(pslg.LevelGenerator.emptySpaces[dl].length);
+
+            doNothingScore.push(doNothing(state.levels[j].dat));
+            solutionLengthScore.push(pslg.SolutionLengthScore(result[1].length, state.levels[j].w, state.levels[j].h));
+
+            ruleFitnessScore.push(pslg.AppliedRulesScore(result[3], result[1].length));
+            boxMetricScore.push(pslg.BoxLineMetricScore(result[1]));
+            explorationScore.push(pslg.ExplorationScore(result[0] === 1, result[2], pslg.maxIterations));
+        }
+
+        console.log("\n##################### Solved Score #####################\n");
+        for (var i = 0; i < solvedLevelScore.length; i++) {
+            console.log(i + "\t" + solvedLevelScore[i]);
+        }
+
+        console.log("\n##################### DoNothing Score #####################\n");
+        for (var i = 0; i < doNothingScore.length; i++) {
+            console.log(i + "\t" + doNothingScore[i]);
+        }
+
+        console.log("\n##################### Average Length #####################\n");
+        for (var i = 0; i < averageLength.length; i++) {
+            console.log(i + "\t" + averageLength[i]);
+        }
+
+        console.log("\n##################### Exploration #####################\n");
+        for (var i = 0; i < explorationNumber.length; i++) {
+            console.log(i + "\t" + explorationNumber[i]);
+        }
+
+        console.log("\n##################### Rules #####################\n");
+        for (var i = 0; i < ruleNumber.length; i++) {
+            console.log(i + "\t" + ruleNumber[i]);
+        }
+
+        console.log("\n##################### Solution Length Score #####################\n");
+        for (var i = 0; i < solutionLengthScore.length; i++) {
+            console.log(i + "\t" + solutionLengthScore[i]);
+        }
+
+        console.log("\n##################### BoxMetric Fitness #####################\n");
+        for (var i = 0; i < boxMetricScore.length; i++) {
+            console.log(i + "\t" + boxMetricScore[i]);
+        }
+
+        console.log("\n##################### Exploration Fitness #####################\n");
+        for (var i = 0; i < explorationScore.length; i++) {
+            console.log(i + "\t" + explorationScore[i]);
+        }
+
+        console.log("\n##################### Rule Fitness #####################\n");
+        for (var i = 0; i < ruleFitnessScore.length; i++) {
+            console.log(i + "\t" + ruleFitnessScore[i]);
+        }
+
+        disableIO = false;
+    }
+    //Testing Levels Generated
+    else if(test === 0){
+        disableIO = true;
+        var expHistogram = [];
+        var ruleFitnessHistogram = [];
+        var lenHistogram = [];
+        var playHistogram = [];
+        var boxHistogram = [];
+        var doNothingHistogram = [];
+        var objectNumberHistogram = [];
+        var totalFitnessHistogram = [];
+        var winScore = 0;
+        for (var i = 0; i < 101; i++) {
+            expHistogram.push(0);
+            ruleFitnessHistogram.push(0);
+            lenHistogram.push(0);
+            playHistogram.push(0);
+            boxHistogram.push(0);
+            doNothingHistogram.push(0);
+            objectNumberHistogram.push(0);
+            totalFitnessHistogram.push(0);
+        }
+
+        var averageLength = [];
+        for (var i = 0; i < pslg.totalDifficulties; i++) {
+            averageLength.push(0);
+        }
+
+        var levelGenerator = new pslg.LevelGenerator(new pslg.LGFeatures([0.38003, 1, 0.0037171, 0.5109, 0.21737, 0.1653]));
+        for (var i = 0; i < 500; i++) {
+            console.log("Trial Number: " + i);
             state.levels = levelGenerator.GenerateLevels(ruleAnalyzer, state);
-        }
-        else if(test === -1){
-            disableIO = true;
-            var averageLength = [];
-            var ruleNumber = [];
-            var explorationNumber = [];
-            var freeAreaNumber = [];
             var solutionDiffLengthScore = [];
             var solutionLengthScore = [];
             var ruleFitnessScore = [];
             var boxMetricScore = [];
             var explorationScore = [];
-            var doNothingScore = [];
-            var solvedLevelScore = [];
+            var doNothingScore = 0;
             var previousSolutionLength = 0;
-            
+            var solvedLevelScore = 0;
             for(var j = 0; j < state.levels.length; j++){
                 var dl = Math.floor(j / pslg.LevelGenerator.numberOfLevelsPerDifficulty);
                 loadLevelFromState(state, j);
+
                 var result = bestfs(state.levels[j].dat, pslg.maxIterations);
-                
-                solvedLevelScore.push(result[0]);
-                averageLength.push(result[1].length);
-                explorationNumber.push(result[2]);
-                ruleNumber.push(result[3]);
-                freeAreaNumber.push(pslg.LevelGenerator.emptySpaces[dl].length);
-                
-                doNothingScore.push(doNothing(state.levels[j].dat));
-                solutionLengthScore.push(pslg.SolutionDiffLengthScore(dl, result[1].length - pslg.GetAverageSolutionLength(dl, pslg.totalDifficulties), pslg.totalDifficulties));
+                solvedLevelScore += result[0];
+                if(result[0] === 1){
+                    winScore += 1;
+                }
+                averageLength[dl] += result[1].length;
+                doNothingScore += doNothing(state.levels[j].dat);
+
                 solutionDiffLengthScore.push(pslg.SolutionDiffLengthScore(dl, result[1].length - previousSolutionLength, pslg.totalDifficulties));
-                
+                solutionLengthScore.push(pslg.SolutionDiffLengthScore(dl, result[1].length - pslg.GetAverageSolutionLength(dl, pslg.totalDifficulties), pslg.totalDifficulties));
                 ruleFitnessScore.push(pslg.AppliedRulesScore(result[3], result[1].length));
                 boxMetricScore.push(pslg.BoxLineMetricScore(result[1]));
                 explorationScore.push(pslg.ExplorationScore(result[0] === 1, result[2], pslg.maxIterations));
@@ -2478,263 +2585,167 @@ function compile(command,text) {
                 previousSolutionLength = result[1].length;
             }
 
-            console.log("\n##################### Solved Score #####################\n");
-            for (var i = 0; i < solvedLevelScore.length; i++) {
-                console.log(i + "\t" + solvedLevelScore[i]);
-            }
-            
-            console.log("\n##################### DoNothing Score #####################\n");
-            for (var i = 0; i < doNothingScore.length; i++) {
-                console.log(i + "\t" + doNothingScore[i]);
-            }
-            
-            console.log("\n##################### Average Length #####################\n");
-            for (var i = 0; i < averageLength.length; i++) {
-                console.log(i + "\t" + averageLength[i]);
-            }
-            
-            console.log("\n##################### Exploration #####################\n");
-            for (var i = 0; i < explorationNumber.length; i++) {
-                console.log(i + "\t" + explorationNumber[i]);
-            }
-            
-            console.log("\n##################### Rules #####################\n");
-            for (var i = 0; i < ruleNumber.length; i++) {
-                console.log(i + "\t" + ruleNumber[i]);
-            }
-            
-            console.log("\n##################################################\n");
-            
-            console.log("\n##################### Solution Length Score #####################\n");
-            for (var i = 0; i < solutionLengthScore.length; i++) {
-                console.log(i + "\t" + solutionLengthScore[i]);
-            }
-            
-            console.log("\n##################### BoxMetric Fitness #####################\n");
-            for (var i = 0; i < boxMetricScore.length; i++) {
-                console.log(i + "\t" + boxMetricScore[i]);
-            }
-            
-            console.log("\n##################### Exploration Fitness #####################\n");
-            for (var i = 0; i < explorationScore.length; i++) {
-                console.log(i + "\t" + explorationScore[i]);
-            }
-            
-            console.log("\n##################### Rule Fitness #####################\n");
-            for (var i = 0; i < ruleFitnessScore.length; i++) {
-                console.log(i + "\t" + ruleFitnessScore[i]);
-            }
-            
-            disableIO = false;
+            solvedLevelScore = pslg.SolvedLevelsScore(solvedLevelScore, pslg.totalDifficulties);
+            doNothingScore = pslg.SolvedLevelsScore(doNothingScore, pslg.totalDifficulties);
+            var objectNumberScore = pslg.NumberOfObjects(state, ruleAnalyzer);
+
+            expHistogram[Math.round(explorationScore.avg() * 100)] += 1;
+            ruleFitnessHistogram[Math.round(ruleFitnessScore.avg() * 100)] += 1;
+            lenHistogram[Math.round((0.8 * solutionLengthScore.avg() + 0.2 * solutionDiffLengthScore.avg()) * 100)] += 1;
+            playHistogram[Math.round((solvedLevelScore - doNothingScore) * 100)] += 1;
+            boxHistogram[Math.round(boxMetricScore.avg() * 100)] += 1;
+            doNothingHistogram[Math.round(doNothingScore * 100)] += 1;
+            objectNumberHistogram[Math.round(objectNumberScore * 100)] += 1;
+
+            var fitness = 0.35 * (solvedLevelScore - doNothingScore) +
+                0.18 * (0.8 * solutionLengthScore.avg() + 0.2 * solutionDiffLengthScore.avg()) +
+                0.13 * explorationScore.avg() + 
+                0.13 * boxMetricScore.avg() +
+                0.13 * ruleFitnessScore.avg() +
+                0.08 * objectNumberScore;
+            totalFitnessHistogram[Math.round(fitness * 100)] += 1;
         }
-        else if(test === 0){
-            disableIO = true;
-            var expHistogram = [];
-            var ruleFitnessHistogram = [];
-            var lenHistogram = [];
-            var playHistogram = [];
-            var boxHistogram = [];
-            var doNothingHistogram = [];
-            var objectNumberHistogram = [];
-            var totalFitnessHistogram = [];
-            var winScore = 0;
-            for (var i = 0; i < 101; i++) {
-                expHistogram.push(0);
-                ruleFitnessHistogram.push(0);
-                lenHistogram.push(0);
-                playHistogram.push(0);
-                boxHistogram.push(0);
-                doNothingHistogram.push(0);
-                objectNumberHistogram.push(0);
-                totalFitnessHistogram.push(0);
-            }
-            
-            var averageLength = [];
-            for (var i = 0; i < pslg.totalDifficulties; i++) {
-                averageLength.push(0);
-            }
-            
-            var levelGenerator = new pslg.LevelGenerator(new pslg.LGFeatures([0.38003, 1, 0.0037171, 0.5109, 0.21737, 0.1653]));
-            for (var i = 0; i < 500; i++) {
-                console.log("Trial Number: " + i);
-                state.levels = levelGenerator.GenerateLevels(ruleAnalyzer, state);
-                var solutionDiffLengthScore = [];
-                var solutionLengthScore = [];
-                var ruleFitnessScore = [];
-                var boxMetricScore = [];
-                var explorationScore = [];
-                var doNothingScore = 0;
-                var previousSolutionLength = 0;
-                var solvedLevelScore = 0;
-                for(var j = 0; j < state.levels.length; j++){
-                    var dl = Math.floor(j / pslg.LevelGenerator.numberOfLevelsPerDifficulty);
-                    loadLevelFromState(state, j);
-                    
-                    var result = bestfs(state.levels[j].dat, pslg.maxIterations);
-                    solvedLevelScore += result[0];
-                    if(result[0] === 1){
-                        winScore += 1;
-                    }
-                    averageLength[dl] += result[1].length;
-                    doNothingScore += doNothing(state.levels[j].dat);
 
-                    solutionDiffLengthScore.push(pslg.SolutionDiffLengthScore(dl, result[1].length - previousSolutionLength, pslg.totalDifficulties));
-                    solutionLengthScore.push(pslg.SolutionDiffLengthScore(dl, result[1].length - pslg.GetAverageSolutionLength(dl, pslg.totalDifficulties), pslg.totalDifficulties));
-                    ruleFitnessScore.push(pslg.AppliedRulesScore(result[3], result[1].length));
-                    boxMetricScore.push(pslg.BoxLineMetricScore(result[1]));
-                    explorationScore.push(pslg.ExplorationScore(result[0] === 1, result[2], pslg.maxIterations));
+        console.log("\n##################### Wins #####################\n");
+        console.log(Math.round(winScore / 8));
 
-                    previousSolutionLength = result[1].length;
-                }
-                
-                solvedLevelScore = pslg.SolvedLevelsScore(solvedLevelScore, pslg.totalDifficulties);
-                doNothingScore = pslg.SolvedLevelsScore(doNothingScore, pslg.totalDifficulties);
-                var objectNumberScore = pslg.NumberOfObjects(state, ruleAnalyzer);
-                
-                expHistogram[Math.round(explorationScore.avg() * 100)] += 1;
-                ruleFitnessHistogram[Math.round(ruleFitnessScore.avg() * 100)] += 1;
-                lenHistogram[Math.round((0.8 * solutionLengthScore.avg() + 0.2 * solutionDiffLengthScore.avg()) * 100)] += 1;
-                playHistogram[Math.round((solvedLevelScore - doNothingScore) * 100)] += 1;
-                boxHistogram[Math.round(boxMetricScore.avg() * 100)] += 1;
-                doNothingHistogram[Math.round(doNothingScore * 100)] += 1;
-                objectNumberHistogram[Math.round(objectNumberScore * 100)] += 1;
-                
-                var fitness = 0.35 * (solvedLevelScore - doNothingScore) +
-                    0.18 * (0.8 * solutionLengthScore.avg() + 0.2 * solutionDiffLengthScore.avg()) +
-                    0.13 * explorationScore.avg() + 
-                    0.13 * boxMetricScore.avg() +
-                    0.13 * ruleFitnessScore.avg() +
-                    0.08 * objectNumberScore;
-                totalFitnessHistogram[Math.round(fitness * 100)] += 1;
-            }
-            
-            console.log("\n##################### Wins #####################\n");
-            console.log(Math.round(winScore / 8));
-            
-            console.log("\n##################### Average Length #####################\n");
-            for (var i = 0; i < pslg.totalDifficulties; i++) {
-                console.log(i + "\t" + (averageLength[i] / 500).toString());
-            }
-            
-            console.log("\n##################### Exploration #####################\n");
-            for (var i = 0; i < 101; i++) {
-                console.log(i + "\t" +expHistogram[i] + "\n");
-            }
-            
-            console.log("\n##################### Rule Fitness #####################\n");
-            for (var i = 0; i < 101; i++) {
-                console.log(i + "\t" +ruleFitnessHistogram[i] + "\n");
-            }
-            
-            console.log("\n##################### Length #####################\n");
-            for (var i = 0; i < 101; i++) {
-                console.log(i + "\t" +lenHistogram[i] + "\n");
-            }
-            
-            console.log("\n##################### Play #####################\n");
-            for (var i = 0; i < 101; i++) {
-                console.log(i + "\t" +playHistogram[i] + "\n");
-            }
-            
-            console.log("\n##################### Do Nothing #####################\n");
-            for (var i = 0; i < 101; i++) {
-                console.log(i + "\t" +doNothingHistogram[i] + "\n");
-            }
-            
-            console.log("\n##################### Object Number #####################\n");
-            for (var i = 0; i < 101; i++) {
-                console.log(i + "\t" +objectNumberHistogram[i] + "\n");
-            }
-            
-            console.log("\n##################### Box Line Metric #####################\n");
-            for (var i = 0; i < 101; i++) {
-                console.log(i + "\t" +boxHistogram[i] + "\n");
-            }
-            
-            console.log("\n##################### Total Fitness #####################\n");
-            for (var i = 0; i < 101; i++) {
-                console.log(i + "\t" +totalFitnessHistogram[i] + "\n");
-            }
-            disableIO = false;
+        console.log("\n##################### Average Length #####################\n");
+        for (var i = 0; i < pslg.totalDifficulties; i++) {
+            console.log(i + "\t" + (averageLength[i] / 500).toString());
         }
-        else if(test === 1){
-            pslg.GeneticAlgorithm.numberOfGenerations = 100;
-            pslg.GeneticAlgorithm.populationSize = 50;
-            pslg.GeneticAlgorithm.sdError = 0;
-            pslg.GeneticAlgorithm.crossoverRate = 0.7;
-            pslg.GeneticAlgorithm.mutationRate = 0.1;
-            pslg.GeneticAlgorithm.elitismRatio = 0;
 
-            var initialData = {};
-            initialData["Initialize"] = pslg.ParameterEvolutionInitialize;
-            initialData["Clone"] = pslg.ParameterEvolutionClone;
-            initialData["CrossOver"] = pslg.ParameterEvolutionCrossOver;
-            initialData["Mutation"] = pslg.ParameterEvolutionMutation;
-            initialData["CalculateFitness"] = pslg.ParameterEvolutionCalculateFitness;
-            initialData["data"] = {};
+        console.log("\n##################### Exploration #####################\n");
+        for (var i = 0; i < 101; i++) {
+            console.log(i + "\t" +expHistogram[i] + "\n");
+        }
 
-            disableIO = true;
-            var genetic = new pslg.GeneticAlgorithm(initialData);
-            var bestParameter = genetic.Evolve(1);
-            disableIO = false;
-            
-            console.log("Best Parameters: " + bestParameter[0].genes + " with Best Fitness: " + bestParameter[0].fitness + " at age of " + bestParameter[0].age);
-            
-            var levelGenerator = new pslg.LevelGenerator(new pslg.LGFeatures(bestParameter[0].genes));
+        console.log("\n##################### Rule Fitness #####################\n");
+        for (var i = 0; i < 101; i++) {
+            console.log(i + "\t" +ruleFitnessHistogram[i] + "\n");
+        }
+
+        console.log("\n##################### Length #####################\n");
+        for (var i = 0; i < 101; i++) {
+            console.log(i + "\t" +lenHistogram[i] + "\n");
+        }
+
+        console.log("\n##################### Play #####################\n");
+        for (var i = 0; i < 101; i++) {
+            console.log(i + "\t" +playHistogram[i] + "\n");
+        }
+
+        console.log("\n##################### Do Nothing #####################\n");
+        for (var i = 0; i < 101; i++) {
+            console.log(i + "\t" +doNothingHistogram[i] + "\n");
+        }
+
+        console.log("\n##################### Object Number #####################\n");
+        for (var i = 0; i < 101; i++) {
+            console.log(i + "\t" +objectNumberHistogram[i] + "\n");
+        }
+
+        console.log("\n##################### Box Line Metric #####################\n");
+        for (var i = 0; i < 101; i++) {
+            console.log(i + "\t" +boxHistogram[i] + "\n");
+        }
+
+        console.log("\n##################### Total Fitness #####################\n");
+        for (var i = 0; i < 101; i++) {
+            console.log(i + "\t" +totalFitnessHistogram[i] + "\n");
+        }
+        disableIO = false;
+    }
+    //Find best parameters for a game
+    else if(test === 1){
+        pslg.GeneticAlgorithm.numberOfGenerations = 100;
+        pslg.GeneticAlgorithm.populationSize = 50;
+        pslg.GeneticAlgorithm.sdError = 0;
+        pslg.GeneticAlgorithm.crossoverRate = 0.7;
+        pslg.GeneticAlgorithm.mutationRate = 0.1;
+        pslg.GeneticAlgorithm.elitismRatio = 0;
+
+        var initialData = {};
+        initialData["Initialize"] = pslg.ParameterEvolutionInitialize;
+        initialData["Clone"] = pslg.ParameterEvolutionClone;
+        initialData["CrossOver"] = pslg.ParameterEvolutionCrossOver;
+        initialData["Mutation"] = pslg.ParameterEvolutionMutation;
+        initialData["CalculateFitness"] = pslg.ParameterEvolutionCalculateFitness;
+        initialData["data"] = {};
+
+        disableIO = true;
+        var genetic = new pslg.GeneticAlgorithm(initialData);
+        var bestParameter = genetic.Evolve(1);
+        disableIO = false;
+
+        console.log("Best Parameters: " + bestParameter[0].genes + " with Best Fitness: " + bestParameter[0].fitness + " at age of " + bestParameter[0].age);
+
+        var levelGenerator = new pslg.LevelGenerator(new pslg.LGFeatures(bestParameter[0].genes));
+        state.levels = levelGenerator.GenerateLevels(ruleAnalyzer, state);
+    }
+    //Testing Levels Generated
+    else if(test === 2){
+        disableIO = true;
+
+        var features = pslg.LevelGenerator.AutoFeatures(pslg.ruleAnalyzer);
+        var levelGenerator = new pslg.LevelGenerator(features);
+
+        var fitnessArray = [];
+        for (var i = 0; i < 1000; i++) {
+            console.log("Trial Number: " + i);
             state.levels = levelGenerator.GenerateLevels(ruleAnalyzer, state);
+            fitnessArray.push(pslg.GetLevelFitness(state.levels));
         }
-        else if(test === 2){
-            disableIO = true;
+
+        console.log("Current Features: " + features.ConvertToArray());
+        console.log("Average Fitness: " + fitnessArray.avg() + ", Min Fitness: " + fitnessArray.min() + ", Max Fitness: " + fitnessArray.max() + " ,sd: " + fitnessArray.sd());
+        state.levels = levelGenerator.GenerateLevels(pslg.ruleAnalyzer, state);
+
+        disableIO = false;
+    }
+    //Generating best 8 levels
+    else if(test === 3){
+        pslg.GeneticAlgorithm.numberOfGenerations = 100;
+        pslg.GeneticAlgorithm.populationSize = 50;
+        pslg.GeneticAlgorithm.sdError = 0;
+        pslg.GeneticAlgorithm.crossoverRate = 0.7;
+        pslg.GeneticAlgorithm.mutationRate = 0.1;
+        pslg.GeneticAlgorithm.elitismRatio = 0;
+
+        var levels = [];
+        var initialData = {};
+        initialData["Initialize"] = pslg.LevelEvolutionInitialize;
+        initialData["Clone"] = pslg.LevelEvolutionClone;
+        initialData["CrossOver"] = pslg.LevelEvolutionCrossOver;
+        initialData["Mutation"] = pslg.LevelEvolutionMutation;
+        initialData["CalculateFitness"] = pslg.LevelEvolutionCalculateFitness;
+        
+        disableIO = true;
+        for (var i = 0; i < pslg.totalDifficulties; i++) {
+            console.log("#######################################");
+            console.log("Generating level: " + (i + 1).toString());
+            console.log("#######################################");
             
-            var features = pslg.LevelGenerator.AutoFeatures(pslg.ruleAnalyzer);
-            var levelGenerator = new pslg.LevelGenerator(features);
-            
-            var fitnessArray = [];
-            for (var i = 0; i < 1000; i++) {
-                console.log("Trial Number: " + i);
-                state.levels = levelGenerator.GenerateLevels(ruleAnalyzer, state);
-                fitnessArray.push(pslg.GetLevelFitness(state.levels));
-            }
-            
-            console.log("Current Features: " + features.ConvertToArray());
-            console.log("Average Fitness: " + fitnessArray.avg() + ", Min Fitness: " + fitnessArray.min() + ", Max Fitness: " + fitnessArray.max() + " ,sd: " + fitnessArray.sd());
-            state.levels = levelGenerator.GenerateLevels(pslg.ruleAnalyzer, state);
-            
-            disableIO = false;
-        }
-        else if(test === 3){
-            pslg.GeneticAlgorithm.numberOfGenerations = 100;
-            pslg.GeneticAlgorithm.populationSize = 50;
-            pslg.GeneticAlgorithm.sdError = 0;
-            pslg.GeneticAlgorithm.crossoverRate = 0.7;
-            pslg.GeneticAlgorithm.mutationRate = 0.1;
-            pslg.GeneticAlgorithm.elitismRatio = 0;
-            
-            var initialData = {};
-            initialData["Initialize"] = pslg.LevelEvolutionInitialize;
-            initialData["Clone"] = pslg.LevelEvolutionClone;
-            initialData["CrossOver"] = pslg.LevelEvolutionCrossOver;
-            initialData["Mutation"] = pslg.LevelEvolutionMutation;
-            initialData["CalculateFitness"] = pslg.LevelEvolutionCalculateFitness;
-            initialData["data"] = {dl: 4, lgFeature: new pslg.LGFeatures([0.003,1,0.381,0.257,0.607,0.353])};
-            
-            disableIO = true;
+            initialData["data"] = {dl: i, lgFeature: pslg.LevelGenerator.AutoFeatures(pslg.ruleAnalyzer)};
             var genetic = new pslg.GeneticAlgorithm(initialData);
-            var bestLevels = genetic.Evolve(1);
-            disableIO = false;
-            
-            state.levels = [bestLevels[0].level];
-            loadLevelFromState(state, 0);
-            
-            console.log("Best Chromosome Fitness: " + bestLevels[0].fitness);
+            var bestLevels = genetic.Evolve(5);
+            console.log("#######################################");
+            console.log("Best level " + (i + 1).toString() + " Fitness are:");
+            for (var j = 0; j < bestLevels.length; j++) {
+                console.log(bestLevels[j].fitness);
+                levels.push(bestLevels[j].level);
+            }
+            console.log("#######################################");
         }
-        //End of My Code
+        disableIO = false;
+
+        state.levels = levels;
+        loadLevelFromState(state, 0);
+    }
+    //End of My Code
 }
 
-
-
 function qualifyURL(url) {
-	var a = document.createElement('a');
-	a.href = url;
-	return a.href;
+    var a = document.createElement('a');
+    a.href = url;
+    return a.href;
 }

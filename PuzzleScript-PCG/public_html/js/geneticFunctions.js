@@ -195,9 +195,9 @@ this.pslg = this.pslg||{};
 
         var fitness = 0.36 * (solvedLevelScore - doNothingScore) +
                 0.2 * solutionLengthScore.avg() + 
-                0.14 * boxMetricScore.avg() +
-                0.14 * appliedRuleScore.avg() +
-                0.08 * explorationScore.avg() +
+                0.13 * boxMetricScore.avg() +
+                0.13 * appliedRuleScore.avg() +
+                0.1 * explorationScore.avg() +
                 0.08 * objectNumberScore;
 
         return fitness;

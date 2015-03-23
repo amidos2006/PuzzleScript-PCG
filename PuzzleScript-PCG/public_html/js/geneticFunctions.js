@@ -184,7 +184,7 @@ this.pslg = this.pslg||{};
             solvedLevelScore += result[0];
             doNothingScore += doNothing(state.levels[i].dat);
             
-            solutionLengthScore.push(SolutionLengthScore(result[1].length, state.levels[i].width, state.levels[i].height));
+            solutionLengthScore.push(SolutionLengthScore(result[1].length, state.levels[i].w, state.levels[i].h));
             explorationScore.push(ExplorationScore(result[0] === 1, result[2], maxIterations));
             appliedRuleScore.push(AppliedRulesScore(result[3], result[1].length));
             boxMetricScore.push(BoxLineMetricScore(result[1]));
@@ -318,9 +318,9 @@ this.pslg = this.pslg||{};
             }
         }
         
-        var criticalNumber = Object.keys(criticalObjects).length * lgFeature.criticalWeight;
-        var ruleNumber = Object.keys(ruleObjects).length * lgFeature.ruleWeight;
-        var solidNumber = ruleAnalyzer.solidObjects.length * (1 - lgFeature.criticalWeight - lgFeature.ruleWeight);
+        var criticalNumber = Object.keys(criticalObjects).length;
+        var ruleNumber = Object.keys(ruleObjects).length;
+        var solidNumber = ruleAnalyzer.solidObjects.length;
         var totalNumber = criticalNumber + ruleNumber + solidNumber;
         
         var criticalPropability = {};
@@ -365,6 +365,21 @@ this.pslg = this.pslg||{};
         return ruleAnalyzer.solidObjects.rand();
     };
     
+    function LevelEvolutionCalculateEmptyNonEmpty(chromosome){
+        var state = pslg.state;
+        var levelOutline = pslg.LevelGenerator.levelsOutline[chromosome.dl];
+        for (var i = 0; i < chromosome.level.dat.length; i++) {
+            if(levelOutline.dat[i] !== state.objectMasks["wall"]){
+                if(chromosome.level.dat[i] === state.objectMasks["background"]){
+                    chromosome.emptySpaces.push(i);
+                }
+                else{
+                    chromosome.notEmptySpaces.push(i);
+                }
+            }
+        }
+    }
+    
     function LevelEvolutionInitialize(chromosome, initialData){
         var ruleAnalyzer = pslg.ruleAnalyzer;
         var state = pslg.state;
@@ -377,14 +392,7 @@ this.pslg = this.pslg||{};
         
         var lg = new pslg.LevelGenerator(chromosome.lgFeature);
         chromosome.level = lg.GenerateLevel(chromosome.dl, ruleAnalyzer, state);
-        for (var i = 0; i < chromosome.level.dat.length; i++) {
-            if(chromosome.level.dat[i] === state.objectMasks["background"]){
-                chromosome.emptySpaces.push(i);
-            }
-            else if(chromosome.level.dat[i] !== state.objectMasks["wall"] + state.objectMasks["background"]){
-                chromosome.notEmptySpaces.push(i);
-            }
-        }
+        LevelEvolutionCalculateEmptyNonEmpty(chromosome);
     }
     
     function LevelEvolutionClone(cloned, chromosome){
@@ -397,9 +405,7 @@ this.pslg = this.pslg||{};
     }
     
     function LevelEvolutionCrossOver(child1, child2, chromosome1, chromosome2){
-        var state = pslg.state;
-        
-        var swapPoint = Math.randomInt(chromosome1.level.dat.length - 1);
+        var swapPoint = Math.randomInt(chromosome1.level.dat.length - 2) + 1;
         for (var i = 0; i < chromosome1.level.dat.length; i++) {
             if(i <= swapPoint){
                 child1.level.dat[i] = chromosome1.level.dat[i];
@@ -416,35 +422,23 @@ this.pslg = this.pslg||{};
         child1.emptySpaces = [];
         child2.notEmptySpaces = [];
         child2.emptySpaces = [];
-        for (var i = 0; i < child1.level.dat.length; i++) {
-            if(child1.level.dat[i] === state.objectMasks["background"]){
-                child1.emptySpaces.push(i);
-            }
-            else if(child1.level.dat[i] !== state.objectMasks["wall"]){
-                child1.notEmptySpaces.push(i);
-            }
-            
-            if(child2.level.dat[i] === state.objectMasks["background"]){
-                child2.emptySpaces.push(i);
-            }
-            else if(child2.level.dat[i] !== state.objectMasks["wall"]){
-                child2.notEmptySpaces.push(i);
-            }
-        }
+        
+        LevelEvolutionCalculateEmptyNonEmpty(child1);
+        LevelEvolutionCalculateEmptyNonEmpty(child2);
     }
     
     function LevelEvolutionMutation(newChromosome, chromosome){
         var state = pslg.state;
         
-        var coverSize = pslg.LevelGenerator.emptySpaces[chromosome.dl].length * chromosome.lgFeature.coverPercentage;
+//        var coverSize = pslg.LevelGenerator.emptySpaces[chromosome.dl].length * chromosome.lgFeature.coverPercentage;
         newChromosome.level = deepCloneLevel(chromosome.level);
         newChromosome.notEmptySpaces = chromosome.notEmptySpaces.clone();
         newChromosome.emptySpaces = chromosome.emptySpaces.clone();
         
         var randomValue = Math.random();
-        var createProbability = (coverSize - this.notEmptySpaces.length) / coverSize;
-        var destroyProbability = (this.notEmptySpaces.length) / coverSize;
-        if(randomValue < createProbability * 0.7){
+//        var createProbability = (coverSize - this.notEmptySpaces.length) / coverSize;
+//        var destroyProbability = (this.notEmptySpaces.length) / coverSize;
+        if(randomValue < 0.2){
             newChromosome.emptySpaces.shuffle();
             var randomObject = LevelEvolutionRandomValue(chromosome.lgFeature);
             var randomEmptySpace = newChromosome.emptySpaces[0];
@@ -453,7 +447,7 @@ this.pslg = this.pslg||{};
             
             newChromosome.level.dat[randomEmptySpace] = newChromosome.level.dat[randomEmptySpace] | state.objectMasks[randomObject];
         }
-        else if(randomValue < destroyProbability * 0.7){
+        else if(randomValue < 0.5){
             newChromosome.notEmptySpaces.shuffle();
             var randomNonEmptySpace = newChromosome.notEmptySpaces[0];
             newChromosome.notEmptySpaces.splice(0, 1);
@@ -466,7 +460,7 @@ this.pslg = this.pslg||{};
             newChromosome.emptySpaces.shuffle();
             
             var randomNotEmptySpace = newChromosome.notEmptySpaces[0];
-            var randomEmptySpace = newChromosome.emptySpaces[1];
+            var randomEmptySpace = newChromosome.emptySpaces[0];
             
             newChromosome.notEmptySpaces.splice(0, 1);
             newChromosome.emptySpaces.splice(0, 1);

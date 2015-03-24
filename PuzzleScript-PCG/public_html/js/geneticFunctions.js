@@ -74,10 +74,6 @@ this.pslg = this.pslg||{};
         return Math.getGaussianScore(length / ((width - 2) * (height - 2)), 1.128, 0.468);
     }
     
-    function SolvedLevelsScore(numberOfSolved, totalNumLevels){
-        return numberOfSolved / totalNumLevels;
-    }
-    
     function SolutionComplexityScore(solution, analysisDegree){
         if(solution.length === 0){
             return 0;
@@ -142,31 +138,68 @@ this.pslg = this.pslg||{};
         return Math.getGaussianScore(appRules / totalLength, 0.451, 0.209);
     }
     
-    function NumberOfObjects(state, ruleAnalyzer){
+    function NumberOfObjects(level){
+        var state = pslg.state;
+        var ruleAnalyzer = pslg.ruleAnalyzer;
         var totalObjects = Object.keys(ruleAnalyzer.minNumberObjects);
-        var currentObjects = 0;
-        for (var i = 0; i < state.levels.length; i++) {
-            var curLevel = state.levels[i].dat;
-            var element = 0;
-            for (var j = 0; j < curLevel.length; j++) {
-                for (var k = 0; k < totalObjects.length; k++) {
-                    var mask = state.objectMasks[totalObjects[k]];
-                    var result = curLevel[j] & mask;
-                    var isNew = mask & element;
-                    if(result > 0 && isNew === 0){
-                        element |= mask;
-                        currentObjects += 1;
+        var numOfObjects = {};
+        
+        for (var j = 0; j < level.length; j++) {
+            for (var k = 0; k < totalObjects.length; k++) {
+                var mask = state.objectMasks[totalObjects[k]];
+                var result = level[j] & mask;
+                if(result > 0){
+                    if(numOfObjects[totalObjects[k]] === undefined){
+                        numOfObjects[totalObjects[k]] = 1;
+                    }
+                    else{
+                        numOfObjects[totalObjects[k]] += 1;
                     }
                 }
             }
         }
         
-        return currentObjects / (state.levels.length * totalObjects.length);
+        var currentObjects = 0;
+        for (var i = 0; i < totalObjects.length; i++) {
+            var obj = totalObjects[i];
+            var number = 0;
+            if(numOfObjects[obj] !== undefined){
+                number = numOfObjects[obj];
+            }
+            if(number >= ruleAnalyzer.minNumberObjects[obj]){
+                currentObjects += 1;
+            }
+        }
+        
+        var playerNumber = 0;
+        if(numOfObjects["player"] === 1){
+            playerNumber = 1;
+        }
+        
+        var winObjects = 0;
+        if(ruleAnalyzer.winRules[0] === "no"){
+            if(numOfObjects[ruleAnalyzer.winObjects[0]] === numOfObjects[ruleAnalyzer.winObjects[1]]){
+                winObjects = 1;
+            }
+        }
+        else{
+            var result = ruleAnalyzer.objectBehaviour[ruleAnalyzer.winObjects[0]] & pslg.ObjectBehaviour.CREATE |
+                    ruleAnalyzer.objectBehaviour[ruleAnalyzer.winObjects[1]] & pslg.ObjectBehaviour.CREATE;
+            if(result === 0){
+                if(numOfObjects[ruleAnalyzer.winObjects[0]] === numOfObjects[ruleAnalyzer.winObjects[1]]){
+                    winObjects = 1;
+                }
+            }
+            else{
+                winObjects = 1;
+            }
+        }
+        
+        return 0.5 * currentObjects / (totalObjects.length) + 0.25 * winObjects + 0.25 * playerNumber;
     }
     
     function GetLevelFitness(levels){
         var state = pslg.state;
-        var ruleAnalyzer = pslg.ruleAnalyzer;
         var maxIterations = pslg.maxIterations;
         
         state.levels = levels;
@@ -175,30 +208,28 @@ this.pslg = this.pslg||{};
         var explorationScore = [];
         var boxMetricScore = [];
         var appliedRuleScore = [];
-        var doNothingScore = 0;
-        var solvedLevelScore = 0;
-        var objectNumberScore = NumberOfObjects(state, ruleAnalyzer);
+        var objectNumberScore = [];
+        var doNothingScore = [];
+        var solvedLevelScore = [];
         for(var i = 0; i < state.levels.length; i++){
             loadLevelFromState(state, i);
             var result = bestfs(state.levels[i].dat, maxIterations);
-            solvedLevelScore += result[0];
-            doNothingScore += doNothing(state.levels[i].dat);
+            solvedLevelScore.push(result);
+            doNothingScore.push(doNothing(state.levels[i].dat));
             
             solutionLengthScore.push(SolutionLengthScore(result[1].length, state.levels[i].w, state.levels[i].h));
             explorationScore.push(ExplorationScore(result[0] === 1, result[2], maxIterations));
             appliedRuleScore.push(AppliedRulesScore(result[3], result[1].length));
             boxMetricScore.push(BoxLineMetricScore(result[1]));
+            objectNumberScore.push(NumberOfObjects(state.levels[i].dat));
         }
-
-        solvedLevelScore = SolvedLevelsScore(solvedLevelScore, state.levels.length);
-        doNothingScore = SolvedLevelsScore(doNothingScore, state.levels.length);
-
-        var fitness = 0.36 * (solvedLevelScore - doNothingScore) +
+        
+        var fitness = 0.36 * (solvedLevelScore.avg() - doNothingScore.avg()) +
                 0.2 * solutionLengthScore.avg() + 
                 0.13 * boxMetricScore.avg() +
                 0.13 * appliedRuleScore.avg() +
                 0.1 * explorationScore.avg() +
-                0.08 * objectNumberScore;
+                0.08 * objectNumberScore.avg();
 
         return fitness;
     }
@@ -369,7 +400,7 @@ this.pslg = this.pslg||{};
         var state = pslg.state;
         var levelOutline = pslg.LevelGenerator.levelsOutline[chromosome.dl];
         for (var i = 0; i < chromosome.level.dat.length; i++) {
-            if(levelOutline.dat[i] !== state.objectMasks["wall"]){
+            if(levelOutline.dat[i] !== state.objectMasks["wall"] + state.objectMasks["background"]){
                 if(chromosome.level.dat[i] === state.objectMasks["background"]){
                     chromosome.emptySpaces.push(i);
                 }
@@ -447,7 +478,9 @@ this.pslg = this.pslg||{};
             
             newChromosome.level.dat[randomEmptySpace] = newChromosome.level.dat[randomEmptySpace] | state.objectMasks[randomObject];
         }
-        else if(randomValue < 0.5){
+        
+        var randomValue = Math.random();
+        if(randomValue < 0.2){
             newChromosome.notEmptySpaces.shuffle();
             var randomNonEmptySpace = newChromosome.notEmptySpaces[0];
             newChromosome.notEmptySpaces.splice(0, 1);
@@ -455,7 +488,9 @@ this.pslg = this.pslg||{};
             
             newChromosome.level.dat[randomNonEmptySpace] = state.objectMasks["background"];
         }
-        else{
+        
+        var randomValue = Math.random();
+        if(randomValue < 0.5){
             newChromosome.notEmptySpaces.shuffle();
             newChromosome.emptySpaces.shuffle();
             
@@ -498,7 +533,6 @@ this.pslg = this.pslg||{};
     pslg.GetTrapeziumFunctionValue = GetTrapeziumFunctionValue;
     pslg.SolutionDiffLengthScore = SolutionDiffLengthScore;
     pslg.SolutionLengthScore = SolutionLengthScore;
-    pslg.SolvedLevelsScore = SolvedLevelsScore;
     pslg.SolutionComplexityScore = SolutionComplexityScore;
     pslg.BoxLineMetricScore = BoxLineMetricScore;
     pslg.ExplorationScore = ExplorationScore;

@@ -317,9 +317,9 @@ this.pslg = this.pslg||{};
         var obj1LayerMask = state.layerMasks[state.objects[obj1].layer];
         var obj2LayerMask = state.layerMasks[state.objects[obj2].layer];
         minObjects = Math.max(ruleAnalyzer.minNumberObjects[obj1], ruleAnalyzer.minNumberObjects[obj2]);
-        var generateOne = (ruleAnalyzer.objectBehaviour[obj1] & pslg.ObjectBehaviour.CREATE) | 
-                (ruleAnalyzer.objectBehaviour[obj2] & pslg.ObjectBehaviour.CREATE);
+        result = ruleAnalyzer.objectBehaviour[obj2] & pslg.ObjectBehaviour.CREATE;
         while(winNumber > 0){
+            var secondObjectNumber = ruleAnalyzer.minNumberObjects[obj2];
             for (var j = 0; j < minObjects; j++){
                 var index = this.GetInsertionLocation(ruleAnalyzer, obj1, obj1LayerMask, _level, emptySpaces);
                 var position = emptySpaces[index];
@@ -327,8 +327,11 @@ this.pslg = this.pslg||{};
                 _level.dat[position] = _level.dat[position] | state.objectMasks[obj1];
                 winNumber -= 1;
                 
-                if(generateOne > 0){
+                if(result > 0 && secondObjectNumber <= 0){
                     continue;
+                }
+                else{
+                    secondObjectNumber -= 1;
                 }
                 
                 if(this.winRule === "no"){

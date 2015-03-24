@@ -2418,7 +2418,7 @@ function compile(command,text) {
     setGameState(state,command);
 
     //My Code
-    var test = 3;
+    var test = -1;
     var ruleAnalyzer = new pslg.RuleAnalyzer();
     ruleAnalyzer.Initialize(state);
 
@@ -2457,6 +2457,7 @@ function compile(command,text) {
         var explorationScore = [];
         var doNothingScore = [];
         var solvedLevelScore = [];
+        var numOfObjectsScore = [];
 
         for(var j = 0; j < state.levels.length; j++){
             var dl = Math.floor(j / pslg.LevelGenerator.numberOfLevelsPerDifficulty);
@@ -2471,6 +2472,7 @@ function compile(command,text) {
 
             doNothingScore.push(doNothing(state.levels[j].dat));
             solutionLengthScore.push(pslg.SolutionLengthScore(result[1].length, state.levels[j].w, state.levels[j].h));
+            numOfObjectsScore.push(pslg.NumberOfObjects(state.levels[j].dat));
 
             ruleFitnessScore.push(pslg.AppliedRulesScore(result[3], result[1].length));
             boxMetricScore.push(pslg.BoxLineMetricScore(result[1]));
@@ -2520,6 +2522,11 @@ function compile(command,text) {
         console.log("\n##################### Rule Fitness #####################\n");
         for (var i = 0; i < ruleFitnessScore.length; i++) {
             console.log(i + "\t" + ruleFitnessScore[i]);
+        }
+        
+        console.log("\n##################### Number of Objects Score #####################\n");
+        for (var i = 0; i < numOfObjectsScore.length; i++) {
+            console.log(i + "\t" + numOfObjectsScore[i]);
         }
 
         disableIO = false;

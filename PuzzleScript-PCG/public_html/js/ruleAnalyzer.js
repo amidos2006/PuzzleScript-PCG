@@ -32,6 +32,7 @@ this.pslg = this.pslg||{};
         this.winObjects = [];
         this.solidObjects = [];
         this.winRules = [];
+        this.lhsRelations = [];
         this.minNumberObjects = {};
         this.objectBehaviour = {};
         this.objectPriority = {};
@@ -110,6 +111,7 @@ this.pslg = this.pslg||{};
         }
         
         var minCreateRule = {};
+        var previousRuleRelation = {};
         //Check the original rules
         for(i = 0; i < engineState.originalRules.length; i++){
             var rule = engineState.originalRules[i];
@@ -118,6 +120,7 @@ this.pslg = this.pslg||{};
             var numberLHS = {};
             var numberRHS = {};
             var dependObj = [];
+            var leftDependObj = [];
             var moveObj = [];
             
             // Calculating variables for each rule
@@ -136,6 +139,7 @@ this.pslg = this.pslg||{};
 
                             if(dependObj.indexOf(lObj[l + 1]) < 0){
                                 dependObj.push(lObj[l + 1]);
+                                leftDependObj.push(lObj[l + 1]);
                             }
 
                             if(lObj[l + 1] in numberLHS){
@@ -202,6 +206,24 @@ this.pslg = this.pslg||{};
                             }
                             moveObj.push(lObj[l + 1]);
                         }
+                    }
+                }
+            }
+            
+            // Calculating lhs relations
+            for(j = 0; j < leftDependObj.length; j++){
+                for (k = j; k < leftDependObj.length; k++) {
+                    if(j === k){
+                        if(numberLHS[leftDependObj[j]] > 1 && 
+                                previousRuleRelation[leftDependObj[j] + leftDependObj[k]] === undefined){
+                            previousRuleRelation[leftDependObj[j] + leftDependObj[k]] = true;
+                            this.lhsRelations.push([leftDependObj[j], leftDependObj[k]]);
+                        }
+                    }
+                    else if(previousRuleRelation[leftDependObj[j] + leftDependObj[k]] === undefined){
+                        previousRuleRelation[leftDependObj[j] + leftDependObj[k]] = true;
+                        previousRuleRelation[leftDependObj[k] + leftDependObj[j]] = true;
+                        this.lhsRelations.push([leftDependObj[j], leftDependObj[k]]);
                     }
                 }
             }

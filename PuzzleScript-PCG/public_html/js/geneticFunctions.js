@@ -71,7 +71,7 @@ this.pslg = this.pslg||{};
     }
     
     function SolutionLengthScore(length, width, height){
-        return Math.getGaussianScore(length / ((width - 2) * (height - 2)), 1.128, 0.468);
+        return Math.getGaussianScore(length / ((width - 2) * (height - 2)), 1.221, 0.461);
     }
     
     function SolutionComplexityScore(solution, analysisDegree){
@@ -123,19 +123,18 @@ this.pslg = this.pslg||{};
     }
     
     function ExplorationScore(win, iterations, maxIterations){
-        var winBonus = 0;
         if(win){
-            winBonus = 0.75;
+            return 1;
         }
         
-        return winBonus + (1 - winBonus) * (iterations / maxIterations);
+        return iterations / maxIterations;
     }
     
     function AppliedRulesScore(appRules, totalLength){
         if(totalLength === 0){
             return 0;
         }
-        return Math.getGaussianScore(appRules / totalLength, 0.451, 0.209);
+        return Math.getGaussianScore(appRules / totalLength, 0.417, 0.128);
     }
     
     function NumberOfObjects(level){
@@ -195,7 +194,7 @@ this.pslg = this.pslg||{};
             }
         }
         
-        return 0.5 * currentObjects / (totalObjects.length) + 0.25 * winObjects + 0.25 * playerNumber;
+        return 0.4 * currentObjects / (totalObjects.length) + 0.3 * winObjects + 0.3 * playerNumber;
     }
     
     function GetLevelFitness(levels){
@@ -224,12 +223,12 @@ this.pslg = this.pslg||{};
             objectNumberScore.push(NumberOfObjects(state.levels[i].dat));
         }
         
-        var fitness = 0.36 * (solvedLevelScore.avg() - doNothingScore.avg()) +
-                0.2 * solutionLengthScore.avg() + 
+        var fitness = 0.3 * (solvedLevelScore.avg() - doNothingScore.avg()) +
+                0.22 * solutionLengthScore.avg() + 
                 0.13 * boxMetricScore.avg() +
                 0.13 * appliedRuleScore.avg() +
-                0.1 * explorationScore.avg() +
-                0.08 * objectNumberScore.avg();
+                0.11 * explorationScore.avg() +
+                0.11 * objectNumberScore.avg();
 
         return fitness;
     }

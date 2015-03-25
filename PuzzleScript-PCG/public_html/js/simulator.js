@@ -215,7 +215,6 @@ function bestfs(startState, maxIterations_) {
         
         var dirs = [0,1,2,3,4];
         var dir = -1;
-        shuffle(dirs);
 
         for (var i=0; i<dirs.length; i++)
         {
@@ -243,7 +242,6 @@ function bestfs(startState, maxIterations_) {
                 bestSolution = u2;
             }
             else if(output_score === bestScore && bestSolution.length < u2.length){
-                bestScore = output_score;
                 bestSolution = u2;
             }
 
@@ -508,37 +506,15 @@ function get_level_score(leveldat) {
             
             var indices1 = [];
             var indices2 = [];
-            var criticalIndeces = [];
-            var ruleIndeces = [];
+            var objectIndeces = {};
+            
+            var ruleAnalyzer = pslg.ruleAnalyzer;
+            for (var i = 0; i < ruleAnalyzer.ruleObjects.length; i++) {
+                objectIndeces[ruleAnalyzer.ruleObjects[i]] = [];
+            }
             
             var winDistances = [];
             var distances = [];
-            
-            //Get the critical and rule objects
-            var ruleAnalyzer = pslg.ruleAnalyzer;
-            var criticalObjects = [];
-            var ruleObjects = [];
-            for (var i = 0; i < ruleAnalyzer.ruleObjects.length; i++){
-                var obj = ruleAnalyzer.ruleObjects[i];
-                if(ruleAnalyzer.winObjects.indexOf(obj) > -1 || obj === "player"){
-                    continue;
-                }
-                var result = ruleAnalyzer.CheckCriticalObject(obj);
-                switch(result){
-                    case 0:
-                        //useless object in rule
-                        break;
-                    case 1:
-                        ruleObjects.push(state.objectMasks[obj]);
-                        break;
-                    case 2:
-                        ruleObjects.push(state.objectMasks[obj]);
-                        break;
-                    case 3:
-                        criticalObjects.push(state.objectMasks[obj]);
-                        break;
-                }
-            }
 
             var conditionScore = 0.0;
 
@@ -551,17 +527,10 @@ function get_level_score(leveldat) {
                         indices2.push(i);
                 }
                 
-                //critical objects indeces
-                for (var j = 0; j < criticalObjects.length; j++) {
-                    if((criticalObjects[j]&val) !== 0){
-                        criticalIndeces.push(i);
-                    }
-                }
-                
-                //rule objects indeces
-                for (var j = 0; j < ruleObjects.length; j++) {
-                    if((ruleObjects[j]&val) !== 0){
-                        ruleIndeces.push(i);
+                for (var o = 0; o < ruleAnalyzer.ruleObjects.length; o++) {
+                    var objFilter = state.objectMasks[ruleAnalyzer.ruleObjects[o]];
+                    if((objFilter&val)!==0){
+                        objectIndeces[ruleAnalyzer.ruleObjects[o]].push(i);
                     }
                 }
             }
@@ -569,15 +538,14 @@ function get_level_score(leveldat) {
             for (var j=0; j<indices1.length;j++) {
                 var dt = [];
                 for (var k=0; k<indices2.length;k++) {
-                        dt.push(get_index_manhattan_distance(indices1[j],indices2[k]));
+                    dt.push(get_index_manhattan_distance(indices1[j],indices2[k]));
                 }
                 if (dt.length > 0 ){
-                        winDistances.push(dt.min());
+                    winDistances.push(dt.min());
                 }
-
             }
-
-            var playerPositions = getPlayerPositions();
+            
+            var playerPositions = objectIndeces["player"];
             //var windices = indices1;	// ________ on something
             //var windices = indices2;	// something on _________ (LIMERICK)
 
@@ -591,32 +559,34 @@ function get_level_score(leveldat) {
                 // if PLAYER is in FILTER1, then go for object2
                 windices = filter1 & state.playerMask !== 0 ? indices2 : indices1;
             }
-
+            
             for (var p=0; p < playerPositions.length; p++) {
                 var dt2 = [];
                 for (var o=0; o < windices.length; o++) {
                     dt2.push(get_index_manhattan_distance(playerPositions[p], windices[o]));
                 }
                 if (dt2.length > 0 ){
-                    distances.push(dt2.avg());
-                }
-                
-                //Critical Objects Distance
-                dt2 = [];
-                for (var o=0; o < criticalIndeces.length; o++) {
-                    dt2.push(get_index_manhattan_distance(playerPositions[p], criticalIndeces[o]));
-                }
-                if (dt2.length > 0 ){
-                    distances.push(0.5 * dt2.avg());
-                }
-                
-                //Rule Objects Distance
-                dt2 = [];
-                for (var o=0; o < ruleIndeces.length; o++) {
-                    dt2.push(get_index_manhattan_distance(playerPositions[p], ruleIndeces[o]));
-                }
-                if (dt2.length > 0 ){
                     distances.push(0.25 * dt2.avg());
+                }
+            }
+
+            for (var i = 0; i < ruleAnalyzer.lhsRelations.length; i++) {
+                indices1 = objectIndeces[ruleAnalyzer.lhsRelations[i][0]];
+                indices2 = objectIndeces[ruleAnalyzer.lhsRelations[i][1]];
+                if(indices1 === undefined){
+                    indices1 = [];
+                }
+                if(indices2 === undefined){
+                    indices2 = [];
+                }
+                for (var j=0; j<indices1.length;j++) {
+                    var dt = [];
+                    for (var k=0; k<indices2.length;k++) {
+                        dt.push(get_index_manhattan_distance(indices1[j],indices2[k]));
+                    }
+                    if (dt.length > 0 ){
+                        distances.push(0.5 * dt.avg());
+                    }
                 }
             }
             
@@ -629,7 +599,7 @@ function get_level_score(leveldat) {
                     if(winDistances.length <= 0){
                         winDistances.push(0);
                     }
-                    conditionScore = 1 - winDistances.nonZeroCount() / winDistances.length + distances.avg() / max_manhattan;
+                    conditionScore = 1 - winDistances.avg() / max_manhattan + distances.avg() / max_manhattan;
                     break;
                 }
                 case 0://SOME
@@ -700,7 +670,7 @@ function get_output_score(leveldat) {
                     if(distances.length <= 0){
                         distances.push(0);
                     }
-                    conditionScore = 1 - distances.nonZeroCount() / distances.length;
+                    conditionScore = 1 - distances.avg() / max_manhattan;
                     break;
                 }
                 case 0://SOME

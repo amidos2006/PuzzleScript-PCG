@@ -2418,7 +2418,7 @@ function compile(command,text) {
     setGameState(state,command);
 
     //My Code
-    var test = -1;
+    var test = -2;
     var ruleAnalyzer = new pslg.RuleAnalyzer();
     ruleAnalyzer.Initialize(state);
 
@@ -2430,7 +2430,7 @@ function compile(command,text) {
 
     pslg.ruleAnalyzer = ruleAnalyzer;
     pslg.state = state;
-    pslg.maxIterations = 2000;
+    pslg.maxIterations = 5000;
     pslg.totalDifficulties =  pslg.LevelGenerator.levelsOutline.length;
     pslg.startingDifficulty = 0;
 
@@ -2441,10 +2441,40 @@ function compile(command,text) {
     //Testing Auto Generator
     else if(test === -2){
         var levelGenerator = new pslg.LevelGenerator(pslg.LevelGenerator.AutoFeatures(pslg.ruleAnalyzer));
-        state.levels = levelGenerator.GenerateLevels(ruleAnalyzer, state);
+        var finalLevels = [];
+        for (var i = 0; i < pslg.totalDifficulties; i++) {
+            var levels = [];
+            var fitness = [];
+            console.log("Level " + (i+1) + ":");
+            console.log("###################################")
+            for (var j = 0; j < 100; j++) {
+                var level = levelGenerator.GenerateLevel(i, ruleAnalyzer, state);
+                level.fitness = pslg.GetLevelFitness([level]);
+                fitness.push(level.fitness);
+                console.log("\titeration " + (j + 1));
+                levels.push(level);
+            }
+            
+            console.log("current sd: " + fitness.sd().toString() + 
+                " ,average fitness: " + fitness.avg().toString() + 
+                " ,best fitness: " + fitness.max().toString() +
+                " ,min fitness: " + fitness.min().toString());
+            levels.sort(pslg.FitnessSort);
+            for (var j = 0; j < 2; j++) {
+                finalLevels.push(levels[j]);
+            }
+        }
+        
+        for (var i = 0; i < finalLevels.length; i++) {
+            console.log("Fitness for level " + (i + 1) + ": " + finalLevels[i].fitness);
+        }
+        
+        state.levels = finalLevels;
+        loadLevelFromState(state, 0);
     }
     //Testing Human Designed Levels
     else if(test === -1){
+        humanTesting = false;
         disableIO = true;
         var averageLength = [];
         var ruleNumber = [];
@@ -2711,12 +2741,12 @@ function compile(command,text) {
     }
     //Generating best 8 levels
     else if(test === 3){
-        pslg.GeneticAlgorithm.numberOfGenerations = 100;
+        pslg.GeneticAlgorithm.numberOfGenerations = 20;
         pslg.GeneticAlgorithm.populationSize = 50;
         pslg.GeneticAlgorithm.sdError = 0;
         pslg.GeneticAlgorithm.crossoverRate = 0.7;
         pslg.GeneticAlgorithm.mutationRate = 0.1;
-        pslg.GeneticAlgorithm.elitismRatio = 0;
+        pslg.GeneticAlgorithm.elitismRatio = 0.02;
 
         var levels = [];
         var initialData = {};
@@ -2734,7 +2764,7 @@ function compile(command,text) {
             
             initialData["data"] = {dl: i, lgFeature: pslg.LevelGenerator.AutoFeatures(pslg.ruleAnalyzer)};
             var genetic = new pslg.GeneticAlgorithm(initialData);
-            var bestLevels = genetic.Evolve(5);
+            var bestLevels = genetic.Evolve(2);
             console.log("#######################################");
             console.log("Best level " + (i + 1).toString() + " Fitness are:");
             for (var j = 0; j < bestLevels.length; j++) {

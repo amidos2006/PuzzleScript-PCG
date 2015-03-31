@@ -56,7 +56,7 @@ this.pslg = this.pslg||{};
             if(randomValue < probabilities[i]){
                 index = i;
                 break;
-            }
+            } 
         }
         
         return this.chromosomes[index];
@@ -66,13 +66,13 @@ this.pslg = this.pslg||{};
         var newPopulation = new Population(this.populationSize);
         
         for (var i = 0; i < this.chromosomes.length; i++) {
-            console.log("\tChromosome number: " + (i + 1).toString());
+            //console.log("\tChromosome number: " + (i + 1).toString());
             this.chromosomes[i].age += 1;
             Chromosome.CalculateFitness(this.chromosomes[i]);
-            console.log("\tFitness Score: " + this.chromosomes[i].fitness);
+            //console.log("\tFitness Score: " + this.chromosomes[i].fitness);
         }
         
-        while(newPopulation.chromosomes.length < newPopulation.populationSize * (1 - elitism)){
+        while(newPopulation.chromosomes.length < newPopulation.populationSize){
             var parent1 = this.SelectionAlgorithm();
             var parent2 = this.SelectionAlgorithm();
             
@@ -115,6 +115,9 @@ this.pslg = this.pslg||{};
         }
         
         this.chromosomes.sort(FitnessSort);
+        for (var i = 0; i < elitism * newPopulation.populationSize; i++) {
+            newPopulation.chromosomes.splice(newPopulation.populationSize - i - 1, 1);
+        }
         var currentLength = newPopulation.chromosomes.length;
         for(var i = 0; i < newPopulation.populationSize - currentLength; i++){
             newPopulation.chromosomes.push(this.chromosomes[i]);
@@ -173,5 +176,6 @@ this.pslg = this.pslg||{};
     /////////////////////////////
     //  Class Declaration
     /////////////////////////////
+    pslg.FitnessSort = FitnessSort;
     pslg.GeneticAlgorithm = GeneticAlgorithm;
 }());

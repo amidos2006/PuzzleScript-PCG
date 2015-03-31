@@ -2440,6 +2440,7 @@ function compile(command,text) {
     }
     //Testing Auto Generator
     else if(test === -2){
+        disableIO = true;
         var levelGenerator = new pslg.LevelGenerator(pslg.LevelGenerator.AutoFeatures(pslg.ruleAnalyzer));
         var finalLevels = [];
         for (var i = 0; i < pslg.totalDifficulties; i++) {
@@ -2468,7 +2469,7 @@ function compile(command,text) {
         for (var i = 0; i < finalLevels.length; i++) {
             console.log("Fitness for level " + (i + 1) + ": " + finalLevels[i].fitness);
         }
-        
+        disableIO = false;
         state.levels = finalLevels;
         loadLevelFromState(state, 0);
     }

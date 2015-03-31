@@ -71,7 +71,7 @@ this.pslg = this.pslg||{};
     }
     
     function SolutionLengthScore(length, width, height){
-        return Math.getGaussianScore(length / ((width - 2) * (height - 2)), 1.221, 0.461);
+        return Math.getGaussianScore(length / ((width - 2) * (height - 2)), 1.3, 0.6);
     }
     
     function SolutionComplexityScore(solution, analysisDegree){
@@ -124,17 +124,21 @@ this.pslg = this.pslg||{};
     
     function ExplorationScore(win, iterations, maxIterations){
         if(win){
-            return 1;
+            return 0.6 + 0.4 * iterations / maxIterations;
         }
         
-        return iterations / maxIterations;
+        if(iterations === maxIterations){
+            return 0.6;
+        }
+        
+        return 0;
     }
     
-    function AppliedRulesScore(appRules, totalLength){
+    function AppliedRulesScore(appRules, noMove, totalLength){
         if(totalLength === 0){
             return 0;
         }
-        return Math.getGaussianScore(appRules / totalLength, 0.417, 0.128);
+        return Math.getGaussianScore((appRules - noMove) / totalLength, 0.4, 0.15);
     }
     
     function NumberOfObjects(level){
@@ -216,19 +220,25 @@ this.pslg = this.pslg||{};
             solvedLevelScore.push(result);
             doNothingScore.push(doNothing(state.levels[i].dat));
             
+            numAppRules = 0;
+            loadLevelFromState(state, i);
+            for (var j=0; j < 10; j++){
+                processInput(-1,true,false);
+            }
+            
             solutionLengthScore.push(SolutionLengthScore(result[1].length, state.levels[i].w, state.levels[i].h));
             explorationScore.push(ExplorationScore(result[0] === 1, result[2], maxIterations));
-            appliedRuleScore.push(AppliedRulesScore(result[3], result[1].length));
+            appliedRuleScore.push(AppliedRulesScore(result[3], numAppRules, result[1].length));
             boxMetricScore.push(BoxLineMetricScore(result[1]));
             objectNumberScore.push(NumberOfObjects(state.levels[i].dat));
         }
         
         var fitness = 0.3 * (solvedLevelScore.avg() - doNothingScore.avg()) +
-                0.22 * solutionLengthScore.avg() + 
-                0.13 * boxMetricScore.avg() +
-                0.13 * appliedRuleScore.avg() +
-                0.11 * explorationScore.avg() +
-                0.11 * objectNumberScore.avg();
+                0.2 * solutionLengthScore.avg() +
+                0.15 * objectNumberScore.avg() +
+                0.12 * boxMetricScore.avg() +
+                0.12 * appliedRuleScore.avg() +
+                0.11 * explorationScore.avg();
 
         return fitness;
     }

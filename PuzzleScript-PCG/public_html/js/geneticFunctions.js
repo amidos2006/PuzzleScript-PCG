@@ -124,11 +124,11 @@ this.pslg = this.pslg||{};
     
     function ExplorationScore(win, iterations, maxIterations){
         if(win){
-            return 0.6 + 0.4 * iterations / maxIterations;
+            return 0.75 + 0.25 * iterations / maxIterations;
         }
         
         if(iterations === maxIterations){
-            return 0.6;
+            return 0.5;
         }
         
         return 0;
@@ -138,7 +138,12 @@ this.pslg = this.pslg||{};
         if(totalLength === 0){
             return 0;
         }
-        return Math.getGaussianScore((appRules - noMove) / totalLength, 0.4, 0.15);
+        
+        var value = (appRules - noMove) / totalLength;
+        if(value > 0.4){
+            value = (appRules + noMove) / totalLength;
+        }
+        return Math.getGaussianScore(value, 0.4, 0.15);
     }
     
     function NumberOfObjects(level){

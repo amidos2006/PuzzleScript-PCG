@@ -139,9 +139,12 @@ this.pslg = this.pslg||{};
             return 0;
         }
         
-        var value = (appRules - noMove) / totalLength;
+        var value = appRules / totalLength;
         if(value > 0.4){
             value = (appRules + noMove) / totalLength;
+        }
+        else{
+            value = (appRules - noMove) / totalLength;
         }
         return Math.getGaussianScore(value, 0.4, 0.15);
     }

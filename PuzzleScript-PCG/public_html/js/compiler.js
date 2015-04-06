@@ -2418,7 +2418,7 @@ function compile(command,text) {
     setGameState(state,command);
 
     //My Code
-    var test = -2;
+    var test = 3;
     var ruleAnalyzer = new pslg.RuleAnalyzer();
     ruleAnalyzer.Initialize(state);
 

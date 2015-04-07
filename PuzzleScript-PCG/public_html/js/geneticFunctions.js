@@ -491,7 +491,7 @@ this.pslg = this.pslg||{};
         var randomValue = Math.random();
 //        var createProbability = (coverSize - this.notEmptySpaces.length) / coverSize;
 //        var destroyProbability = (this.notEmptySpaces.length) / coverSize;
-        if(randomValue < 0.2){
+        if(randomValue < 0.2 && newChromosome.emptySpaces.length > 0){
             newChromosome.emptySpaces.shuffle();
             var randomObject = LevelEvolutionRandomValue(chromosome.lgFeature);
             var randomEmptySpace = newChromosome.emptySpaces[0];
@@ -502,7 +502,7 @@ this.pslg = this.pslg||{};
         }
         
         var randomValue = Math.random();
-        if(randomValue < 0.2){
+        if(randomValue < 0.2 && newChromosome.notEmptySpaces.length > 0){
             newChromosome.notEmptySpaces.shuffle();
             var randomNonEmptySpace = newChromosome.notEmptySpaces[0];
             newChromosome.notEmptySpaces.splice(0, 1);
@@ -512,7 +512,7 @@ this.pslg = this.pslg||{};
         }
         
         var randomValue = Math.random();
-        if(randomValue < 0.5){
+        if(randomValue < 0.5 && newChromosome.notEmptySpaces.length > 0 && newChromosome.emptySpaces.length > 0){
             newChromosome.notEmptySpaces.shuffle();
             newChromosome.emptySpaces.shuffle();
             

@@ -37,11 +37,11 @@ this.pslg = this.pslg||{};
             this.chromosomes.push(new Chromosome(Chromosome.InitialData));
         }
         for (var i = 0; i < diffAmount; i++) {
-            if(i > diffAmount / 2){
+            if(i > diffAmount / 3){
                 Chromosome.InitialData.emptyInitialize = true;
             }
             var newChromosome = new Chromosome(Chromosome.InitialData);
-            for (var j = 0; j < 5; j++) {
+            for (var j = 0; j < 20; j++) {
                 Chromosome.Mutate(newChromosome, newChromosome);
             }
             this.chromosomes.push(newChromosome);

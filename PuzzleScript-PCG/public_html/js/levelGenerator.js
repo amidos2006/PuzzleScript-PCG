@@ -283,8 +283,7 @@ this.pslg = this.pslg||{};
             
             if(!state.objects.hasOwnProperty(obj))
             {
-                console.log("Error happened because of " + obj + " and the objects length is " + Object.keys(state.objects).length);
-                throw "Error happened because of " + obj + " and the objects length is " + Object.keys(state.objects).length.toString();
+                throw "Error happened because of " + obj + " and the solidObjects length is " + ruleAnalyzer.solidObjects.length + " and the objects length is " + Object.keys(state.objects).length.toString();
             }
             
             var index = this.GetInsertionLocation(ruleAnalyzer, obj, state.layerMasks[state.objects[obj].layer], _level, emptySpaces);

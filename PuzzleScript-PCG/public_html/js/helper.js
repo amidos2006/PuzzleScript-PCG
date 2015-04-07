@@ -109,22 +109,21 @@ Array.prototype.variance = function () {
 // Reference:
 // https://github.com/icelabMIT/PuzzleScriptAI/blob/master/js/simulator.js
 Array.prototype.sd = function() {
-	return Math.sqrt(this.variance());
+    return Math.sqrt(this.variance());
 };
 
 // Reference:
 // https://github.com/icelabMIT/PuzzleScriptAI/blob/master/js/simulator.js
 Array.prototype.se = function() {
-	return Math.sqrt(this.variance()/this.length);
+    return Math.sqrt(this.variance()/this.length);
 };
 
 // Reference:
 // https://github.com/icelabMIT/PuzzleScriptAI/blob/master/js/simulator.js
 Array.prototype.rand = function() {
-
-	if (this.length >= 0) {
-		return this[parseInt(Math.random() * this.length,10)];
-	}
+    if (this.length >= 0) {
+        return this[Math.floor(Math.random() * this.length)];
+    }
 };
 
 Array.prototype.nonZeroCount = function(){

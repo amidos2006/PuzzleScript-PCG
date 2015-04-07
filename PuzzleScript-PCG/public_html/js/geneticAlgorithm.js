@@ -32,8 +32,19 @@ this.pslg = this.pslg||{};
     }
     
     Population.prototype.Initialize = function(){
-        for (var i = 0; i < this.populationSize; i++) {
+        var diffAmount = Math.floor(GeneticAlgorithm.mixedInitializationSize * this.populationSize);
+        for (var i = 0; i < this.populationSize - diffAmount; i++) {
             this.chromosomes.push(new Chromosome(Chromosome.InitialData));
+        }
+        for (var i = 0; i < diffAmount; i++) {
+            if(i > diffAmount / 2){
+                Chromosome.InitialData.emptyInitialize = true;
+            }
+            var newChromosome = new Chromosome(Chromosome.InitialData);
+            for (var j = 0; j < 5; j++) {
+                Chromosome.Mutate(newChromosome, newChromosome);
+            }
+            this.chromosomes.push(newChromosome);
         }
     };
     
@@ -139,6 +150,7 @@ this.pslg = this.pslg||{};
     GeneticAlgorithm.prototype.Evolve = function(numberOfBestChromosomes){
         var currentPopulation = new Population(GeneticAlgorithm.populationSize);
         currentPopulation.Initialize();
+        Chromosome.InitialData.emptyInitialize = true;
         
         for(var i = 0; i < GeneticAlgorithm.numberOfGenerations; i++){
             console.log("Generation number: " + (i + 1).toString());      
@@ -172,6 +184,7 @@ this.pslg = this.pslg||{};
     GeneticAlgorithm.crossoverRate = 0.6;
     GeneticAlgorithm.mutationRate = 0.01;
     GeneticAlgorithm.elitismRatio = 0.2;
+    GeneticAlgorithm.mixedInitializationSize = 0;
     
     /////////////////////////////
     //  Class Declaration

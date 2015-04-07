@@ -438,8 +438,13 @@ this.pslg = this.pslg||{};
         chromosome.emptySpaces = [];
         chromosome.fitness = undefined;
         
-        var lg = new pslg.LevelGenerator(chromosome.lgFeature);
-        chromosome.level = lg.GenerateLevel(chromosome.dl, ruleAnalyzer, state);
+        if(initialData.hasOwnProperty("emptyInitialize")){
+            chromosome.level = deepCloneLevel(pslg.LevelGenerator.levelsOutline[chromosome.dl]);
+        }
+        else{
+            var lg = new pslg.LevelGenerator(chromosome.lgFeature);
+            chromosome.level = lg.GenerateLevel(chromosome.dl, ruleAnalyzer, state);
+        }
         LevelEvolutionCalculateEmptyNonEmpty(chromosome);
     }
     

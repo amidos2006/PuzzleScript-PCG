@@ -39,7 +39,7 @@ this.pslg = this.pslg||{};
             this.chromosomes.push(new Chromosome(Chromosome.InitialData));
         }
         for (var i = 0; i < diffAmount; i++) {
-            if(i > mutatedSize){
+            if(i >= mutatedSize){
                 Chromosome.InitialData.emptyInitialize = true;
             }
             var newChromosome = new Chromosome(Chromosome.InitialData);

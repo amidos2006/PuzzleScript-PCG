@@ -1,5 +1,5 @@
-title My Lava Game
-author Ahmed Abdel Samea Khalifa
+title LavaGame
+author Ahmed Khalifa
 homepage www.amidos-games.com
 
 ========
@@ -50,9 +50,9 @@ Black Orange White Blue
 Crate
 Orange Yellow
 00000
-01110
-01110
-01110
+0...0
+0...0
+0...0
 00000
 
 
@@ -77,15 +77,13 @@ COLLISIONLAYERS
 
 Background 
 Target
-Lava
-Player, Wall, Crate
+Player, Wall, Crate, Lava
 
 ======
 RULES
 ======
 
 [ > Player | Crate ] -> [ > Player | > Crate ]
-[ > Player | Lava ] -> [ Player | Lava ]
 [ > Crate | Lava ] -> [ | ]
 
 ==============

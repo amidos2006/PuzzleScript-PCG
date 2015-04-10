@@ -1,5 +1,5 @@
-title My Blockfaker
-author Ahmed Abdel Samea Khalifa
+title Blockfaker
+author Ahmed Khalifa
 homepage www.amidos-games.com
 
 ========
@@ -85,6 +85,7 @@ RULES
 ======
 
 [ > Player | Crate ] -> [ > Player | > Crate ]
+[ > Crate | Crate ] -> [ > Crate | > Crate ]
 [ > Crate | Stopper] -> [ Crate | Stopper ]
 [ Crate | Crate | Crate ] -> [ | | ]
 

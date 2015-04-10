@@ -1,5 +1,5 @@
 title Sokoban
-author Ahmed Abdel Samea Khalifa
+author Ahmed Khalifa
 homepage www.amidos-games.com
 
 ========
@@ -16,10 +16,10 @@ LIGHTGREEN GREEN
 
 
 Target
-DarkBlue
+DarkBlue Blue
 .....
 .000.
-.0.0.
+.010.
 .000.
 .....
 

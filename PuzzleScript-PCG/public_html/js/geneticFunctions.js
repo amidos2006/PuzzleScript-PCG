@@ -344,73 +344,7 @@ this.pslg = this.pslg||{};
     
     function LevelEvolutionRandomValue(lgFeature){
         var ruleAnalyzer = pslg.ruleAnalyzer;
-        
-        var criticalObjects = {};
-        var ruleObjects = {};
-        for (var i = 0; i < ruleAnalyzer.ruleObjects.length; i++){
-            var obj = ruleAnalyzer.ruleObjects[i];
-            var result = ruleAnalyzer.CheckCriticalObject(obj);
-            switch(result){
-                case 0:
-                    //useless object in rule
-                    break;
-                case 1:
-                    ruleObjects[obj] = ruleAnalyzer.minNumberObjects[obj];
-                    break;
-                case 2:
-                    ruleObjects[obj] = ruleAnalyzer.minNumberObjects[obj];
-                    break;
-                case 3:
-                    criticalObjects[obj] = ruleAnalyzer.minNumberObjects[obj];
-                    break;
-            }
-        }
-        
-        var criticalNumber = Object.keys(criticalObjects).length;
-        var ruleNumber = Object.keys(ruleObjects).length;
-        var solidNumber = ruleAnalyzer.solidObjects.length;
-        var totalNumber = criticalNumber + ruleNumber + solidNumber;
-        
-        var criticalPropability = {};
-        var objectAccumlator = 0;
-        for (var obj in criticalObjects){
-            objectAccumlator += ruleAnalyzer.objectPriority[obj];
-            criticalPropability[obj] = objectAccumlator;
-        }
-        for (var obj in criticalPropability){
-            criticalPropability[obj] /= objectAccumlator;
-        }
-        
-        var rulePropability = {};
-        objectAccumlator = 0;
-        for(var obj in ruleObjects){
-            objectAccumlator += ruleAnalyzer.objectPriority[obj];
-            rulePropability[obj] = objectAccumlator;
-        }
-        for (var obj in rulePropability){
-            rulePropability[obj] /= objectAccumlator;
-        }
-        
-        var randomValue = Math.random();
-            
-        if(randomValue < criticalNumber / totalNumber){
-            randomValue = Math.random();
-            for (var obj in criticalPropability){
-                if(randomValue < criticalPropability[obj]){
-                    return obj;
-                }
-            }
-        }
-        else if(randomValue < (criticalNumber + ruleNumber) / totalNumber){
-            randomValue = Math.random();
-            for (var obj in rulePropability){
-                if(randomValue < rulePropability[obj]){
-                    return obj;
-                }
-            }
-        }
-        
-        return ruleAnalyzer.solidObjects.rand();
+        return Object.keys(ruleAnalyzer.minNumberObjects).rand();
     };
     
     function LevelEvolutionCalculateEmptyNonEmpty(chromosome){

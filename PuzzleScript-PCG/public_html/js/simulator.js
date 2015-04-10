@@ -241,7 +241,7 @@ function bestfs(startState, maxIterations_) {
                 bestScore = output_score;
                 bestSolution = u2;
             }
-            else if(output_score === bestScore && bestSolution.length < u2.length){
+            else if(output_score === bestScore && bestSolution.length > u2.length){
                 bestSolution = u2;
             }
 

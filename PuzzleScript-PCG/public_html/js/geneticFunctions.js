@@ -432,7 +432,7 @@ this.pslg = this.pslg||{};
             newChromosome.emptySpaces.shuffle();
             randomObject = LevelEvolutionRandomValue(chromosome.lgFeature);
             var objectValue = state.objectMasks[randomObject];
-            if(ruleAnalyzer.winRule[0] === "no" && randomObject in ruleAnalyzer.winObjects){
+            if(ruleAnalyzer.winRules[0] === "no" && ruleAnalyzer.winObjects.indexOf(randomObject) >= 0){
                 objectValue = state.objectMasks[ruleAnalyzer.winObjects[0]] | state.objectMasks[ruleAnalyzer.winObjects[1]];
             }
             randomEmptySpace = newChromosome.emptySpaces[0];

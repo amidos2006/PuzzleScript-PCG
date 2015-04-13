@@ -419,6 +419,7 @@ this.pslg = this.pslg||{};
     
     function LevelEvolutionMutation(newChromosome, chromosome){
         var state = pslg.state;
+        var ruleAnalyzer = pslg.ruleAnalyzer;
         
         newChromosome.level = deepCloneLevel(chromosome.level);
         newChromosome.notEmptySpaces = chromosome.notEmptySpaces.clone();
@@ -430,11 +431,15 @@ this.pslg = this.pslg||{};
         if(randomValue < 0.2 && newChromosome.emptySpaces.length > 0){
             newChromosome.emptySpaces.shuffle();
             randomObject = LevelEvolutionRandomValue(chromosome.lgFeature);
+            var objectValue = state.objectMasks[randomObject];
+            if(ruleAnalyzer.winRule[0] === "no" && randomObject in ruleAnalyzer.winObjects){
+                objectValue = ruleAnalyzer.winObjects[0] | ruleAnalyzer.winObjects[1];
+            }
             randomEmptySpace = newChromosome.emptySpaces[0];
             newChromosome.emptySpaces.splice(0, 1);
             newChromosome.notEmptySpaces.push(randomEmptySpace);
             
-            newChromosome.level.dat[randomEmptySpace] = state.objectMasks["background"] | state.objectMasks[randomObject];
+            newChromosome.level.dat[randomEmptySpace] = state.objectMasks["background"] | objectValue;
         }
         
         var randomValue = Math.random();

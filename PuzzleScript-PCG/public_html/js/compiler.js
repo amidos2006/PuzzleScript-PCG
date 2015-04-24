@@ -768,6 +768,7 @@ function rulesToArray(state) {
 	}
 	state.originalRules = _rules.slice(0);
         state.originalWinConditions = state.winconditions.slice(0);
+        state.winCondLineNumber = state.originalWinConditions[0][4];
 	state.loops=loops;
 
 	//now expand out rules with multiple directions
@@ -2386,6 +2387,9 @@ function compile(command,text) {
         compiling = false;
     }
     if (errorCount>MAX_ERRORS) {
+        if(skipMyCode){
+            disableIO = true;
+        }
         return;
     }
     /*catch(err)
@@ -2418,7 +2422,12 @@ function compile(command,text) {
     setGameState(state,command);
 
     //My Code
-    var test = 3;
+    if(skipMyCode){
+        disableIO = true;
+        return;
+    }
+    
+    var test = 4;
     var ruleAnalyzer = new pslg.RuleAnalyzer();
     ruleAnalyzer.Initialize(state);
 
@@ -2430,7 +2439,7 @@ function compile(command,text) {
 
     pslg.ruleAnalyzer = ruleAnalyzer;
     pslg.state = state;
-    pslg.maxIterations = 5000;
+    pslg.maxIterations = 1500;
     pslg.totalDifficulties =  pslg.LevelGenerator.levelsOutline.length;
     pslg.startingDifficulty = 0;
 
@@ -2749,7 +2758,7 @@ function compile(command,text) {
         pslg.GeneticAlgorithm.mutationRate = 0.1;
         pslg.GeneticAlgorithm.elitismRatio = 0.02;
         pslg.GeneticAlgorithm.mutatedInitializationSize = 0;
-        pslg.GeneticAlgorithm.randomInitializationSize = 0;
+        pslg.GeneticAlgorithm.randomInitializationSize = 1;
 
         var levels = [];
         var initialData = {};
@@ -2780,6 +2789,20 @@ function compile(command,text) {
 
         state.levels = levels;
         loadLevelFromState(state, 0);
+    }
+    //Generating rules for games
+    else if(test === 4){
+        skipMyCode = true;
+        disableIO = true;
+        
+        pslg.ruleMaxGeneratedLevels = 10;
+        pslg.ruleNumberOfBestLevels = 5;
+        pslg.ruleGeneratedLevelOutline = 2;
+        
+        console.log(pslg.GetRuleFitness(pslg.state.originalRules, ["all", "target", "gem"]));
+        
+        skipMyCode = true;
+        disableIO = true;
     }
     //End of My Code
 }

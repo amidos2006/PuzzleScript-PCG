@@ -251,13 +251,88 @@ this.pslg = this.pslg||{};
         return fitness;
     }
     
+    function ClearEditorRules(){
+        var lineNumbers = pslg.state.winCondLineNumber;
+        var minLine = lineNumbers - 1;
+	var maxLine = lineNumbers - 1;
+        editor.setCursor({line:minLine-1, ch:0});
+	editor.setSelection({line:minLine, ch:0}, {line:maxLine, ch:999});
+	editor.replaceSelection("");
+        
+        lineNumbers = pslg.state.ruleLineNumbers;
+	minLine = lineNumbers.min()-1;
+	maxLine = lineNumbers.max()-1;
+
+	editor.setCursor({line:minLine-1, ch:0});
+	editor.setSelection({line:minLine, ch:0}, {line:maxLine, ch:999});
+	editor.replaceSelection("");   
+    }
+    
+    function PrintObjects(objects){
+        var string = "";
+        for (var i = 0; i < objects.length; i++) {
+            string += objects[i];
+            if(i < objects.length - 1){
+                string += " ";
+            }
+        }
+        
+        return string;
+    }
+    
+    function PrintTuple(tuple){
+        var string = "[ ";
+        for (var i = 0; i < tuple.length; i++) {
+            string += PrintObjects(tuple[i]);
+            if(i < tuple.length - 1){
+                string += " | ";
+            }
+        }
+        string += " ]";
+        return string;
+    }
+    
+    function PrintHS(hs){
+        var string = "";
+        for (var i = 0; i < hs.length; i++) {
+            string += PrintTuple(hs[i]);
+        }
+        
+        return string;
+    }
+    
+    function PrintRule(rule){
+        return PrintHS(rule.lhs) + " -> " + PrintHS(rule.rhs);
+    }
+    
     function GetRuleFitness(rules, winningRule){
         //Initializing parameters
         //TODO: compile and assign the state
-        pslg.state.originalRules = rules;
-        pslg.state.originalWinConditions = winningRule;
+        ClearEditorRules();
+        var ruleLineStart = pslg.state.ruleLineNumbers.min();
+	var lineIndex = ruleLineStart-1;
+	var newLine = null;
+
+	for (var i=0; i < rules.length; i++) {
+		lineIndex = ruleLineStart+i-1;
+		newLine =  PrintRule(rules[i]);
+		
+		if (i < rules.length-1) {
+			newLine += "\n";
+		}
+		editor.setLine(lineIndex, newLine);
+	}
+        
+        var winCondLine = lineIndex + 6;
+        newLine = winningRule[0] + " " + winningRule[1] + " on " + winningRule[2];
+        editor.setLine(winCondLine, newLine);
+	rebuild();
+        
+        pslg.state = state;
         pslg.ruleAnalyzer = new pslg.RuleAnalyzer();
         pslg.ruleAnalyzer.Initialize(pslg.state);
+        
+        var validity = errorCount > 0? 0 : 1;
         
         //Rule Fitness
         var player = 0;
@@ -336,10 +411,14 @@ this.pslg = this.pslg||{};
         var ruleFitness = 0.5 * heuristic.avg() + 0.5 * validity;
         
         //Level Fitness
+        if(validity <= 0){
+            return 0.7 * ruleFitness;
+        }
+        
         var levelGenerator = new pslg.LevelGenerator(pslg.LevelGenerator.AutoFeatures(pslg.ruleAnalyzer));
         var levels = [];
         for (var i = 0; i < pslg.ruleMaxGeneratedLevels; i++) {
-            var level = levelGenerator.GenerateLevel(i, pslg.ruleAnalyzer, pslg.state);
+            var level = levelGenerator.GenerateLevel(pslg.ruleGeneratedLevelOutline, pslg.ruleAnalyzer, pslg.state);
             level.fitness = pslg.GetLevelFitness([level]);
             levels.push(level);
         }
@@ -612,6 +691,7 @@ this.pslg = this.pslg||{};
     pslg.startingDifficulty = 0;
     pslg.ruleMaxGeneratedLevels = 20;
     pslg.ruleNumberOfBestLevels = 10;
+    pslg.ruleGeneratedLevelOutline = 2;
     
     /////////////////////////////
     //  Functions Declaration

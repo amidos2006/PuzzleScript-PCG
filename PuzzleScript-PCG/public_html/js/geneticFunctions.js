@@ -251,6 +251,109 @@ this.pslg = this.pslg||{};
         return fitness;
     }
     
+    function GetRuleFitness(rules, winningRule){
+        //Initializing parameters
+        //TODO: compile and assign the state
+        pslg.state.originalRules = rules;
+        pslg.state.originalWinConditions = winningRule;
+        pslg.ruleAnalyzer = new pslg.RuleAnalyzer();
+        pslg.ruleAnalyzer.Initialize(pslg.state);
+        
+        //Rule Fitness
+        var player = 0;
+        if(pslg.ruleAnalyzer.ruleObjects.indexOf("player") >= 0){
+            player = 1;
+        }
+        var criticalPath = 0;
+        if(pslg.ruleAnalyzer.CheckCriticalPath()){
+            criticalPath = 1;
+        }
+        var uselessObjects = 1 / (pslg.ruleAnalyzer.GetUselessObjects().length + 1.0);
+        var winningCondition = 0;
+        if(pslg.ruleAnalyzer.CheckWinningValidity()){
+            winningCondition = 1;
+        }
+        var winningObject = 0;
+        if(pslg.ruleAnalyzer.ruleObjects.indexOf(pslg.ruleAnalyzer.winObjects[0]) >= 0 ||
+                pslg.ruleAnalyzer.ruleObjects.indexOf(pslg.ruleAnalyzer.winObjects[1]) >= 0){
+            winningObject = 1;
+        }
+        var playerLHS = 0;
+        var playerMovement = 0;
+        var directionConst = [];
+        var directions = [">", "<", "^", "v", "action"];
+        var moveDirections = {};
+        for (var rIndex = 0; rIndex < rules.length; rIndex++) {
+            var tempRule = rules[rIndex];
+            for (var dIndex = 0; dIndex < directions.length; dIndex++) {
+                moveDirections[directions[dIndex]] = 0;
+            }
+            
+            for (var tIndex = 0; tIndex < tempRule.lhs.length; tIndex++) {
+                var tempTuple = tempRule.lhs[tIndex];
+                for (var oIndex = 0; oIndex < tempTuple.length; oIndex++) {
+                    if(tempTuple[oIndex].indexOf("player") >= 0){
+                        playerLHS = 1;
+                    }
+                    
+                    for (var dIndex = 0; dIndex < directions.length; dIndex++) {
+                        if(tempTuple[oIndex].indexOf(directions[dIndex]) >= 0){
+                            playerMovement = 1;
+                            moveDirections[directions[dIndex]] += 1;
+                        }
+                    }
+                }
+            }
+            
+            for (var tIndex = 0; tIndex < tempRule.rhs.length; tIndex++) {
+                var tempTuple = tempRule.rhs[tIndex];
+                for (var oIndex = 0; oIndex < tempTuple.length; oIndex++) {
+                    for (var dIndex = 0; dIndex < directions.length; dIndex++) {
+                        if(tempTuple[oIndex].indexOf(directions[dIndex]) >= 0){
+                            playerMovement = 1;
+                            moveDirections[directions[dIndex]] += 1;
+                        }
+                    }
+                }
+            }
+            
+            var unique = 0;
+            for (var dIndex = 0; dIndex < directions.length; dIndex++) {
+                if(moveDirections[directions[dIndex]] > 0){
+                    unique += 1;
+                }
+            }
+            if(unique === 0){
+                directionConst.push(1);
+            }
+            else{
+                directionConst.push(1 / unique);
+            }
+        }
+        
+        var heuristic = [player, criticalPath, uselessObjects, winningCondition, 
+            winningObject, playerLHS, playerMovement, directionConst.avg()];
+        var ruleFitness = 0.5 * heuristic.avg() + 0.5 * validity;
+        
+        //Level Fitness
+        var levelGenerator = new pslg.LevelGenerator(pslg.LevelGenerator.AutoFeatures(pslg.ruleAnalyzer));
+        var levels = [];
+        for (var i = 0; i < pslg.ruleMaxGeneratedLevels; i++) {
+            var level = levelGenerator.GenerateLevel(i, pslg.ruleAnalyzer, pslg.state);
+            level.fitness = pslg.GetLevelFitness([level]);
+            levels.push(level);
+        }
+        
+        levels.sort(pslg.FitnessSort);
+        var fitness = [];
+        for (var i = 0; i < pslg.ruleNumberOfBestLevels; i++) {
+            fitness.push(levels[i].fitness);
+        }
+        
+        //Final value
+        return 0.3 * fitness.avg() + 0.7 * ruleFitness;
+    }
+    
     function ParameterEvolutionRandomValue(index){
         switch(index){
             case 0:
@@ -479,6 +582,26 @@ this.pslg = this.pslg||{};
         chromosome.fitness = GetLevelFitness([chromosome.level]);
     }
     
+    function RuleEvolutionInitialize(chromosome, initialData){
+        
+    }
+    
+    function RuleEvolutionClone(cloned, chromosome){
+        
+    }
+    
+    function RuleEvolutionCrossOver(child1, child2, chromosome1, chromosome2){
+        
+    }
+    
+    function RuleEvolutionMutation(newChromosome, chromosome){
+        
+    }
+    
+    function RuleEvolutionCalculateFitness(chromosome){
+        
+    }
+    
     /////////////////////////////
     //  Variables Declaration
     /////////////////////////////
@@ -487,6 +610,8 @@ this.pslg = this.pslg||{};
     pslg.maxIterations = 1000;
     pslg.totalDifficulties = 8;
     pslg.startingDifficulty = 0;
+    pslg.ruleMaxGeneratedLevels = 20;
+    pslg.ruleNumberOfBestLevels = 10;
     
     /////////////////////////////
     //  Functions Declaration
@@ -502,12 +627,19 @@ this.pslg = this.pslg||{};
     pslg.AppliedRulesScore = AppliedRulesScore;
     pslg.NumberOfObjects = NumberOfObjects;
     pslg.GetLevelFitness = GetLevelFitness;
+    pslg.GetRuleFitness = GetRuleFitness;
     
     pslg.LevelEvolutionInitialize = LevelEvolutionInitialize;
     pslg.LevelEvolutionClone = LevelEvolutionClone;
     pslg.LevelEvolutionCrossOver = LevelEvolutionCrossOver;
     pslg.LevelEvolutionMutation = LevelEvolutionMutation;
     pslg.LevelEvolutionCalculateFitness = LevelEvolutionCalculateFitness;
+    
+    pslg.RuleEvolutionInitialize = RuleEvolutionInitialize;
+    pslg.RuleEvolutionClone = RuleEvolutionClone;
+    pslg.RuleEvolutionCrossOver = RuleEvolutionCrossOver;
+    pslg.RuleEvolutionMutation = RuleEvolutionMutation;
+    pslg.RuleEvolutionCalculateFitness = RuleEvolutionCalculateFitness;
     
     pslg.ParameterEvolutionInitialize = ParameterEvolutionInitialize;
     pslg.ParameterEvolutionClone = ParameterEvolutionClone;

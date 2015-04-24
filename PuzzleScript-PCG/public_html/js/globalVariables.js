@@ -1,5 +1,6 @@
 var unitTesting=false;
 var disableIO = false;
+var skipMyCode = false;
 var humanTesting = false;
 var parallelCode = false;
 var curlevel=0;

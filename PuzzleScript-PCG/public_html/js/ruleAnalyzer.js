@@ -475,6 +475,57 @@ this.pslg = this.pslg||{};
         });
     };
     
+    RuleAnalyzer.prototype.CheckCriticalPath = function(){
+        if(this.ruleObjects[0] === "player" || this.ruleObjects[0] === "player"){
+            return true;
+        }
+        
+        var result = [];
+        result.push(this.CheckCriticalObject(this.ruleObjects[0]));
+        result.push(this.CheckCriticalObject(this.ruleObjects[0]));
+        
+        return result[0] === 3 || result[1] === 3;
+    }
+    
+    RuleAnalyzer.prototype.GetUselessObjects = function(){
+        var uselessObjects = [];
+        for (var i = 0; i < this.ruleObjects.length; i++){
+            var obj = this.ruleObjects[i];
+            if(this.winObjects.indexOf(obj) > -1 || obj === "player"){
+                continue;
+            }
+            var result = this.CheckCriticalObject(obj);
+            if(result === 0){
+                uselessObjects.push(obj);
+            }
+        }
+        
+        return uselessObjects;
+    }
+    
+    RuleAnalyzer.prototype.CheckWinningValidity = function(){
+        var correctMask, result;
+        if(this.winRules[0] === "no"){
+            correctMask = ObjectBehaviour.DESTROY | ObjectBehaviour.MOVE_SAME | 
+                    ObjectBehaviour.MOVE_DIFF | ObjectBehaviour.MOVE_TELEPORT;
+            result = (this.objectBehaviour[this.winObjects[0]] | 
+                    this.objectBehaviour[this.winObjects[1]]) & correctMask;
+            if(result > 0){
+                return true;
+            }
+            return false;
+        }
+        
+        correctMask = ObjectBehaviour.CREATE | ObjectBehaviour.MOVE_SAME | 
+                    ObjectBehaviour.MOVE_DIFF | ObjectBehaviour.MOVE_TELEPORT;
+        result = (this.objectBehaviour[this.winObjects[0]] | 
+                    this.objectBehaviour[this.winObjects[1]]) & correctMask;
+        if(result > 0){
+            return true;
+        }
+        return false;
+    };
+    
     /////////////////////////////
     //  Class Declaration
     /////////////////////////////

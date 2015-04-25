@@ -2276,8 +2276,9 @@ function formatHomePage(state){
 var proc;
 var MAX_ERRORS=5;
 function loadFile(str) {
-
-	window.console.log('>>>> loadFile');
+        if(!skipMyCode){
+            window.console.log('>>>> loadFile');
+        }
 
 	var processor = new codeMirrorFn();
 	var state = processor.startState();
@@ -2356,8 +2357,13 @@ function loadFile(str) {
 
 var ifrm;
 function compile(command,text) {
-    console.log('>>>> compile(), command=%s', command.toString());
-    disableIO = false;
+    if(skipMyCode){
+        disableIO = true;
+    }
+    else{
+        disableIO = false;
+        console.log('>>>> compile(), command=%s', command.toString());
+    }
     forceRegenImages=true;
     if (command===undefined) {
         command = ["restart"];

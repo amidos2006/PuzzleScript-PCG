@@ -547,7 +547,9 @@ function backupLevel() {
 }
 
 function setGameState(_state, command) {
-	console.log(">>>> setGameState(), _state=%o, command=%s", _state, command.toString());
+        if(!skipMyCode){
+            console.log(">>>> setGameState(), _state=%o, command=%s", _state, command.toString());
+        }
 	oldflickscreendat=[];
 	timer=0;
 	autotick=0;

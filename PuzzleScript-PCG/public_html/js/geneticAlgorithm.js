@@ -136,6 +136,14 @@ this.pslg = this.pslg||{};
             newPopulation.chromosomes.push(this.chromosomes[i]);
         }
         
+        console.log("\tBest Rules");
+        for (var i = 0; i < this.chromosomes[0].length; i++) {
+            console.log("\t\t" + pslg.PrintRule(this.chromosomes[0].rules[i]));
+        }
+        console.log("\tBest WinRule");
+        console.log("\t\t" + this.chromosomes[0].winRule[0] + " " + 
+                this.chromosomes[0].winRule[1] + " on " + this.chromosomes[0].winRule[2]);
+        
         return newPopulation;
     };
     
@@ -143,7 +151,7 @@ this.pslg = this.pslg||{};
         var newPopulation = new Population(this.populationSize);
         
         for (var i = 0; i < this.chromosomes.length; i++) {
-            //console.log("\tChromosome number: " + (i + 1).toString());
+            console.log("\tChromosome " + (i + 1).toString());
             this.chromosomes[i].age += 1;
             Chromosome.CalculateFitness(this.chromosomes[i]);
             //console.log("\tFitness Score: " + this.chromosomes[i].fitness);

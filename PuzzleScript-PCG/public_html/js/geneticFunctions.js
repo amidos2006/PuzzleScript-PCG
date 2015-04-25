@@ -307,12 +307,13 @@ this.pslg = this.pslg||{};
     
     function GetRuleFitness(rules, winningRule){
         //Initializing parameters
-        //TODO: compile and assign the state
+        console.log("\t\tClearing the editor")
         ClearEditorRules();
         var ruleLineStart = pslg.state.ruleLineNumbers.min();
 	var lineIndex = ruleLineStart-1;
 	var newLine = null;
-
+        
+        console.log("\t\tAdding new rules");
 	for (var i=0; i < rules.length; i++) {
 		lineIndex = ruleLineStart+i-1;
 		newLine =  PrintRule(rules[i]);
@@ -323,17 +324,20 @@ this.pslg = this.pslg||{};
 		editor.setLine(lineIndex, newLine);
 	}
         
+        console.log("\t\tAdding winning condition");
         var winCondLine = lineIndex + 6;
         newLine = winningRule[0] + " " + winningRule[1] + " on " + winningRule[2];
         editor.setLine(winCondLine, newLine);
 	rebuild();
         
+        console.log("\t\tRule Analyzing");
         pslg.state = state;
         pslg.ruleAnalyzer = new pslg.RuleAnalyzer();
         pslg.ruleAnalyzer.Initialize(pslg.state);
         
         var validity = errorCount > 0? 0 : 1;
         
+        console.log("\t\tRule Fitness");
         //Rule Fitness
         var player = 0;
         if(pslg.ruleAnalyzer.ruleObjects.indexOf("player") >= 0){
@@ -415,6 +419,7 @@ this.pslg = this.pslg||{};
             return 0.7 * ruleFitness;
         }
         
+        console.log("\t\tLevel Fitness");
         var levelGenerator = new pslg.LevelGenerator(pslg.LevelGenerator.AutoFeatures(pslg.ruleAnalyzer));
         var levels = [];
         for (var i = 0; i < pslg.ruleMaxGeneratedLevels; i++) {
@@ -613,9 +618,6 @@ this.pslg = this.pslg||{};
     function RuleEvolutionClone(cloned, chromosome){
         var rules = [];
         for (var i = 0; i < chromosome.rules.length; i++) {
-            if(chromosome.rules[i].lhs === undefined || chromosome.rules[i].rhs === undefined){
-                console.log("kofta");
-            }
             rules.push({
                 lhs: deepCloneHS(chromosome.rules[i].lhs),
                 rhs: deepCloneHS(chromosome.rules[i].rhs)
@@ -727,7 +729,7 @@ this.pslg = this.pslg||{};
             randomObject = Math.randomInt(chromosome.rules[randomRule]["lhs"][randomTuple].length + 1);
             chromosome.rules[randomRule]["rhs"][randomTuple].splice(randomObject, 0, [directions.rand(), objects.rand()]);
         }else{
-            if(chromosome.rules[randomRule]["lhs"][randomTuple].length > 0){
+            if(chromosome.rules[randomRule]["lhs"][randomTuple].length > 1){
                 var randomObject = Math.randomInt(chromosome.rules[randomRule]["lhs"][randomTuple].length);
                 chromosome.rules[randomRule]["lhs"][randomTuple].splice(randomObject, 1);
                 randomObject = Math.randomInt(chromosome.rules[randomRule]["lhs"][randomTuple].length);

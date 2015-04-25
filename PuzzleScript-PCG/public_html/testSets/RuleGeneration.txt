@@ -1,5 +1,5 @@
-title My BlockSwapper
-author Ahmed Abdel Samea Khalifa
+title GeneratedGame
+author Ahmed Khalifa
 homepage www.amidos-games.com
 
 ========
@@ -14,14 +14,21 @@ LIGHTGREEN GREEN
 11111
 10111
 
-
 Target
-DarkBlue
+DarkBlue Blue
 .....
 .000.
-.0.0.
+.010.
 .000.
 .....
+
+Gem
+DarkRed Red
+..0..
+.010.
+.100.
+.000.
+..0..
 
 Stopper
 DarkRed
@@ -30,6 +37,14 @@ DarkRed
 0...0
 0...0
 00000
+
+Lava
+DarkRed Red
+10101
+01010
+10101
+01010
+10101
 
 Wall
 BROWN DARKBROWN
@@ -44,16 +59,8 @@ Black Orange White Blue
 .000.
 .111.
 22222
-23332
-.3.3.
-
-Wife
-Brown Orange Red Blue
-00000
-01110
-22222
-23332
 .333.
+.3.3.
 
 Crate
 Orange Yellow
@@ -70,36 +77,37 @@ LEGEND
 
 . = Background
 # = Wall
-X = Stopper
-P = Player
-W = Wife
-* = Crate
-O = Target
+p = Player
+c = Crate
+l = lava
+g = Gem
+s = Stopper
+t = Target
 
 =======
-Sounds
+SOUNDS
 =======
 
 ================
 COLLISIONLAYERS
 ================
 
-Background 
+Background
 Target
-Stopper
-Player, Wall, Crate, Wife
+Stopper, Lava
+Player, Wall, Crate, Gem
 
 ======
 RULES
 ======
 
-[ > Player | Crate]->[Crate | Player]
+[ ] -> [ ]
 
 ==============
 WINCONDITIONS
 ==============
 
-all Target on Crate
+All Target on Crate
 
 =======
 LEVELS

@@ -433,97 +433,6 @@ this.pslg = this.pslg||{};
         return 0.3 * fitness.avg() + 0.7 * ruleFitness;
     }
     
-    function ParameterEvolutionRandomValue(index){
-        switch(index){
-            case 0:
-                return Number((Math.random() * 0.7 + 0.2).toPrecision(5));
-            case 1:
-                return 1;
-            case 2:
-                return Number((Math.random() * 0.25).toPrecision(5));
-            case 3:
-                return Number((Math.random()).toPrecision(5));
-            case 4:
-                return Number((Math.random() * 0.8).toPrecision(5));
-            case 5:
-                return Number((Math.random() * 0.3).toPrecision(5));
-        }
-        
-        return Number((Math.random() * 0.1).toPrecision(5));
-    }
-    
-    function ParameterEvolutionFixProbabilites(chromosome, lastProbability){
-        var total = chromosome.genes[chromosome.genes.length - 1] + chromosome.genes[chromosome.genes.length - 2] + chromosome.genes[chromosome.genes.length - 3] + lastProbability;
-        if (total === 0){
-            total = 1;
-        }
-        chromosome.genes[chromosome.genes.length - 1] = Number((chromosome.genes[chromosome.genes.length - 1] / total).toPrecision(5));
-        chromosome.genes[chromosome.genes.length - 2] = Number((chromosome.genes[chromosome.genes.length - 2] / total).toPrecision(5));
-        chromosome.genes[chromosome.genes.length - 3] = Number((chromosome.genes[chromosome.genes.length - 3] / total).toPrecision(5));
-    }
-    
-    function ParameterEvolutionInitialize(chromosome, initialData){
-        chromosome.genes = [];
-        chromosome.fitness = undefined;
-        
-        for (var i = 0; i < 6; i++) {
-            chromosome.genes.push(ParameterEvolutionRandomValue(i));
-        }
-        
-        ParameterEvolutionFixProbabilites(chromosome, ParameterEvolutionRandomValue(6));
-    }
-    
-    function ParameterEvolutionClone(cloned, chromosome){
-        cloned.genes = chromosome.genes.clone();
-        cloned.fitness = chromosome.fitness;
-        cloned.fitnessArray = chromosome.fitnessArray.clone();
-        cloned.age = chromosome.age;
-    }
-    
-    function ParameterEvolutionCrossOver(child1, child2, chromosome1, chromosome2){
-        var pointOfSwap = Math.randomInt(chromosome1.genes.length - 1);
-        
-        for (var i = 0; i < chromosome1.genes.length; i++) {
-            if(i <= pointOfSwap){
-                child1.genes[i] = chromosome1.genes[i];
-                child2.genes[i] = chromosome2.genes[i];
-            }
-            else{
-                child1.genes[i] = chromosome2.genes[i];
-                child2.genes[i] = chromosome1.genes[i];
-            }
-        }
-        
-        var lastProbability = 1 - chromosome1.genes[chromosome1.genes.length - 1] - chromosome1.genes[chromosome1.genes.length - 2] - chromosome1.genes[chromosome1.genes.length - 3];
-        ParameterEvolutionFixProbabilites(child2, lastProbability);
-        lastProbability = 1 - chromosome2.genes[chromosome2.genes.length - 1] - chromosome2.genes[chromosome2.genes.length - 2] - chromosome2.genes[chromosome2.genes.length - 3];
-        ParameterEvolutionFixProbabilites(child1, lastProbability);
-    }
-    
-    function ParameterEvolutionMutation(newChromosome, chromosome){
-        newChromosome.genes = chromosome.genes.clone();
-        var randomIndex = Math.randomInt(chromosome.genes.length);
-        newChromosome.genes[randomIndex] = ParameterEvolutionRandomValue(randomIndex);
-        
-        var lastProbability = 1 - chromosome.genes[chromosome.genes.length - 1] - chromosome.genes[chromosome.genes.length - 2] - chromosome.genes[chromosome.genes.length - 3];
-        ParameterEvolutionFixProbabilites(newChromosome, lastProbability);
-    }
-    
-    function ParameterEvolutionCalculateFitness(chromosome){
-        var state = pslg.state;
-        var ruleAnalyzer = pslg.ruleAnalyzer;
-        
-        var levelGenerator = new pslg.LevelGenerator(new pslg.LGFeatures(chromosome.genes.clone()));
-        var fitness = GetLevelFitness(levelGenerator.GenerateLevels(ruleAnalyzer, state));
-        
-        if(chromosome.fitnessArray === undefined){
-            chromosome.fitnessArray = [];
-        }
-        chromosome.fitnessArray.push(fitness);
-        chromosome.fitness = chromosome.fitnessArray.avg() + 
-                (chromosome.age * 0.005) / pslg.GeneticAlgorithm.numberOfGenerations;
-    }
-    
     function LevelEvolutionRandomValue(lgFeature){
         var ruleAnalyzer = pslg.ruleAnalyzer;
         return Object.keys(ruleAnalyzer.minNumberObjects).rand();
@@ -654,31 +563,237 @@ this.pslg = this.pslg||{};
     }
     
     function LevelEvolutionCalculateFitness(chromosome){
-        if(this.fitness !== undefined){
+        if(chromosome.fitness !== undefined){
             return;
         }
         
         chromosome.fitness = GetLevelFitness([chromosome.level]);
     }
     
-    function RuleEvolutionInitialize(chromosome, initialData){
+    function GetPossibleObjects(){
+        var objects = Object.keys(pslg.state.objects);
+        for (var i = 0; i < objects.length; i++) {
+            if(objects[i] === "wall"){
+                objects.splice(i, 1);
+            }
+            if(objects[i] === "background"){
+                objects.splice(i, 1);
+            }
+        }
+        return objects;
+    }
+    
+    function CreateEmptyRule(){
+        return {
+            lhs: deepCloneHS(pslg.emptyRule.lhs),
+            rhs: deepCloneHS(pslg.emptyRule.rhs)
+        };
+    }
+    
+    function CreateRandomWinCond(){
+        var differentRules = ["all", "some", "no"];
+        var objects = GetPossibleObjects();
+        var index1 = Math.randomInt(objects.length);
+        var index2 = (index1 + Math.randomInt(objects.length - 1) + 1) % objects.length;
         
+        return [differentRules.rand(), objects[index1], objects[index2]];
+    }
+    
+    function RuleEvolutionInitialize(chromosome, initialData){
+        pslg.emptyRule = initialData.emptyRule;
+        chromosome.rules = [CreateEmptyRule()];
+        chromosome.winRule = CreateRandomWinCond();
+        chromosome.fitness = undefined;
+        
+        for (var i = 0; i < 20; i++) {
+            RuleEvolutionMutation(chromosome, chromosome);
+        }
     }
     
     function RuleEvolutionClone(cloned, chromosome){
-        
+        var rules = [];
+        for (var i = 0; i < chromosome.rules.length; i++) {
+            if(chromosome.rules[i].lhs === undefined || chromosome.rules[i].rhs === undefined){
+                console.log("kofta");
+            }
+            rules.push({
+                lhs: deepCloneHS(chromosome.rules[i].lhs),
+                rhs: deepCloneHS(chromosome.rules[i].rhs)
+            });
+        }
+        cloned.rules = rules;
+        cloned.winRule = chromosome.winRule.clone();
+        cloned.fitness = chromosome.fitness;
     }
     
     function RuleEvolutionCrossOver(child1, child2, chromosome1, chromosome2){
+        var random = Math.random();
+        if(random < 0.5){
+            //Swap RHS with LHS
+            child1.rules = [];
+            child2.rules = [];
+            for (var i = 0; i < chromosome1.rules.length; i++) {
+                var rule1 = chromosome1.rules[i];
+                var rule2 = chromosome2.rules[i];
+                child1.rules.push({
+                    lhs: deepCloneHS(rule1.lhs),
+                    rhs: deepCloneHS(rule2.rhs)
+                });
+                child2.rules.push({
+                    lhs: deepCloneHS(rule2.lhs),
+                    rhs: deepCloneHS(rule1.rhs)
+                });
+            }
+        }
+        else{
+            //Swap Object
+            RuleEvolutionClone(child1, chromosome1);
+            RuleEvolutionClone(child2, chromosome2);
+            for (var i = 0; i < child1.rules.length; i++) {
+                var hs = Math.random() < 0.5? "lhs" : "rhs";
+                var randomTuple = Math.randomInt(child1.rules[i][hs].length);
+                var tuple1 = child1.rules[i][hs][randomTuple];
+                var tuple2 = child2.rules[i][hs][randomTuple];
+                var swapedObject = Math.randomInt(tuple1.length);
+                var temp = tuple1[swapedObject];
+                tuple1[swapedObject] = tuple2[swapedObject];
+                tuple2[swapedObject] = temp;
+            }
+        }
         
+        //WinRule Crossover
+        var swapObject = Math.randomInt(chromosome1.winRule.length);
+        child1.winRule = chromosome1.winRule.clone();
+        child2.winRule = chromosome2.winRule.clone();
+        child1.winRule[swapObject] = chromosome2.winRule[swapObject];
+        child2.winRule[swapObject] = chromosome1.winRule[swapObject];
+    }
+    
+    function RuleSizeMutator(chromosome){
+        var random = Math.random();
+        if(random < 0.5){
+            if(chromosome.rules.length < 4){
+                chromosome.rules.push(CreateEmptyRule());
+            }
+        }
+        else{
+            if(chromosome.rules.length > 1){
+                var randomIndex = Math.randomInt(chromosome.rules.length);
+                chromosome.rules.splice(randomIndex, 1);
+            }
+        }
+    }
+    
+    function ObjectMutator(chromosome){
+        var randomRule = Math.randomInt(chromosome.rules.length);
+        var randomHS = ["lhs", "rhs"].rand();
+        var randomTuple = Math.randomInt(chromosome.rules[randomRule][randomHS].length);
+        if(chromosome.rules[randomRule][randomHS][randomTuple].length > 0){
+            var randomObject = Math.randomInt(chromosome.rules[randomRule][randomHS][randomTuple].length);
+            if(chromosome.rules[randomRule][randomHS][randomTuple][randomObject].length > 0){
+                var objects = GetPossibleObjects();
+                chromosome.rules[randomRule][randomHS][randomTuple][randomObject][1] = objects.rand();
+            }
+            else{
+                var objects = GetPossibleObjects();
+                chromosome.rules[randomRule][randomHS][randomTuple][randomObject] = ["", objects.rand()];
+            }
+        }
+    }
+    
+    function DirectionMutator(chromosome){
+        var randomRule = Math.randomInt(chromosome.rules.length);
+        var randomHS = ["lhs", "rhs"].rand();
+        var randomTuple = Math.randomInt(chromosome.rules[randomRule][randomHS].length);
+        if(chromosome.rules[randomRule][randomHS][randomTuple].length > 0){
+            var randomObject = Math.randomInt(chromosome.rules[randomRule][randomHS][randomTuple].length);
+            if(chromosome.rules[randomRule][randomHS][randomTuple][randomObject].length > 0){
+                var directions = ["<", ">", "^", "v", "action", ""];
+                chromosome.rules[randomRule][randomHS][randomTuple][randomObject][0] = directions.rand();
+            }
+        }
+    }
+    
+    function TupleSizeMutator(chromosome){
+        var randomRule = Math.randomInt(chromosome.rules.length);
+        var randomTuple = Math.randomInt(chromosome.rules[randomRule]["lhs"].length);
+        var random = Math.random();
+        if(random < 0.5){
+            var objects = GetPossibleObjects();
+            var directions = ["<", ">", "^", "v", "action", ""];
+            
+            var randomObject = Math.randomInt(chromosome.rules[randomRule]["lhs"][randomTuple].length + 1);
+            chromosome.rules[randomRule]["lhs"][randomTuple].splice(randomObject, 0, [directions.rand(), objects.rand()]);
+            randomObject = Math.randomInt(chromosome.rules[randomRule]["lhs"][randomTuple].length + 1);
+            chromosome.rules[randomRule]["rhs"][randomTuple].splice(randomObject, 0, [directions.rand(), objects.rand()]);
+        }else{
+            if(chromosome.rules[randomRule]["lhs"][randomTuple].length > 0){
+                var randomObject = Math.randomInt(chromosome.rules[randomRule]["lhs"][randomTuple].length);
+                chromosome.rules[randomRule]["lhs"][randomTuple].splice(randomObject, 1);
+                randomObject = Math.randomInt(chromosome.rules[randomRule]["lhs"][randomTuple].length);
+                chromosome.rules[randomRule]["rhs"][randomTuple].splice(randomObject, 1);
+            }
+        }
+    }
+    
+    function HandSideSwapMutator(chromosome){
+        var randomRule = Math.randomInt(chromosome.rules.length);
+        var tempHS = chromosome.rules[randomRule].lhs;
+        chromosome.rules[randomRule].lhs = chromosome.rules[randomRule].rhs;
+        chromosome.rules[randomRule].rhs = tempHS;
+    }
+    
+    function WinRuleMutator(chromosome){
+        var randomIndex = Math.randomInt(chromosome.winRule.length);
+        if(randomIndex === 0){
+            var rules = ["all", "some", "no"];
+            chromosome.winRule[0] = rules.rand();
+        }
+        else{
+            var objects = GetPossibleObjects();
+            chromosome.winRule[randomIndex] = objects.rand();
+        }
     }
     
     function RuleEvolutionMutation(newChromosome, chromosome){
-        
+        RuleEvolutionClone(newChromosome, chromosome);
+        var mutators = [RuleSizeMutator, ObjectMutator, DirectionMutator, TupleSizeMutator, HandSideSwapMutator, WinRuleMutator];
+        for (var i = 0; i < mutators.length; i++) {
+            var random = Math.random();
+            if(random < 0.2){
+                mutators[i](newChromosome);
+            }
+        }
     }
     
     function RuleEvolutionCalculateFitness(chromosome){
+        if(chromosome.fitness !== undefined){
+            return;
+        }
         
+        chromosome.fitness = GetRuleFitness(chromosome.rules, chromosome.winRule);
+    }
+    
+    function RuleEvolutionEqual(chromosome1, chromosome2){
+        if(chromosome1.rules.length !== chromosome2.rules.length){
+            return false;
+        }
+        
+        for (var i = 0; i < chromosome1.rules.length; i++) {
+            var rule1 = chromosome1.rules[i];
+            var rule2 = chromosome2.rules[i];
+            if(rule1.lhs.length !== rule2.lhs.length){
+                return false;
+            }
+            
+            for (var j = 0; j < rule1.lhs.length; j++) {
+                if(rule1.lhs[j].length !== rule2.lhs[j].length){
+                    return false;
+                }
+            }
+        }
+        
+        return true;
     }
     
     /////////////////////////////
@@ -708,6 +823,7 @@ this.pslg = this.pslg||{};
     pslg.NumberOfObjects = NumberOfObjects;
     pslg.GetLevelFitness = GetLevelFitness;
     pslg.GetRuleFitness = GetRuleFitness;
+    pslg.PrintRule = PrintRule;
     
     pslg.LevelEvolutionInitialize = LevelEvolutionInitialize;
     pslg.LevelEvolutionClone = LevelEvolutionClone;
@@ -720,11 +836,6 @@ this.pslg = this.pslg||{};
     pslg.RuleEvolutionCrossOver = RuleEvolutionCrossOver;
     pslg.RuleEvolutionMutation = RuleEvolutionMutation;
     pslg.RuleEvolutionCalculateFitness = RuleEvolutionCalculateFitness;
-    
-    pslg.ParameterEvolutionInitialize = ParameterEvolutionInitialize;
-    pslg.ParameterEvolutionClone = ParameterEvolutionClone;
-    pslg.ParameterEvolutionCrossOver = ParameterEvolutionCrossOver;
-    pslg.ParameterEvolutionMutation = ParameterEvolutionMutation;
-    pslg.ParameterEvolutionCalculateFitness = ParameterEvolutionCalculateFitness;
+    pslg.RuleEvolutionEqual = RuleEvolutionEqual;
 }());
 

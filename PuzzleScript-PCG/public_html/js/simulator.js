@@ -512,6 +512,9 @@ function get_level_score(leveldat) {
             for (var i = 0; i < ruleAnalyzer.ruleObjects.length; i++) {
                 objectIndeces[ruleAnalyzer.ruleObjects[i]] = [];
             }
+            if(objectIndeces["player"] === undefined){
+                objectIndeces["player"] = [];
+            }
             
             var winDistances = [];
             var distances = [];

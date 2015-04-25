@@ -92,7 +92,7 @@ this.pslg = this.pslg||{};
                 }
             }
             
-            if(this.winObjects.indexOf(winCond[1]) < 0){
+            if(this.winObjects.indexOf(winCond[1]) < 0 || this.winObjects.length % 2 === 1){
                 this.winObjects.push(winCond[1]);
             }
             
@@ -504,14 +504,15 @@ this.pslg = this.pslg||{};
     }
     
     RuleAnalyzer.prototype.CheckWinningValidity = function(){
-        var correctMask, result;
+        var correctMask, result, sameLayer;
+        sameLayer = pslg.state.objects[this.winObjects[0]].layer === pslg.state.objects[this.winObjects[1]].layer;
         if(this.winRules[0] === "no"){
             correctMask = ObjectBehaviour.DESTROY | ObjectBehaviour.MOVE_SAME | 
                     ObjectBehaviour.MOVE_DIFF | ObjectBehaviour.MOVE_TELEPORT;
             result = (this.objectBehaviour[this.winObjects[0]] | 
                     this.objectBehaviour[this.winObjects[1]]) & correctMask;
             if(result > 0){
-                return true;
+                return !sameLayer;
             }
             return false;
         }
@@ -521,7 +522,7 @@ this.pslg = this.pslg||{};
         result = (this.objectBehaviour[this.winObjects[0]] | 
                     this.objectBehaviour[this.winObjects[1]]) & correctMask;
         if(result > 0){
-            return true;
+            return !sameLayer;
         }
         return false;
     };

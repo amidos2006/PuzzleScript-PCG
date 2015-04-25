@@ -2798,8 +2798,41 @@ function compile(command,text) {
         pslg.ruleMaxGeneratedLevels = 10;
         pslg.ruleNumberOfBestLevels = 5;
         pslg.ruleGeneratedLevelOutline = 2;
+        pslg.GeneticAlgorithm.numberOfGenerations = 20;
+        pslg.GeneticAlgorithm.populationSize = 50;
+        pslg.GeneticAlgorithm.sdError = 0;
+        pslg.GeneticAlgorithm.crossoverRate = 0.7;
+        pslg.GeneticAlgorithm.mutationRate = 0.1;
+        pslg.GeneticAlgorithm.elitismRatio = 0.02;
+        pslg.GeneticAlgorithm.mutatedInitializationSize = 0;
+        pslg.GeneticAlgorithm.randomInitializationSize = 0;
+
+        var levels = [];
+        var initialData = {};
+        initialData["Initialize"] = pslg.RuleEvolutionInitialize;
+        initialData["Clone"] = pslg.RuleEvolutionClone;
+        initialData["CrossOver"] = pslg.RuleEvolutionCrossOver;
+        initialData["Mutation"] = pslg.RuleEvolutionMutation;
+        initialData["CalculateFitness"] = pslg.RuleEvolutionCalculateFitness;
+        initialData["Equal"] = pslg.RuleEvolutionEqual;
+        initialData["data"] = {emptyRule: deepCloneRule(pslg.state.originalRules[0])};
         
-        console.log(pslg.GetRuleFitness(pslg.state.originalRules, ["all", "target", "gem"]));
+        var genetic = new pslg.GeneticAlgorithm(initialData);
+        var bestRules = genetic.Evolve(10);
+        console.log("#######################################");
+        console.log("Best Rules");
+        console.log("#######################################");
+        for (var i = 0; i < bestRules.length; i++) {
+            console.log("\tRules:");
+            for (var j = 0; j < bestRules[i].rules; j++) {
+                console.log("\t\t" + pslg.PrintRule(bestRules[j]));
+            }
+            console.log("\tWin Rule: " + bestRules[i].winRule[0] + " "+ 
+                    bestRules[i].winRule[1] + " on " + bestRules[i].winRule[2]);
+            console.log("\tFitness: " + bestLevels[j].fitness);
+            console.log("\t---------------------------------");
+        }
+        console.log("#######################################");
         
         skipMyCode = true;
         disableIO = true;

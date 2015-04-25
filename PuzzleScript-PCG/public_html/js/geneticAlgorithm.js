@@ -139,6 +139,73 @@ this.pslg = this.pslg||{};
         return newPopulation;
     };
     
+    function RuleNextPopulation(elitism, crossoverRate, mutationRate){
+        var newPopulation = new Population(this.populationSize);
+        
+        for (var i = 0; i < this.chromosomes.length; i++) {
+            //console.log("\tChromosome number: " + (i + 1).toString());
+            this.chromosomes[i].age += 1;
+            Chromosome.CalculateFitness(this.chromosomes[i]);
+            //console.log("\tFitness Score: " + this.chromosomes[i].fitness);
+        }
+        
+        while(newPopulation.chromosomes.length < newPopulation.populationSize){
+            var parent1 = this.SelectionAlgorithm();
+            var parent2 = this.SelectionAlgorithm();
+            var i = 0;
+            while(!Chromosome.Equal(parent1, parent2) && i < 20){
+                parent2 = this.SelectionAlgorithm();
+            }
+            
+            var children = [new Chromosome(Chromosome.InitialData), new Chromosome(Chromosome.InitialData)];;
+            if(crossoverRate === 0){
+                var randomValue = Math.random();
+                if(randomValue < mutationRate){
+                    Chromosome.Mutate(children[0], parent1);
+                }
+
+                randomValue = Math.random();
+                if(randomValue < mutationRate){
+                    Chromosome.Mutate(children[1], parent2);
+                }
+            }
+            else{
+                var randomValue = Math.random();
+                if(randomValue < crossoverRate && i < 20){
+                    Chromosome.CrossOver(children[0], children[1], parent1, parent2);
+                }
+                else
+                {
+                    Chromosome.Clone(children[0], parent1);
+                    var randomValue = Math.random();
+                    if(randomValue < mutationRate){
+                        Chromosome.Mutate(children[1], parent2);
+                    }
+                    
+                    Chromosome.Clone(children[1], parent2);
+                    randomValue = Math.random();
+                    if(randomValue < mutationRate){
+                        Chromosome.Mutate(children[1], parent2);
+                    }
+                }
+            }
+            
+            newPopulation.chromosomes.push(children[0]);
+            newPopulation.chromosomes.push(children[1]);
+        }
+        
+        this.chromosomes.sort(FitnessSort);
+        for (var i = 0; i < elitism * newPopulation.populationSize; i++) {
+            newPopulation.chromosomes.splice(newPopulation.populationSize - i - 1, 1);
+        }
+        var currentLength = newPopulation.chromosomes.length;
+        for(var i = 0; i < newPopulation.populationSize - currentLength; i++){
+            newPopulation.chromosomes.push(this.chromosomes[i]);
+        }
+        
+        return newPopulation;
+    }
+    
     function GeneticAlgorithm(initialData){
         Chromosome.Initialize = initialData.Initialize;
         Chromosome.Clone = initialData.Clone;
@@ -147,6 +214,10 @@ this.pslg = this.pslg||{};
         Chromosome.CalculateFitness = initialData.CalculateFitness;
         
         Chromosome.InitialData = initialData.data;
+        if(initialData.Equal){
+            Chromosome.Equal = initialData.Equal;
+            Population.prototype.NextPopulation = RuleNextPopulation;
+        }
     }
     
     GeneticAlgorithm.prototype.Evolve = function(numberOfBestChromosomes){

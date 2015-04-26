@@ -2807,7 +2807,7 @@ function compile(command,text) {
         pslg.GeneticAlgorithm.numberOfGenerations = 50;
         pslg.GeneticAlgorithm.populationSize = 50;
         pslg.GeneticAlgorithm.sdError = 0;
-        pslg.GeneticAlgorithm.crossoverRate = 0.7;
+        pslg.GeneticAlgorithm.crossoverRate = 0.65;
         pslg.GeneticAlgorithm.mutationRate = 0.1;
         pslg.GeneticAlgorithm.elitismRatio = 0;
         pslg.GeneticAlgorithm.mutatedInitializationSize = 0;
@@ -2824,7 +2824,7 @@ function compile(command,text) {
         initialData["data"] = {emptyRule: deepCloneRule(pslg.state.originalRules[0])};
         
         var genetic = new pslg.GeneticAlgorithm(initialData);
-        var bestRules = genetic.Evolve(20);
+        var bestRules = genetic.Evolve(pslg.GeneticAlgorithm.populationSize);
         console.log("#######################################");
         console.log("Best Rules");
         console.log("#######################################");

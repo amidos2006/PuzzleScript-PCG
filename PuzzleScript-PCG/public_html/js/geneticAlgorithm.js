@@ -146,7 +146,7 @@ this.pslg = this.pslg||{};
             console.log("\tChromosome " + (i + 1).toString());
             this.chromosomes[i].age += 1;
             Chromosome.CalculateFitness(this.chromosomes[i]);
-            //console.log("\tFitness Score: " + this.chromosomes[i].fitness);
+            console.log("\tFitness Score: " + this.chromosomes[i].fitness);
         }
         
         while(newPopulation.chromosomes.length < newPopulation.populationSize){
@@ -173,25 +173,21 @@ this.pslg = this.pslg||{};
                 var randomValue = Math.random();
                 if(randomValue < crossoverRate && i < 20){
                     Chromosome.CrossOver(children[0], children[1], parent1, parent2);
+                    
+                    newPopulation.chromosomes.push(children[0]);
+                    newPopulation.chromosomes.push(children[1]);
                 }
                 else
                 {
                     Chromosome.Clone(children[0], parent1);
                     var randomValue = Math.random();
                     if(randomValue < mutationRate){
-                        Chromosome.Mutate(children[1], parent2);
+                        Chromosome.Mutate(children[0], parent1);
                     }
                     
-                    Chromosome.Clone(children[1], parent2);
-                    randomValue = Math.random();
-                    if(randomValue < mutationRate){
-                        Chromosome.Mutate(children[1], parent2);
-                    }
+                    newPopulation.chromosomes.push(children[0]);
                 }
             }
-            
-            newPopulation.chromosomes.push(children[0]);
-            newPopulation.chromosomes.push(children[1]);
         }
         
         this.chromosomes.sort(FitnessSort);
@@ -203,11 +199,11 @@ this.pslg = this.pslg||{};
             newPopulation.chromosomes.push(this.chromosomes[i]);
         }
         
-        console.log("\tBest Rules");
+        console.log("\tBest Rule:");
         for (var i = 0; i < this.chromosomes[0].rules.length; i++) {
             console.log("\t\t" + pslg.PrintRule(this.chromosomes[0].rules[i]));
         }
-        console.log("\tBest WinRule");
+        console.log("\tBest WinRule:");
         console.log("\t\t" + this.chromosomes[0].winRule[0] + " " + 
                 this.chromosomes[0].winRule[1] + " on " + this.chromosomes[0].winRule[2]);
         

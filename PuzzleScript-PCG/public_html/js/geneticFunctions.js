@@ -375,16 +375,19 @@ this.pslg = this.pslg||{};
             for (var tIndex = 0; tIndex < tempRule.lhs.length; tIndex++) {
                 var tempTuple = tempRule.lhs[tIndex];
                 for (var oIndex = 0; oIndex < tempTuple.length; oIndex++) {
-                    if(tempTuple[oIndex].indexOf("player") >= 0){
+                    var playerIndex = tempTuple[oIndex].indexOf("player");
+                    if(playerIndex > 0){
                         playerLHS = 1;
-                        if(tempTuple[oIndex].length){
+                        if(tempTuple.length > 1){
                             playerObject = 1;
+                        }
+                        if(directions.indexOf(tempTuple[oIndex][playerIndex - 1]) > 0){
+                            playerMovement = 1;
                         }
                     }
                     
                     for (var dIndex = 0; dIndex < directions.length; dIndex++) {
                         if(tempTuple[oIndex].indexOf(directions[dIndex]) >= 0){
-                            playerMovement = 1;
                             moveDirections[directions[dIndex]] += 1;
                         }
                     }

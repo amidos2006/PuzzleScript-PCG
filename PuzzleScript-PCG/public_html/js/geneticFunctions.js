@@ -397,9 +397,12 @@ this.pslg = this.pslg||{};
             for (var tIndex = 0; tIndex < tempRule.rhs.length; tIndex++) {
                 var tempTuple = tempRule.rhs[tIndex];
                 for (var oIndex = 0; oIndex < tempTuple.length; oIndex++) {
+                    var playerIndex = tempTuple[oIndex].indexOf("player");
+                    if(playerIndex > 0){
+                        playerMovement = 1;
+                    }
                     for (var dIndex = 0; dIndex < directions.length; dIndex++) {
                         if(tempTuple[oIndex].indexOf(directions[dIndex]) >= 0){
-                            playerMovement = 1;
                             moveDirections[directions[dIndex]] += 1;
                         }
                     }

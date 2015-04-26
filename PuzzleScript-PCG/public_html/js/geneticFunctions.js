@@ -435,7 +435,13 @@ this.pslg = this.pslg||{};
         var levelGenerator = new pslg.LevelGenerator(pslg.LevelGenerator.AutoFeatures(pslg.ruleAnalyzer));
         var levels = [];
         for (var i = 0; i < pslg.ruleMaxGeneratedLevels; i++) {
-            var level = levelGenerator.GenerateLevel(pslg.ruleGeneratedLevelOutline, pslg.ruleAnalyzer, pslg.state);
+            var level;
+            if(pslg.ruleFixedLevel === 0){
+                level = levelGenerator.GenerateLevel(pslg.ruleGeneratedLevelOutline, pslg.ruleAnalyzer, pslg.state);
+            }
+            else{
+                level = deepCloneLevel(pslg.LevelGenerator.levelsOutline[0]);
+            }
             level.fitness = pslg.GetLevelFitness([level]);
             levels.push(level);
         }
@@ -621,8 +627,20 @@ this.pslg = this.pslg||{};
     
     function RuleEvolutionInitialize(chromosome, initialData){
         pslg.emptyRule = initialData.emptyRule;
-        chromosome.rules = [CreateEmptyRule()];
-        chromosome.winRule = CreateRandomWinCond();
+        pslg.rules = initialData.rules;
+        pslg.winRule = initialData.winRule;
+        if(pslg.ruleFixedRules === 0){
+            chromosome.rules = [CreateEmptyRule()];
+        }
+        else{
+            chromosome.rules = initialData.rules;
+        }
+        if(pslg.ruleFixedWinRule === 0){
+            chromosome.winRule = CreateRandomWinCond();
+        }
+        else{
+            chromosome.winRule = pslg.winRule;
+        }
         chromosome.fitness = undefined;
         
         for (var i = 0; i < 20; i++) {
@@ -645,46 +663,49 @@ this.pslg = this.pslg||{};
     
     function RuleEvolutionCrossOver(child1, child2, chromosome1, chromosome2){
         var random = Math.random();
-        if(random < 0.5){
-            //Swap RHS with LHS
-            child1.rules = [];
-            child2.rules = [];
-            for (var i = 0; i < chromosome1.rules.length; i++) {
-                var rule1 = chromosome1.rules[i];
-                var rule2 = chromosome2.rules[i];
-                child1.rules.push({
-                    lhs: deepCloneHS(rule1.lhs),
-                    rhs: deepCloneHS(rule2.rhs)
-                });
-                child2.rules.push({
-                    lhs: deepCloneHS(rule2.lhs),
-                    rhs: deepCloneHS(rule1.rhs)
-                });
+        if(pslg.ruleFixedRules === 0){
+            if(random < 0.5){
+                //Swap RHS with LHS
+                child1.rules = [];
+                child2.rules = [];
+                for (var i = 0; i < chromosome1.rules.length; i++) {
+                    var rule1 = chromosome1.rules[i];
+                    var rule2 = chromosome2.rules[i];
+                    child1.rules.push({
+                        lhs: deepCloneHS(rule1.lhs),
+                        rhs: deepCloneHS(rule2.rhs)
+                    });
+                    child2.rules.push({
+                        lhs: deepCloneHS(rule2.lhs),
+                        rhs: deepCloneHS(rule1.rhs)
+                    });
+                }
             }
-        }
-        else{
-            //Swap Object
-            RuleEvolutionClone(child1, chromosome1);
-            RuleEvolutionClone(child2, chromosome2);
-            for (var i = 0; i < child1.rules.length; i++) {
-                var hs = Math.random() < 0.5? "lhs" : "rhs";
-                var randomTuple = Math.randomInt(child1.rules[i][hs].length);
-                var tuple1 = child1.rules[i][hs][randomTuple];
-                var tuple2 = child2.rules[i][hs][randomTuple];
-                var swapedObject = Math.randomInt(tuple1.length);
-                var temp = tuple1[swapedObject];
-                tuple1[swapedObject] = tuple2[swapedObject];
-                tuple2[swapedObject] = temp;
+            else{
+                //Swap Object
+                RuleEvolutionClone(child1, chromosome1);
+                RuleEvolutionClone(child2, chromosome2);
+                for (var i = 0; i < child1.rules.length; i++) {
+                    var hs = Math.random() < 0.5? "lhs" : "rhs";
+                    var randomTuple = Math.randomInt(child1.rules[i][hs].length);
+                    var tuple1 = child1.rules[i][hs][randomTuple];
+                    var tuple2 = child2.rules[i][hs][randomTuple];
+                    var swapedObject = Math.randomInt(tuple1.length);
+                    var temp = tuple1[swapedObject];
+                    tuple1[swapedObject] = tuple2[swapedObject];
+                    tuple2[swapedObject] = temp;
+                }
             }
         }
         
         //WinRule Crossover
-        var swapObject = Math.randomInt(chromosome1.winRule.length);
-        child1.winRule = chromosome1.winRule.clone();
-        child2.winRule = chromosome2.winRule.clone();
-        child1.winRule[swapObject] = chromosome2.winRule[swapObject];
-        child2.winRule[swapObject] = chromosome1.winRule[swapObject];
-        
+        if(pslg.ruleFixedWinRule === 0){
+            var swapObject = Math.randomInt(chromosome1.winRule.length);
+            child1.winRule = chromosome1.winRule.clone();
+            child2.winRule = chromosome2.winRule.clone();
+            child1.winRule[swapObject] = chromosome2.winRule[swapObject];
+            child2.winRule[swapObject] = chromosome1.winRule[swapObject];
+        }
         child1.fitness = undefined;
         child2.fitness = undefined;
     }
@@ -783,7 +804,18 @@ this.pslg = this.pslg||{};
     
     function RuleEvolutionMutation(newChromosome, chromosome){
         RuleEvolutionClone(newChromosome, chromosome);
-        var mutators = [RuleSizeMutator, ObjectMutator, DirectionMutator, TupleSizeMutator, HandSideSwapMutator, WinRuleMutator];
+        var mutators = [];
+        if(pslg.ruleFixedRules === 0){
+            mutators.push(RuleSizeMutator);
+            mutators.push(ObjectMutator);
+            mutators.push(DirectionMutator);
+            mutators.push(TupleSizeMutator);
+            mutators.push(HandSideSwapMutator);
+        }
+        if(pslg.ruleFixedWinRule === 0){
+            mutators.push(WinRuleMutator);
+        }
+        
         for (var i = 0; i < mutators.length; i++) {
             var random = Math.random();
             if(random < 0.2){
@@ -837,6 +869,9 @@ this.pslg = this.pslg||{};
     pslg.ruleNumberOfBestLevels = 10;
     pslg.ruleGeneratedLevelOutline = 2;
     pslg.doNothingWeight = 1;
+    pslg.ruleFixedLevel = 0;
+    pslg.ruleFixedWinRule = 0;
+    pslg.ruleFixedRules = 0;
     
     /////////////////////////////
     //  Functions Declaration

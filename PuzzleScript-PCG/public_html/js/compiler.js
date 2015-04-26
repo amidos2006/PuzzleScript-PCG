@@ -2805,6 +2805,9 @@ function compile(command,text) {
         pslg.ruleNumberOfBestLevels = 5;
         pslg.ruleGeneratedLevelOutline = 2;
         pslg.doNothingWeight = 0;
+        pslg.ruleFixedLevel = 0;
+        pslg.ruleFixedRules = 0;
+        pslg.ruleFixedWinRule = 0;
         
         pslg.GeneticAlgorithm.numberOfGenerations = 100;
         pslg.GeneticAlgorithm.populationSize = 50;
@@ -2823,7 +2826,12 @@ function compile(command,text) {
         initialData["Mutation"] = pslg.RuleEvolutionMutation;
         initialData["CalculateFitness"] = pslg.RuleEvolutionCalculateFitness;
         initialData["Equal"] = pslg.RuleEvolutionEqual;
-        initialData["data"] = {emptyRule: deepCloneRule(pslg.state.originalRules[0])};
+        initialData["data"] = {
+            emptyRule: deepCloneRule(pslg.state.originalRules[0]),
+            rules: pslg.state.originalRules,
+            winRule: [pslg.state.originalWinConditions[0], 
+                pslg.state.originalWinConditions[1], pslg.state.originalWinConditions[3]]
+        };
         
         var genetic = new pslg.GeneticAlgorithm(initialData);
         var bestRules = genetic.Evolve(pslg.GeneticAlgorithm.populationSize);

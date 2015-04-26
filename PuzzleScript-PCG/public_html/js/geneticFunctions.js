@@ -241,7 +241,7 @@ this.pslg = this.pslg||{};
             objectNumberScore.push(NumberOfObjects(state.levels[i].dat));
         }
         
-        var fitness = 0.3 * (solvedLevelScore.avg() - doNothingScore.avg()) +
+        var fitness = 0.3 * (solvedLevelScore.avg() - pslg.doNothingWeight * doNothingScore.avg()) +
                 0.2 * solutionLengthScore.avg() +
                 0.15 * objectNumberScore.avg() +
                 0.12 * boxMetricScore.avg() +
@@ -816,6 +816,7 @@ this.pslg = this.pslg||{};
     pslg.ruleMaxGeneratedLevels = 20;
     pslg.ruleNumberOfBestLevels = 10;
     pslg.ruleGeneratedLevelOutline = 2;
+    pslg.doNothingWeight = 1;
     
     /////////////////////////////
     //  Functions Declaration

@@ -2804,6 +2804,8 @@ function compile(command,text) {
         pslg.ruleMaxGeneratedLevels = 25;
         pslg.ruleNumberOfBestLevels = 5;
         pslg.ruleGeneratedLevelOutline = 2;
+        pslg.doNothingWeight = 0;
+        
         pslg.GeneticAlgorithm.numberOfGenerations = 50;
         pslg.GeneticAlgorithm.populationSize = 50;
         pslg.GeneticAlgorithm.sdError = 0;

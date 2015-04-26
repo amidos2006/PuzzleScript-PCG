@@ -674,6 +674,9 @@ this.pslg = this.pslg||{};
         child2.winRule = chromosome2.winRule.clone();
         child1.winRule[swapObject] = chromosome2.winRule[swapObject];
         child2.winRule[swapObject] = chromosome1.winRule[swapObject];
+        
+        child1.fitness = undefined;
+        child2.fitness = undefined;
     }
     
     function RuleSizeMutator(chromosome){
@@ -777,6 +780,8 @@ this.pslg = this.pslg||{};
                 mutators[i](newChromosome);
             }
         }
+        
+        newChromosome.fitness = undefined;
     }
     
     function RuleEvolutionCalculateFitness(chromosome){

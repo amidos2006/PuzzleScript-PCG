@@ -226,10 +226,10 @@ this.pslg = this.pslg||{};
             loadLevelFromState(state, i);
             var result = bestfs(state.levels[i].dat, maxIterations);
             if(pslg.doNothingWeight === 0){
-                solvedLevelScore.push(Math.floor(result));
+                solvedLevelScore.push(Math.floor(result[0]));
             }
             else{
-                solvedLevelScore.push(result);
+                solvedLevelScore.push(result[0]);
             }
             doNothingScore.push(doNothing(state.levels[i].dat));
             

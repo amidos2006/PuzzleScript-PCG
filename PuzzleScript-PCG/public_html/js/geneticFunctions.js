@@ -428,7 +428,7 @@ this.pslg = this.pslg||{};
         
         //Level Fitness
         if(errorCount > 0){
-            return 0.3 * heuristic.avg();
+            return 0.5 * heuristic.avg();
         }
         
         console.log("\t\tLevel Fitness");
@@ -455,8 +455,8 @@ this.pslg = this.pslg||{};
         var validity = errorCount > 0? 0 : 1;
         
         //Final value
-        var ruleFitness = 0.5 * heuristic.avg() + 0.5 * validity;
-        return 0.4 * fitness.avg() + 0.6 * ruleFitness;
+        var ruleFitness = 0.7 * heuristic.avg() + 0.3 * validity;
+        return 0.3 * fitness.avg() + 0.7 * ruleFitness;
     }
     
     function LevelEvolutionRandomValue(lgFeature){

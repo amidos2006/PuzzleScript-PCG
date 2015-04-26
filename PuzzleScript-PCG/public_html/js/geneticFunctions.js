@@ -307,7 +307,7 @@ this.pslg = this.pslg||{};
     
     function GetRuleFitness(rules, winningRule){
         //Initializing parameters
-        console.log("\t\tClearing the editor")
+        console.log("\t\tClearing the editor");
         ClearEditorRules();
         var ruleLineStart = pslg.state.ruleLineNumbers.min();
 	var lineIndex = ruleLineStart-1;
@@ -770,6 +770,7 @@ this.pslg = this.pslg||{};
     
     function RuleEvolutionCalculateFitness(chromosome){
         if(chromosome.fitness !== undefined){
+            console.log("\t\tOld Chromosome");
             return;
         }
         

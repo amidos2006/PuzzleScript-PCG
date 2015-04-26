@@ -2801,10 +2801,10 @@ function compile(command,text) {
         skipMyCode = true;
         disableIO = true;
         
-        pslg.ruleMaxGeneratedLevels = 10;
+        pslg.ruleMaxGeneratedLevels = 25;
         pslg.ruleNumberOfBestLevels = 5;
         pslg.ruleGeneratedLevelOutline = 2;
-        pslg.GeneticAlgorithm.numberOfGenerations = 20;
+        pslg.GeneticAlgorithm.numberOfGenerations = 50;
         pslg.GeneticAlgorithm.populationSize = 50;
         pslg.GeneticAlgorithm.sdError = 0;
         pslg.GeneticAlgorithm.crossoverRate = 0.7;
@@ -2824,24 +2824,25 @@ function compile(command,text) {
         initialData["data"] = {emptyRule: deepCloneRule(pslg.state.originalRules[0])};
         
         var genetic = new pslg.GeneticAlgorithm(initialData);
-        var bestRules = genetic.Evolve(10);
+        var bestRules = genetic.Evolve(20);
         console.log("#######################################");
         console.log("Best Rules");
         console.log("#######################################");
         for (var i = 0; i < bestRules.length; i++) {
-            console.log("\tRules:");
+            console.log("\tRules");
             for (var j = 0; j < bestRules[i].rules; j++) {
-                console.log("\t\t" + pslg.PrintRule(bestRules[j]));
+                console.log("\t\t" + pslg.PrintRule(bestRules[i].rules[j]));
             }
-            console.log("\tWin Rule: " + bestRules[i].winRule[0] + " "+ 
+            console.log("\tWin Rule");
+            console.log("\t\t" + bestRules[i].winRule[0] + " "+ 
                     bestRules[i].winRule[1] + " on " + bestRules[i].winRule[2]);
-            console.log("\tFitness: " + bestLevels[j].fitness);
+            console.log("\tFitness: " + bestRules[i].fitness);
             console.log("\t---------------------------------");
         }
         console.log("#######################################");
         
         skipMyCode = true;
-        disableIO = true;
+        disableIO = false;
     }
     //End of My Code
 }

@@ -335,8 +335,6 @@ this.pslg = this.pslg||{};
         pslg.ruleAnalyzer = new pslg.RuleAnalyzer();
         pslg.ruleAnalyzer.Initialize(pslg.state);
         
-        var validity = errorCount > 0? 0 : 1;
-        
         console.log("\t\tRule Fitness");
         //Rule Fitness
         var player = 0;
@@ -412,7 +410,6 @@ this.pslg = this.pslg||{};
         
         var heuristic = [player, criticalPath, uselessObjects, winningCondition, 
             winningObject, playerLHS, playerMovement, directionConst.avg()];
-        var ruleFitness = 0.5 * heuristic.avg() + 0.5 * validity;
         
         //Level Fitness
         if(validity <= 0){
@@ -434,7 +431,10 @@ this.pslg = this.pslg||{};
             fitness.push(levels[i].fitness);
         }
         
+        var validity = errorCount > 0? 0 : 1;
+        
         //Final value
+        var ruleFitness = 0.5 * heuristic.avg() + 0.5 * validity;
         return 0.3 * fitness.avg() + 0.7 * ruleFitness;
     }
     

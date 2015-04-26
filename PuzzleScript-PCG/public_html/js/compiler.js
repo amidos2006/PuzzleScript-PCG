@@ -2830,7 +2830,7 @@ function compile(command,text) {
         console.log("#######################################");
         for (var i = 0; i < bestRules.length; i++) {
             console.log("\tRules");
-            for (var j = 0; j < bestRules[i].rules; j++) {
+            for (var j = 0; j < bestRules[i].rules.length; j++) {
                 console.log("\t\t" + pslg.PrintRule(bestRules[i].rules[j]));
             }
             console.log("\tWin Rule");

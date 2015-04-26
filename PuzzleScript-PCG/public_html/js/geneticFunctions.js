@@ -694,7 +694,11 @@ this.pslg = this.pslg||{};
             var randomObject = Math.randomInt(chromosome.rules[randomRule][randomHS][randomTuple].length);
             if(chromosome.rules[randomRule][randomHS][randomTuple][randomObject].length > 0){
                 var objects = GetPossibleObjects();
+                objects.push("");
                 chromosome.rules[randomRule][randomHS][randomTuple][randomObject][1] = objects.rand();
+                if(chromosome.rules[randomRule][randomHS][randomTuple][randomObject][1] === ""){
+                    chromosome.rules[randomRule][randomHS][randomTuple][randomObject] = [];
+                }
             }
             else{
                 var objects = GetPossibleObjects();
@@ -724,10 +728,12 @@ this.pslg = this.pslg||{};
             var objects = GetPossibleObjects();
             var directions = ["<", ">", "^", "v", "action", ""];
             
-            var randomObject = Math.randomInt(chromosome.rules[randomRule]["lhs"][randomTuple].length + 1);
-            chromosome.rules[randomRule]["lhs"][randomTuple].splice(randomObject, 0, [directions.rand(), objects.rand()]);
-            randomObject = Math.randomInt(chromosome.rules[randomRule]["lhs"][randomTuple].length + 1);
-            chromosome.rules[randomRule]["rhs"][randomTuple].splice(randomObject, 0, [directions.rand(), objects.rand()]);
+            if(chromosome.rules[randomRule]["lhs"][randomTuple].length < 3){
+                var randomObject = Math.randomInt(chromosome.rules[randomRule]["lhs"][randomTuple].length + 1);
+                chromosome.rules[randomRule]["lhs"][randomTuple].splice(randomObject, 0, [directions.rand(), objects.rand()]);
+                randomObject = Math.randomInt(chromosome.rules[randomRule]["lhs"][randomTuple].length + 1);
+                chromosome.rules[randomRule]["rhs"][randomTuple].splice(randomObject, 0, [directions.rand(), objects.rand()]);
+            }
         }else{
             if(chromosome.rules[randomRule]["lhs"][randomTuple].length > 1){
                 var randomObject = Math.randomInt(chromosome.rules[randomRule]["lhs"][randomTuple].length);

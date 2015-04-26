@@ -204,7 +204,7 @@ this.pslg = this.pslg||{};
         }
         
         console.log("\tBest Rules");
-        for (var i = 0; i < this.chromosomes[0].length; i++) {
+        for (var i = 0; i < this.chromosomes[0].rules.length; i++) {
             console.log("\t\t" + pslg.PrintRule(this.chromosomes[0].rules[i]));
         }
         console.log("\tBest WinRule");

@@ -361,6 +361,7 @@ this.pslg = this.pslg||{};
             winningObject = 1;
         }
         var playerLHS = 0;
+        var playerObject = 0;
         var playerMovement = 0;
         var directionConst = [];
         var directions = [">", "<", "^", "v", "action"];
@@ -376,6 +377,9 @@ this.pslg = this.pslg||{};
                 for (var oIndex = 0; oIndex < tempTuple.length; oIndex++) {
                     if(tempTuple[oIndex].indexOf("player") >= 0){
                         playerLHS = 1;
+                        if(tempTuple[oIndex].length){
+                            playerObject = 1;
+                        }
                     }
                     
                     for (var dIndex = 0; dIndex < directions.length; dIndex++) {
@@ -414,11 +418,11 @@ this.pslg = this.pslg||{};
         }
         
         var heuristic = [player, criticalPath, uselessObjects, winningCondition, 
-            winningObject, playerLHS, playerMovement, directionConst.avg()];
+            winningObject, (playerLHS + playerObject) / 2, playerMovement, directionConst.avg()];
         
         //Level Fitness
-        if(validity <= 0){
-            return 0.7 * ruleFitness;
+        if(errorCount > 0){
+            return 0.3 * heuristic.avg();
         }
         
         console.log("\t\tLevel Fitness");
@@ -440,7 +444,7 @@ this.pslg = this.pslg||{};
         
         //Final value
         var ruleFitness = 0.5 * heuristic.avg() + 0.5 * validity;
-        return 0.4 * fitness.avg() + 0.7 * ruleFitness;
+        return 0.4 * fitness.avg() + 0.6 * ruleFitness;
     }
     
     function LevelEvolutionRandomValue(lgFeature){

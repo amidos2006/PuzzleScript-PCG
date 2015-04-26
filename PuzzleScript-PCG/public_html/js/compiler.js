@@ -2809,7 +2809,7 @@ function compile(command,text) {
         pslg.GeneticAlgorithm.sdError = 0;
         pslg.GeneticAlgorithm.crossoverRate = 0.7;
         pslg.GeneticAlgorithm.mutationRate = 0.1;
-        pslg.GeneticAlgorithm.elitismRatio = 0.02;
+        pslg.GeneticAlgorithm.elitismRatio = 0;
         pslg.GeneticAlgorithm.mutatedInitializationSize = 0;
         pslg.GeneticAlgorithm.randomInitializationSize = 0;
 

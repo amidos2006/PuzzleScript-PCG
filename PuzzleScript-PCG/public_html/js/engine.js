@@ -1776,7 +1776,7 @@ function applyRuleGroup(ruleGroup) {
     var loopcount=0;
     while(propagated) {
     	loopcount++;
-    	if (loopcount>50) 
+    	if (loopcount>200) 
     	{
                 numAppRules = 0;
                 errorCount++;
@@ -1818,7 +1818,7 @@ function propagateMovements(startRuleGroupindex){
         	ruleGroupIndex = state.loopPoint[ruleGroupIndex];
         	loopPropagated=false;
         	loopCount++;
-			if (loopCount > 50) {
+			if (loopCount > 200) {
     			var ruleGroup=state.rules[ruleGroupIndex];
                                 errorCount++;
 			   	logError("got caught in an endless startloop...endloop vortex, escaping!", ruleGroup[0][3],true);
@@ -1831,7 +1831,7 @@ function propagateMovements(startRuleGroupindex){
 		        	ruleGroupIndex = state.loopPoint[ruleGroupIndex];
 		        	loopPropagated=false;		        
 		        	loopCount++;
-					if (loopCount > 50) {
+					if (loopCount > 200) {
 		    			var ruleGroup=state.rules[ruleGroupIndex];
                                                 errorCount++;
 					   	logError("got caught in an endless startloop...endloop vortex, escaping!", ruleGroup[0][3],true);
@@ -1860,7 +1860,7 @@ function propagateLateMovements(){
         	ruleGroupIndex = state.lateLoopPoint[ruleGroupIndex];
         	loopPropagated=false;
         	loopCount++;
-			if (loopCount > 50) {
+			if (loopCount > 200) {
     			var ruleGroup=state.lateRules[ruleGroupIndex];
                                 errorCount++;
 			   	logError("got caught in an endless startloop...endloop vortex, escaping!", ruleGroup[0][3],true);
@@ -1873,7 +1873,7 @@ function propagateLateMovements(){
 		        	ruleGroupIndex = state.lateLoopPoint[ruleGroupIndex];
 		        	loopPropagated=false;
 		        	loopCount++;
-					if (loopCount > 50) {
+					if (loopCount > 200) {
 		    			var ruleGroup=state.lateRules[ruleGroupIndex];
                                                 errorCount++;
 					   	logError("got caught in an endless startloop...endloop vortex, escaping!", ruleGroup[0][3],true);

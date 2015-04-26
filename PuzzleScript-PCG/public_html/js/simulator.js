@@ -192,7 +192,11 @@ function bestfs(startState, maxIterations_) {
         if (iteration >= maxIterations) {
             break;
         }
-
+        
+        if(errorCount > 0){
+            break;
+        }
+        
         t = open[0];
         open.splice(0,1);
 

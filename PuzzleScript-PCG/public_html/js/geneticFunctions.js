@@ -780,7 +780,7 @@ this.pslg = this.pslg||{};
         var mutators = [RuleSizeMutator, ObjectMutator, DirectionMutator, TupleSizeMutator, HandSideSwapMutator, WinRuleMutator];
         for (var i = 0; i < mutators.length; i++) {
             var random = Math.random();
-            if(random < 0.5){
+            if(random < 0.2){
                 mutators[i](newChromosome);
             }
         }

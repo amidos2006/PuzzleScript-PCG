@@ -435,7 +435,7 @@ this.pslg = this.pslg||{};
         
         //Final value
         var ruleFitness = 0.5 * heuristic.avg() + 0.5 * validity;
-        return 0.3 * fitness.avg() + 0.7 * ruleFitness;
+        return 0.4 * fitness.avg() + 0.7 * ruleFitness;
     }
     
     function LevelEvolutionRandomValue(lgFeature){

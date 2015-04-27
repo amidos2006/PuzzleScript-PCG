@@ -225,7 +225,6 @@ this.pslg = this.pslg||{};
         for(var i = 0; i < state.levels.length; i++){
             loadLevelFromState(state, i);
             var result = bestfs(state.levels[i].dat, maxIterations);
-            levels[i].playable = Math.floor(result[0]);
             if(pslg.doNothingWeight === 0){
                 solvedLevelScore.push(Math.floor(result[0]));
                 doNothingScore.push(Math.floor(doNothing(state.levels[i].dat)));
@@ -234,6 +233,8 @@ this.pslg = this.pslg||{};
                 solvedLevelScore.push(result[0]);
                 doNothingScore.push(doNothing(state.levels[i].dat));
             }
+            levels[i].playable = solvedLevelScore[solvedLevelScore.length - 1] - 
+                    doNothingScore[doNothingScore.length - 1];
             
             numAppRules = 0;
             loadLevelFromState(state, i);

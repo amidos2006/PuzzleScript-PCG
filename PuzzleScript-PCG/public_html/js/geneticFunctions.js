@@ -605,6 +605,10 @@ this.pslg = this.pslg||{};
             if(objects[i] === "background"){
                 objects.splice(i, 1);
             }
+            
+            if(objects[i] === "Wall"){
+                objects.splice(i, 1);
+            }
         }
         return objects;
     }

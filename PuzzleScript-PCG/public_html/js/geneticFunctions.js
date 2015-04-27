@@ -431,7 +431,7 @@ this.pslg = this.pslg||{};
         
         //Level Fitness
         if(errorCount > 0){
-            return 0.15 * heuristic.avg();
+            return 0.3 * heuristic.avg();
         }
         
         console.log("\t\tLevel Fitness");
@@ -452,13 +452,13 @@ this.pslg = this.pslg||{};
         levels.sort(pslg.FitnessSort);
         var fitness = [];
         for (var i = 0; i < pslg.ruleNumberOfBestLevels; i++) {
-            fitness.push(levels[i].playable);
+            fitness.push(levels[i].fitness);
         }
         
         var validity = errorCount > 0? 0 : 1;
         
         //Final value
-        var ruleFitness = 0.3 * heuristic.avg() + 0.2 * validity;
+        var ruleFitness = 0.6 * heuristic.avg() + 0.4 * validity;
         return 0.5 * fitness.avg() + 0.5 * ruleFitness;
     }
     

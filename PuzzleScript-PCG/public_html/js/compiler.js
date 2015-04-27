@@ -2809,10 +2809,10 @@ function compile(command,text) {
         pslg.ruleMaxGeneratedLevels = 25;
         pslg.ruleNumberOfBestLevels = 5;
         pslg.ruleGeneratedLevelOutline = 2;
-        pslg.doNothingWeight = 1;
+        pslg.doNothingWeight = 0;
         pslg.ruleFixedLevel = 0;
         pslg.ruleFixedRules = 0;
-        pslg.ruleFixedWinRule = 1;
+        pslg.ruleFixedWinRule = 0;
         
         pslg.GeneticAlgorithm.numberOfGenerations = 50;
         pslg.GeneticAlgorithm.populationSize = 50;

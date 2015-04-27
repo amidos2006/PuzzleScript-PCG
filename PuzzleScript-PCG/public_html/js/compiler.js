@@ -2814,7 +2814,7 @@ function compile(command,text) {
         pslg.ruleFixedRules = 0;
         pslg.ruleFixedWinRule = 1;
         
-        pslg.GeneticAlgorithm.numberOfGenerations = 100;
+        pslg.GeneticAlgorithm.numberOfGenerations = 50;
         pslg.GeneticAlgorithm.populationSize = 50;
         pslg.GeneticAlgorithm.sdError = 0;
         pslg.GeneticAlgorithm.crossoverRate = 0.65;

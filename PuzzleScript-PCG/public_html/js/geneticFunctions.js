@@ -225,6 +225,7 @@ this.pslg = this.pslg||{};
         for(var i = 0; i < state.levels.length; i++){
             loadLevelFromState(state, i);
             var result = bestfs(state.levels[i].dat, maxIterations);
+            levels[i].playable = Math.floor(result[0]);
             if(pslg.doNothingWeight === 0){
                 solvedLevelScore.push(Math.floor(result[0]));
                 doNothingScore.push(Math.floor(doNothing(state.levels[i].dat)));
@@ -429,7 +430,7 @@ this.pslg = this.pslg||{};
         
         //Level Fitness
         if(errorCount > 0){
-            return 0.5 * heuristic.avg();
+            return 0.15 * heuristic.avg();
         }
         
         console.log("\t\tLevel Fitness");
@@ -443,21 +444,21 @@ this.pslg = this.pslg||{};
             else{
                 level = deepCloneLevel(pslg.LevelGenerator.levelsOutline[0]);
             }
-            level.fitness = pslg.GetLevelFitness([level]);
+            level.fitness = pslg.GetLevelFitness([level], level);
             levels.push(level);
         }
         
         levels.sort(pslg.FitnessSort);
         var fitness = [];
         for (var i = 0; i < pslg.ruleNumberOfBestLevels; i++) {
-            fitness.push(levels[i].fitness);
+            fitness.push(levels[i].playable);
         }
         
         var validity = errorCount > 0? 0 : 1;
         
         //Final value
-        var ruleFitness = 0.7 * heuristic.avg() + 0.3 * validity;
-        return 0.3 * fitness.avg() + 0.7 * ruleFitness;
+        var ruleFitness = 0.3 * heuristic.avg() + 0.2 * validity;
+        return 0.5 * fitness.avg() + 0.5 * ruleFitness;
     }
     
     function LevelEvolutionRandomValue(lgFeature){
@@ -641,7 +642,7 @@ this.pslg = this.pslg||{};
         }
         chromosome.fitness = undefined;
         
-        for (var i = 0; i < 20; i++) {
+        for (var i = 0; i < 25; i++) {
             RuleEvolutionMutation(chromosome, chromosome);
         }
     }

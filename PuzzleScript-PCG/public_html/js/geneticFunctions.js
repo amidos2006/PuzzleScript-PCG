@@ -606,7 +606,7 @@ this.pslg = this.pslg||{};
                 objects.splice(i, 1);
             }
             
-            if(objects[i] === "Wall"){
+            if(objects[i] === "wall"){
                 objects.splice(i, 1);
             }
         }

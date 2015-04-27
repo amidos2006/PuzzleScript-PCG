@@ -227,11 +227,12 @@ this.pslg = this.pslg||{};
             var result = bestfs(state.levels[i].dat, maxIterations);
             if(pslg.doNothingWeight === 0){
                 solvedLevelScore.push(Math.floor(result[0]));
+                doNothingScore.push(Math.floor(doNothing(state.levels[i].dat)));
             }
             else{
                 solvedLevelScore.push(result[0]);
+                doNothingScore.push(doNothing(state.levels[i].dat));
             }
-            doNothingScore.push(doNothing(state.levels[i].dat));
             
             numAppRules = 0;
             loadLevelFromState(state, i);
@@ -246,7 +247,7 @@ this.pslg = this.pslg||{};
             objectNumberScore.push(NumberOfObjects(state.levels[i].dat));
         }
         
-        var fitness = 0.3 * (solvedLevelScore.avg() - pslg.doNothingWeight * doNothingScore.avg()) +
+        var fitness = 0.3 * (solvedLevelScore.avg() - doNothingScore.avg()) +
                 0.2 * solutionLengthScore.avg() +
                 0.15 * objectNumberScore.avg() +
                 0.12 * boxMetricScore.avg() +
@@ -599,9 +600,6 @@ this.pslg = this.pslg||{};
     function GetPossibleObjects(){
         var objects = Object.keys(pslg.state.objects);
         for (var i = 0; i < objects.length; i++) {
-            if(objects[i] === "wall"){
-                objects.splice(i, 1);
-            }
             if(objects[i] === "background"){
                 objects.splice(i, 1);
             }
@@ -739,10 +737,6 @@ this.pslg = this.pslg||{};
                     chromosome.rules[randomRule][randomHS][randomTuple][randomObject] = [];
                 }
             }
-            else{
-                var objects = GetPossibleObjects();
-                chromosome.rules[randomRule][randomHS][randomTuple][randomObject] = ["", objects.rand()];
-            }
         }
     }
     
@@ -753,7 +747,7 @@ this.pslg = this.pslg||{};
         if(chromosome.rules[randomRule][randomHS][randomTuple].length > 0){
             var randomObject = Math.randomInt(chromosome.rules[randomRule][randomHS][randomTuple].length);
             if(chromosome.rules[randomRule][randomHS][randomTuple][randomObject].length > 0){
-                var directions = ["<", ">", "^", "v", "action", ""];
+                var directions = ["<", ">", "^", "v", "action", "", "", "", "", ""];
                 chromosome.rules[randomRule][randomHS][randomTuple][randomObject][0] = directions.rand();
             }
         }
@@ -765,7 +759,7 @@ this.pslg = this.pslg||{};
         var random = Math.random();
         if(random < 0.5){
             var objects = GetPossibleObjects();
-            var directions = ["<", ">", "^", "v", "action", ""];
+            var directions = ["<", ">", "^", "v", "action", "", "", "", "", ""];
             
             if(chromosome.rules[randomRule]["lhs"][randomTuple].length < 3){
                 var randomObject = Math.randomInt(chromosome.rules[randomRule]["lhs"][randomTuple].length + 1);

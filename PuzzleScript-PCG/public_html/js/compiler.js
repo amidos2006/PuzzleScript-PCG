@@ -2450,7 +2450,12 @@ function compile(command,text) {
     pslg.startingDifficulty = 0;
 
     //Human Testing
-    if(test === -3){
+    if(test === -4){
+        for (var i = 0; i < pslg.LevelGenerator.levelsOutline.length; i++) {
+            console.log("Level " + (i + 1).toString() + ": " + pslg.GetLevelFitness([pslg.LevelGenerator.levelsOutline[i]]));
+        }
+    }
+    else if(test === -3){
         humanTesting = true;
     }
     //Testing Auto Generator
@@ -2804,10 +2809,10 @@ function compile(command,text) {
         pslg.ruleMaxGeneratedLevels = 25;
         pslg.ruleNumberOfBestLevels = 5;
         pslg.ruleGeneratedLevelOutline = 2;
-        pslg.doNothingWeight = 0;
+        pslg.doNothingWeight = 1;
         pslg.ruleFixedLevel = 0;
         pslg.ruleFixedRules = 0;
-        pslg.ruleFixedWinRule = 0;
+        pslg.ruleFixedWinRule = 1;
         
         pslg.GeneticAlgorithm.numberOfGenerations = 100;
         pslg.GeneticAlgorithm.populationSize = 50;
@@ -2829,8 +2834,8 @@ function compile(command,text) {
         initialData["data"] = {
             emptyRule: deepCloneRule(pslg.state.originalRules[0]),
             rules: pslg.state.originalRules,
-            winRule: [pslg.state.originalWinConditions[0], 
-                pslg.state.originalWinConditions[1], pslg.state.originalWinConditions[3]]
+            winRule: [pslg.state.originalWinConditions[0][0], 
+                pslg.state.originalWinConditions[0][1], pslg.state.originalWinConditions[0][3]]
         };
         
         var genetic = new pslg.GeneticAlgorithm(initialData);
